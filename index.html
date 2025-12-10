@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TabbiMate - Live Language Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background Map Container -->
+    <div class="map-container">
+        <svg class="world-map" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">
+            <!-- Simplified world map paths -->
+            <g class="map-paths" fill="none" stroke="#E0E0E0" stroke-width="1">
+                <!-- North America -->
+                <path d="M150,80 Q180,70 220,85 L240,120 Q230,150 210,180 L180,200 Q150,190 140,170 Z"/>
+                <path d="M220,85 Q250,80 280,95 L300,130 Q290,160 270,190 L240,200 Q230,170 240,120 Z"/>
+                
+                <!-- South America -->
+                <path d="M280,250 Q290,280 285,320 L270,380 Q250,420 230,440 L220,410 Q225,370 235,330 Z"/>
+                
+                <!-- Europe -->
+                <path d="M480,100 Q510,95 540,105 L550,130 Q545,150 530,160 L500,155 Q485,140 480,120 Z"/>
+                
+                <!-- Africa -->
+                <path d="M490,180 Q520,200 530,240 L525,300 Q510,350 490,380 L470,360 Q475,310 480,260 Z"/>
+                
+                <!-- Asia -->
+                <path d="M600,80 Q680,70 760,90 L820,120 Q840,150 850,180 L870,200 Q860,230 840,250 L780,240 Q720,220 680,200 L640,170 Q610,140 600,110 Z"/>
+                
+                <!-- Australia -->
+                <path d="M850,380 Q890,375 920,390 L930,420 Q920,445 890,455 L860,450 Q850,430 850,410 Z"/>
+            </g>
+        </svg>
+        
+        <!-- Active user dots will be inserted here by JS -->
+        <div id="dots-container"></div>
+    </div>
+
+    <!-- Center Card Container -->
+    <div class="center-container">
+        <div class="card" id="main-card">
+            <!-- State 1: Language Selection -->
+            <div class="card-content" id="language-selection">
+                <h1 class="card-title">
+                    TabbiMate <span class="beta-badge">BETA</span>
+                </h1>
+                <div class="button-group">
+                    <button class="language-btn" data-language="English">English</button>
+                    <button class="language-btn" data-language="Spanish">Spanish</button>
+                    <button class="language-btn" data-language="Korean">Korean</button>
+                </div>
+                <a href="#" class="request-link">Request a new language?</a>
+            </div>
+
+            <!-- State 2: Session Levels (hidden initially) -->
+            <div class="card-content hidden" id="session-levels">
+                <h1 class="card-title">
+                    Talk in <span id="selected-language">English</span> <span class="live-badge">LIVE</span>
+                </h1>
+                <div class="level-group">
+                    <button class="level-btn" data-level="Basic" data-duration="3">
+                        <span class="level-info">
+                            <span class="level-name">Basic</span>
+                            <span class="level-duration">(3 min)</span>
+                        </span>
+                        <span class="level-badge">X1</span>
+                    </button>
+                    <button class="level-btn" data-level="Intermediate" data-duration="15">
+                        <span class="level-info">
+                            <span class="level-name">Intermediate</span>
+                            <span class="level-duration">(15 min)</span>
+                        </span>
+                        <span class="level-badge">X2</span>
+                    </button>
+                    <button class="level-btn" data-level="Professional" data-duration="30">
+                        <span class="level-info">
+                            <span class="level-name">Professional</span>
+                            <span class="level-duration">(30 min)</span>
+                        </span>
+                        <span class="level-badge">X3</span>
+                    </button>
+                    <button class="level-btn" data-level="Native" data-duration="30">
+                        <span class="level-info">
+                            <span class="level-name">Talk with Native</span>
+                            <span class="level-duration">(30 min)</span>
+                        </span>
+                        <span class="level-badge">X5</span>
+                    </button>
+                </div>
+                <a href="#" class="back-link" id="back-to-languages">← Change language</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
