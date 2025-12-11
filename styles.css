@@ -58,10 +58,10 @@ body {
 
 @keyframes mapZoomPan {
     0% {
-        transform: translateX(0);
+        transform: translateX(-50%);
     }
     100% {
-        transform: translateX(50%);
+        transform: translateX(0);
     }
 }
 
@@ -212,6 +212,44 @@ body {
 
 .card-content.fade-in {
     opacity: 1;
+}
+
+/* Header with Profile Link */
+.header-with-profile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    position: relative;
+}
+
+.header-with-profile .card-title {
+    margin-bottom: 0;
+}
+
+.profile-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    color: #666;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    position: absolute;
+    right: 0;
+}
+
+.profile-link:hover {
+    background: #f5f5f5;
+    color: #BF3143;
+}
+
+.profile-link svg {
+    stroke: currentColor;
 }
 
 /* Card Title */
