@@ -957,13 +957,13 @@ body {
 .modal-title {
     font-size: 20px;
     font-weight: 600;
-    color: #2c3e50;
+    color: #111214;
     margin: 0;
 }
 
 .modal-body {
     padding: 24px;
-    color: #555;
+    color: #4A4A4D;
     font-size: 15px;
     line-height: 1.5;
 }
@@ -994,25 +994,25 @@ body {
 
 .modal-btn-secondary {
     background: white;
-    color: #666;
-    border: 2px solid #e0e0e0;
+    color: #4A4A4D;
+    border: 2px solid #E5E5E7;
 }
 
 .modal-btn-secondary:hover {
-    background: #f9f9f9;
-    border-color: #ccc;
+    background: #F7F7F8;
+    border-color: #A1A1A6;
 }
 
 .modal-btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #BF3143;
     color: white;
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(191, 49, 67, 0.3);
 }
 
 .modal-btn-primary:hover {
-    background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+    background: #a52938;
+    box-shadow: 0 4px 16px rgba(191, 49, 67, 0.4);
     transform: translateY(-1px);
 }
 
@@ -1039,7 +1039,7 @@ body {
 
 .modal-input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #BF3143;
 }
 
 .modal-textarea {
