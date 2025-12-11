@@ -211,7 +211,14 @@ function showError(message, form = 'signin') {
     errorDiv.textContent = message;
 
     const targetForm = form === 'signin' ? elements.signinForm : elements.signupForm;
-    targetForm.insertBefore(errorDiv, targetForm.firstChild);
+    if (targetForm && targetForm.firstChild) {
+        targetForm.insertBefore(errorDiv, targetForm.firstChild);
+    } else if (targetForm) {
+        targetForm.appendChild(errorDiv);
+    } else {
+        console.error('Target form not found');
+        return;
+    }
 
     // Auto-remove after 5 seconds
     setTimeout(() => {
@@ -228,7 +235,14 @@ function showSuccess(message, form = 'signin') {
     successDiv.textContent = message;
 
     const targetForm = form === 'signin' ? elements.signinForm : elements.signupForm;
-    targetForm.insertBefore(successDiv, targetForm.firstChild);
+    if (targetForm && targetForm.firstChild) {
+        targetForm.insertBefore(successDiv, targetForm.firstChild);
+    } else if (targetForm) {
+        targetForm.appendChild(successDiv);
+    } else {
+        console.error('Target form not found');
+        return;
+    }
 }
 
 // Clear all messages

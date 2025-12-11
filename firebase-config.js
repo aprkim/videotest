@@ -38,7 +38,14 @@ function initializeFirebase() {
         app = firebase.initializeApp(firebaseConfig);
         auth = firebase.auth();
         db = firebase.firestore();
-        storage = firebase.storage();
+        
+        // Only initialize storage if the SDK is loaded
+        if (typeof firebase.storage === 'function') {
+            storage = firebase.storage();
+        } else {
+            console.warn('Firebase Storage SDK not loaded');
+            storage = null;
+        }
 
         console.log('Firebase initialized successfully');
         return true;
