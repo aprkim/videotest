@@ -2127,13 +2127,18 @@ function setupSignOut() {
     const signoutBtn = document.getElementById('signout-btn');
     if (signoutBtn) {
         signoutBtn.addEventListener('click', async () => {
-            if (confirm('Are you sure you want to sign out?')) {
+            const confirmed = await customConfirm(
+                'Are you sure you want to sign out?',
+                'Sign Out'
+            );
+            
+            if (confirmed) {
                 try {
                     await firebase.auth().signOut();
                     window.location.href = 'auth.html';
                 } catch (error) {
                     console.error('Sign out error:', error);
-                    alert('Failed to sign out. Please try again.');
+                    customAlert('Failed to sign out. Please try again.', 'Error');
                 }
             }
         });
