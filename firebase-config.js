@@ -34,8 +34,15 @@ function initializeFirebase() {
     }
 
     try {
-        // Initialize Firebase
-        app = firebase.initializeApp(firebaseConfig);
+        // Check if Firebase is already initialized
+        if (firebase.apps.length === 0) {
+            // Initialize Firebase only if not already initialized
+            app = firebase.initializeApp(firebaseConfig);
+        } else {
+            // Use existing app
+            app = firebase.app();
+        }
+        
         auth = firebase.auth();
         db = firebase.firestore();
         
