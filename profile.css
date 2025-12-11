@@ -247,8 +247,14 @@
 /* Location Inputs */
 .location-inputs {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    gap: 12px;
+}
+
+@media (max-width: 640px) {
+    .location-inputs {
+        flex-direction: column;
+        gap: 16px;
+    }
 }
 
 .location-status {
