@@ -71,13 +71,20 @@
     padding: 32px;
 }
 
+/* Two-column layout for desktop */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+}
+
 /* Profile Sections */
 .profile-section {
-    margin-bottom: 48px;
+    margin-bottom: 0;
 }
 
 .profile-section:last-of-type {
-    margin-bottom: 32px;
+    margin-bottom: 0;
 }
 
 .section-title {
@@ -131,7 +138,6 @@
     width: 140px;
     height: 140px;
     border-radius: 50%;
-    overflow: hidden;
     background: #f5f5f5;
     display: flex;
     align-items: center;
@@ -139,25 +145,39 @@
     border: 3px solid #E8E8E8;
 }
 
+.avatar-preview::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    z-index: 1;
+}
+
 .avatar-placeholder {
     color: #999;
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 2;
 }
 
 .avatar-image {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
+    z-index: 2;
 }
 
 .edit-photo-btn {
     position: absolute;
-    bottom: 8px;
-    right: 8px;
-    width: 36px;
-    height: 36px;
+    bottom: 4px;
+    right: 4px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: #BF3143;
     border: 3px solid white;
@@ -167,12 +187,19 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    z-index: 10;
 }
 
 .edit-photo-btn:hover {
     background: #a02838;
-    transform: scale(1.05);
+    transform: scale(1.08);
+    box-shadow: 0 4px 16px rgba(191, 49, 67, 0.4);
+}
+
+.edit-photo-btn svg {
+    position: relative;
+    z-index: 1;
 }
 
 .upload-btn {
@@ -222,6 +249,44 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.location-status {
+    margin-top: 12px;
+}
+
+.status-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.status-success {
+    background: rgba(76, 175, 80, 0.1);
+    color: #2E7D32;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.status-success svg {
+    stroke: #2E7D32;
+    flex-shrink: 0;
+}
+
+.status-warning {
+    background: rgba(255, 152, 0, 0.1);
+    color: #E65100;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.status-warning svg {
+    stroke: #E65100;
+    fill: none;
+    flex-shrink: 0;
 }
 
 /* Language Management */
@@ -285,12 +350,39 @@
 .language-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .language-name {
     font-size: 16px;
     font-weight: 600;
     color: #333;
+}
+
+.language-level-select {
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    background: white;
+    border: 1.5px solid #E0E0E0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+    max-width: 160px;
+}
+
+.language-level-select:hover {
+    border-color: #BF3143;
+}
+
+.language-level-select:focus {
+    outline: none;
+    border-color: #BF3143;
+    box-shadow: 0 0 0 3px rgba(191, 49, 67, 0.1);
 }
 
 .language-actions {
@@ -663,6 +755,36 @@
     }
 }
 
+/* Desktop: Two-column efficient layout */
+@media (min-width: 1024px) {
+    .profile-container {
+        max-width: 1200px;
+    }
+
+    .profile-content {
+        padding: 40px;
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
+
+    /* Photo section spans both columns but centered */
+    .profile-section:first-child {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Full width for languages and interests */
+    .profile-section:nth-child(3),
+    .profile-section:nth-child(4) {
+        grid-column: 1 / -1;
+    }
+}
+
 /* Tablet and Desktop: Show container with shadow */
 @media (min-width: 769px) {
     .profile-fullscreen {
@@ -677,5 +799,21 @@
 
     .profile-page-header {
         position: relative;
+    }
+
+    .section-title {
+        font-size: 19px;
+    }
+
+    .avatar-preview {
+        width: 160px;
+        height: 160px;
+    }
+
+    .edit-photo-btn {
+        width: 44px;
+        height: 44px;
+        bottom: 6px;
+        right: 6px;
     }
 }

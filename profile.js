@@ -5,16 +5,27 @@
  * - Uses localStorage key: "tabbimate_profile_v1"
  * - Profile structure:
  *   {
- *     languages: [{ id: string, name: string, match: boolean }],
+ *     languages: [{ 
+ *       id: string, 
+ *       name: string, 
+ *       level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Native',
+ *       match: boolean 
+ *     }],
  *     interests: string[] (max 3),
- *     location: { city: string, country: string },
+ *     location: { 
+ *       city: string, 
+ *       country: string,
+ *       coordinates?: { lat: number, lon: number },
+ *       verified: boolean,
+ *       displayName?: string
+ *     },
  *     photoUrl?: string (Data URL)
  *   }
  * 
  * Features:
  * - Profile photo upload with cropping capability
  * - Location tracking (city, country)
- * - Language management with match toggle
+ * - Language management with level selection and match toggle
  * - Interest tags (max 3)
  * - Auto-save to localStorage on every change
  */
@@ -54,6 +65,7 @@ function init() {
         uploadBtnText: document.getElementById('upload-btn-text'),
         cityInput: document.getElementById('city-input'),
         countryInput: document.getElementById('country-input'),
+        locationStatus: document.getElementById('location-status'),
         languageInput: document.getElementById('language-input'),
         addLanguageBtn: document.getElementById('add-language-btn'),
         languagesList: document.getElementById('languages-list'),
@@ -107,6 +119,39 @@ function loadProfile() {
 
     elements.cityInput.value = profile.location.city || '';
     elements.countryInput.value = profile.location.country || '';
+    
+    // Show location verification status
+    updateLocationStatus();
+}
+
+// Update location status display
+function updateLocationStatus() {
+    if (!profile.location.city || !profile.location.country) {
+        elements.locationStatus.innerHTML = '';
+        return;
+    }
+
+    if (profile.location.verified) {
+        elements.locationStatus.innerHTML = `
+            <div class="status-message status-success">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13.3333 4L6 11.3333L2.66667 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Location verified - You'll appear on the map</span>
+            </div>
+        `;
+    } else if (profile.location.verified === false) {
+        elements.locationStatus.innerHTML = `
+            <div class="status-message status-warning">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 1.33331L1.33334 14H14.6667L8 1.33331Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8 6V8.66667" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M8 11.3333H8.00667" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>Location not verified - Check spelling</span>
+            </div>
+        `;
+    }
 }
 
 // Save profile to localStorage
@@ -280,11 +325,121 @@ function removePhoto() {
     saveProfile();
 }
 
-// Handle location input changes
+// Handle location input changes with debouncing
+let locationTimeout = null;
 function handleLocationChange() {
-    profile.location.city = elements.cityInput.value.trim();
-    profile.location.country = elements.countryInput.value.trim();
-    saveProfile();
+    // Clear previous timeout
+    if (locationTimeout) {
+        clearTimeout(locationTimeout);
+    }
+
+    // Debounce to avoid too many API calls
+    locationTimeout = setTimeout(() => {
+        const city = elements.cityInput.value.trim();
+        const country = elements.countryInput.value.trim();
+
+        // Only verify if both fields have values
+        if (city && country) {
+            verifyLocation(city, country);
+        } else {
+            // Save without verification if incomplete
+            profile.location.city = city;
+            profile.location.country = country;
+            profile.location.coordinates = null;
+            profile.location.verified = false;
+            saveProfile();
+        }
+    }, 1000); // Wait 1 second after user stops typing
+}
+
+// Verify location using Nominatim (OpenStreetMap) geocoding API
+async function verifyLocation(city, country) {
+    try {
+        // Show loading state
+        elements.cityInput.style.borderColor = '#999';
+        elements.countryInput.style.borderColor = '#999';
+
+        const query = `${city}, ${country}`;
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+            {
+                headers: {
+                    'User-Agent': 'TabbiMate App'
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('Geocoding service unavailable');
+        }
+
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+            // Location found and verified
+            const result = data[0];
+            profile.location.city = city;
+            profile.location.country = country;
+            profile.location.coordinates = {
+                lat: parseFloat(result.lat),
+                lon: parseFloat(result.lon)
+            };
+            profile.location.verified = true;
+            profile.location.displayName = result.display_name;
+
+            // Show success (green border)
+            elements.cityInput.style.borderColor = '#4CAF50';
+            elements.countryInput.style.borderColor = '#4CAF50';
+
+            setTimeout(() => {
+                elements.cityInput.style.borderColor = '';
+                elements.countryInput.style.borderColor = '';
+            }, 2000);
+
+            updateLocationStatus();
+            saveProfile();
+        } else {
+            // Location not found
+            profile.location.city = city;
+            profile.location.country = country;
+            profile.location.coordinates = null;
+            profile.location.verified = false;
+
+            // Show warning (orange border)
+            elements.cityInput.style.borderColor = '#FF9800';
+            elements.countryInput.style.borderColor = '#FF9800';
+
+            customAlert('Location could not be verified. Please check your city and country names.');
+
+            setTimeout(() => {
+                elements.cityInput.style.borderColor = '';
+                elements.countryInput.style.borderColor = '';
+            }, 3000);
+
+            updateLocationStatus();
+            saveProfile();
+        }
+    } catch (error) {
+        console.error('Location verification error:', error);
+        
+        // Save anyway but mark as unverified
+        profile.location.city = city;
+        profile.location.country = country;
+        profile.location.coordinates = null;
+        profile.location.verified = false;
+
+        // Show error state (red border briefly)
+        elements.cityInput.style.borderColor = '#BF3143';
+        elements.countryInput.style.borderColor = '#BF3143';
+
+        setTimeout(() => {
+            elements.cityInput.style.borderColor = '';
+            elements.countryInput.style.borderColor = '';
+        }, 2000);
+
+        updateLocationStatus();
+        saveProfile();
+    }
 }
 
 // Add a new language
@@ -309,6 +464,7 @@ function addLanguage() {
     const newLanguage = {
         id: generateId(),
         name: languageName,
+        level: 'Intermediate', // Default level
         match: true // Default to ON for matching
     };
 
@@ -335,6 +491,15 @@ function toggleLanguageMatch(id) {
     }
 }
 
+// Change language level
+function changeLanguageLevel(id, newLevel) {
+    const language = profile.languages.find(lang => lang.id === id);
+    if (language) {
+        language.level = newLevel;
+        saveProfile();
+    }
+}
+
 // Render languages list
 function renderLanguages() {
     if (profile.languages.length === 0) {
@@ -342,10 +507,23 @@ function renderLanguages() {
         return;
     }
 
-    elements.languagesList.innerHTML = profile.languages.map(lang => `
+    const levels = ['Beginner', 'Intermediate', 'Advanced', 'Native'];
+
+    elements.languagesList.innerHTML = profile.languages.map(lang => {
+        // Ensure level exists, default to Intermediate if missing
+        const currentLevel = lang.level || 'Intermediate';
+        
+        return `
         <div class="language-item" data-id="${lang.id}">
             <div class="language-info">
                 <span class="language-name">${escapeHtml(lang.name)}</span>
+                <select class="language-level-select" onchange="changeLanguageLevel('${lang.id}', this.value)">
+                    ${levels.map(level => `
+                        <option value="${level}" ${currentLevel === level ? 'selected' : ''}>
+                            ${level}
+                        </option>
+                    `).join('')}
+                </select>
             </div>
             <div class="language-actions">
                 <label class="toggle-switch" title="Use for matching">
@@ -361,7 +539,7 @@ function renderLanguages() {
                 </button>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // Add a new interest
