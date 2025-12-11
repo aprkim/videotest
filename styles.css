@@ -226,7 +226,7 @@ body {
 
 .beta-badge {
     display: inline-block;
-    color: #BF3143;
+    color: #888;
     font-size: 16px;
     font-weight: 600;
     margin-left: 8px;
@@ -464,14 +464,18 @@ body {
 }
 
 .leave-btn {
-    color: #D64545;
-    border-color: #D64545;
+    background: #BF3143;
+    color: white;
+    border-color: #BF3143;
+}
+
+.leave-btn svg {
+    stroke: white;
 }
 
 .leave-btn:hover {
-    background: #FFF6F7;
-    border-color: #BF3143;
-    color: #BF3143;
+    background: #A02638;
+    border-color: #A02638;
 }
 
 .video-title {
