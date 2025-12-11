@@ -1375,9 +1375,13 @@ function setupAIPopout() {
 // Setup Message Channel
 function setupMessageChannel() {
     const channel = document.getElementById('message-channel');
+    const channelHeader = document.getElementById('channel-header');
     const closeBtn = document.getElementById('close-channel');
     const sendBtn = document.getElementById('send-channel-message');
     const input = document.getElementById('channel-input');
+    
+    // Make draggable
+    makeDraggable(channel, channelHeader);
     
     // Close button
     closeBtn.addEventListener('click', () => {
