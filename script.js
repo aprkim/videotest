@@ -763,6 +763,15 @@ function startVideoChat(matchedUser, durationMinutes) {
     currentMatchedUser = matchedUser;
     state.sessionDuration = durationMinutes;
     
+    // Track session data for summary
+    sessionData = {
+        startTime: new Date(),
+        language: state.selectedLanguage,
+        level: getLevelName(durationMinutes),
+        partner: matchedUser.name,
+        durationMinutes: durationMinutes
+    };
+    
     // Update UI with matched user info
     document.getElementById('matched-user-name').textContent = matchedUser.name;
     document.getElementById('remote-name').textContent = matchedUser.name.toLowerCase();
@@ -782,6 +791,16 @@ function startVideoChat(matchedUser, durationMinutes) {
     // Setup end call button and timer
     setupVideoCallControls();
     startCallTimer(durationMinutes);
+}
+
+// Helper to get level name from duration
+function getLevelName(durationMinutes) {
+    switch(durationMinutes) {
+        case 3: return 'Basic';
+        case 15: return 'Intermediate';
+        case 30: return 'Professional / Talk with Native';
+        default: return 'Practice Session';
+    }
 }
 
 // Setup back button
@@ -837,8 +856,16 @@ function setupVideoCallControls() {
     const newLeaveBtn = leaveBtn.cloneNode(true);
     leaveBtn.parentNode.replaceChild(newLeaveBtn, leaveBtn);
     
-    newLeaveBtn.addEventListener('click', () => {
-        endVideoChat();
+    newLeaveBtn.addEventListener('click', async () => {
+        const confirmed = await customConfirm('Are you sure you want to leave this session?', 'Leave Session');
+        if (confirmed) {
+            // Clear timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            // Show session summary
+            showSessionSummary();
+        }
     });
     
     // Setup control buttons
@@ -1493,6 +1520,7 @@ function makeDraggable(element, handle) {
 
 // Start call timer
 let timerInterval;
+let sessionData = null; // Track session info for summary
 function startCallTimer(durationMinutes) {
     // Clear any existing timer
     if (timerInterval) {
@@ -1511,11 +1539,33 @@ function startCallTimer(durationMinutes) {
         
         if (seconds < 0) {
             clearInterval(timerInterval);
-            // Session ended naturally - celebrate!
+            // Session ended naturally - start 3-minute cool-down
             showConfetti();
-            customAlert('🎉 Congratulations! You practiced speaking! Great job on your language learning journey!', 'Time\'s Up!').then(() => {
-                endVideoChat();
+            customAlert('🎉 Time\'s up! You have 3 more minutes to wrap up your conversation.', 'Main Session Complete').then(() => {
+                startCooldownTimer();
             });
+        }
+    };
+    
+    updateTimer(); // Update immediately
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+// Start 3-minute cool-down timer
+function startCooldownTimer() {
+    let seconds = 3 * 60; // 3 minutes
+    
+    const updateTimer = () => {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        document.getElementById('call-timer').textContent = `Cool-down ${minutes}:${secs.toString().padStart(2, '0')}`;
+        
+        seconds--;
+        
+        if (seconds < 0) {
+            clearInterval(timerInterval);
+            // Cool-down ended - show session summary
+            showSessionSummary();
         }
     };
     
@@ -1916,10 +1966,62 @@ function showConfetti() {
     }, 50);
 }
 
+// Show session summary
+function showSessionSummary() {
+    console.log('Showing session summary');
+    
+    if (!sessionData) {
+        console.error('No session data available');
+        return;
+    }
+    
+    // Hide video chat
+    const videoChat = document.getElementById('video-chat');
+    if (videoChat) {
+        videoChat.classList.add('hidden');
+    }
+    
+    // Calculate actual duration
+    const endTime = new Date();
+    const actualDuration = Math.round((endTime - sessionData.startTime) / 60000); // minutes
+    
+    // Populate summary data
+    document.getElementById('summary-language').textContent = sessionData.language || 'N/A';
+    document.getElementById('summary-level').textContent = sessionData.level || 'N/A';
+    document.getElementById('summary-partner').textContent = sessionData.partner || 'N/A';
+    document.getElementById('summary-duration').textContent = `${actualDuration} minute${actualDuration !== 1 ? 's' : ''}`;
+    document.getElementById('summary-date').textContent = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+    
+    // Show summary
+    const summaryEl = document.getElementById('session-summary');
+    if (summaryEl) {
+        summaryEl.classList.remove('hidden');
+    }
+}
+
+// Setup session summary Done button
+function setupSessionSummary() {
+    const doneBtn = document.getElementById('summary-done');
+    if (doneBtn) {
+        doneBtn.addEventListener('click', () => {
+            // Reload page to return to home
+            window.location.reload();
+        });
+    }
+}
+
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => {
+        init();
+        setupSessionSummary();
+    });
 } else {
     init();
+    setupSessionSummary();
 }
 
