@@ -123,6 +123,7 @@ function init() {
     setupLevelButtons();
     setupBackButton();
     setupCardDrag();
+    setupLanguageRequest();
 }
 
 // Store dot and tooltip references for filtering
@@ -738,6 +739,90 @@ function setupCardDrag() {
     function setTranslate(xPos, yPos, el) {
         el.style.transform = `translate(${xPos}px, ${yPos}px)`;
     }
+}
+
+// Language Request Management
+const LanguageRequestManager = {
+    saveRequest(language, email, notes) {
+        const requests = this.getRequests();
+        const newRequest = {
+            id: Date.now(),
+            language: language,
+            email: email,
+            notes: notes,
+            timestamp: new Date().toISOString(),
+            status: 'pending'
+        };
+        requests.push(newRequest);
+        localStorage.setItem('tabbimate_language_requests', JSON.stringify(requests));
+        return newRequest;
+    },
+    
+    getRequests() {
+        const requests = localStorage.getItem('tabbimate_language_requests');
+        return requests ? JSON.parse(requests) : [];
+    },
+    
+    getAllRequests() {
+        return this.getRequests();
+    }
+};
+
+// Setup Language Request Form
+function setupLanguageRequest() {
+    const requestLink = document.querySelector('.request-link');
+    const modal = document.getElementById('language-request-modal');
+    const cancelBtn = document.getElementById('cancel-request');
+    const submitBtn = document.getElementById('submit-request');
+    const form = document.getElementById('language-request-form');
+    
+    if (!requestLink || !modal) return; // Exit if elements don't exist
+    
+    // Open modal
+    requestLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        modal.classList.remove('hidden');
+    });
+    
+    // Close modal
+    cancelBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        form.reset();
+    });
+    
+    // Submit request
+    submitBtn.addEventListener('click', async () => {
+        const language = document.getElementById('requested-language').value.trim();
+        const email = document.getElementById('requester-email').value.trim();
+        const notes = document.getElementById('additional-notes').value.trim();
+        
+        if (!language) {
+            await customAlert('Please enter a language name.', 'Required Field');
+            return;
+        }
+        
+        // Save the request
+        const request = LanguageRequestManager.saveRequest(language, email, notes);
+        console.log('Language request saved:', request);
+        
+        // Close modal and reset form
+        modal.classList.add('hidden');
+        form.reset();
+        
+        // Show confirmation
+        await customAlert(
+            `Thank you for your request!\n\nWe've received your request for ${language}. We'll notify you when it becomes available.`,
+            'Request Submitted'
+        );
+    });
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+            form.reset();
+        }
+    });
 }
 
 // Initialize when DOM is ready
