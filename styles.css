@@ -1411,3 +1411,10 @@ body {
         font-size: 1rem;
     }
 }
+
+.session-id {
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 1px;
+    color: #BF3143;
+    font-weight: 700;
+}

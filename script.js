@@ -765,12 +765,15 @@ function startVideoChat(matchedUser, durationMinutes) {
     
     // Track session data for summary
     sessionData = {
+        sessionId: generateSessionId(),
         startTime: new Date(),
         language: state.selectedLanguage,
         level: getLevelName(durationMinutes),
         partner: matchedUser.name,
         durationMinutes: durationMinutes
     };
+    
+    console.log('Session started with ID:', sessionData.sessionId);
     
     // Update UI with matched user info
     document.getElementById('matched-user-name').textContent = matchedUser.name;
@@ -1521,6 +1524,14 @@ function makeDraggable(element, handle) {
 // Start call timer
 let timerInterval;
 let sessionData = null; // Track session info for summary
+
+// Generate unique 10-digit session ID
+function generateSessionId() {
+    // Generate a random 10-digit number
+    const min = 1000000000; // 10 digits minimum
+    const max = 9999999999; // 10 digits maximum
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 function startCallTimer(durationMinutes) {
     // Clear any existing timer
     if (timerInterval) {
@@ -1986,6 +1997,7 @@ function showSessionSummary() {
     const actualDuration = Math.round((endTime - sessionData.startTime) / 60000); // minutes
     
     // Populate summary data
+    document.getElementById('summary-session-id').textContent = sessionData.sessionId || 'N/A';
     document.getElementById('summary-language').textContent = sessionData.language || 'N/A';
     document.getElementById('summary-level').textContent = sessionData.level || 'N/A';
     document.getElementById('summary-partner').textContent = sessionData.partner || 'N/A';
