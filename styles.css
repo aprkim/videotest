@@ -800,8 +800,14 @@ body {
 }
 
 .ai-message {
-    background: #f0f0f0;
+    background: #F7F7F8;
+    border: 1px solid #E5E5E7;
     align-self: flex-start;
+}
+
+.ai-message strong {
+    color: #BF3143;
+    font-weight: 600;
 }
 
 .user-message {
@@ -810,12 +816,101 @@ body {
     align-self: flex-end;
 }
 
+/* Loading message animation */
+.loading-message {
+    opacity: 0.7;
+}
+
+.loading-dots {
+    display: inline-block;
+}
+
+.loading-dots span {
+    animation: loadingDot 1.4s infinite;
+    display: inline-block;
+}
+
+.loading-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes loadingDot {
+    0%, 60%, 100% {
+        opacity: 0.3;
+        transform: translateY(0);
+    }
+    30% {
+        opacity: 1;
+        transform: translateY(-4px);
+    }
+}
+
+/* Error message */
+.error-message {
+    background: #FFF6F7;
+    border: 1px solid #D64545;
+    color: #D64545;
+}
+
 .system-message {
     background: #e8f4f8;
     color: #666;
     align-self: center;
     font-size: 12px;
     padding: 6px 12px;
+}
+
+/* AI Quick Actions */
+.ai-quick-actions {
+    padding: 12px 16px;
+    border-top: 1px solid #E5E5E7;
+    display: flex;
+    gap: 8px;
+    background: #F7F7F8;
+}
+
+.quick-action-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 8px;
+    background: #FFFFFF;
+    border: 1px solid #E5E5E7;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    font-weight: 500;
+    color: #4A4A4D;
+}
+
+.quick-action-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: #4A4A4D;
+    transition: stroke 0.2s ease;
+}
+
+.quick-action-btn:hover {
+    background: #BF3143;
+    border-color: #BF3143;
+    color: #FFFFFF;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(191, 49, 67, 0.2);
+}
+
+.quick-action-btn:hover svg {
+    stroke: #FFFFFF;
+}
+
+.quick-action-btn:active {
+    transform: translateY(0);
 }
 
 .chat-input-container {

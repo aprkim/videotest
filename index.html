@@ -227,11 +227,39 @@
         </div>
         <div class="chat-messages" id="ai-messages">
             <div class="chat-message ai-message">
-                <p>Hi! I'm here to help with translations and corrections during your conversation.</p>
+                <p>Hi! I'm your AI language coach. I can help you with:</p>
+                <ul style="margin: 8px 0; padding-left: 20px; font-size: 13px;">
+                    <li>Correcting your sentences</li>
+                    <li>Translating phrases</li>
+                    <li>Suggesting conversation topics</li>
+                </ul>
             </div>
         </div>
+        <div class="ai-quick-actions" id="ai-quick-actions">
+            <button class="quick-action-btn" data-action="correct" title="Correct my sentence">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Correct</span>
+            </button>
+            <button class="quick-action-btn" data-action="translate" title="Translate">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17A15.4 15.4 0 0 1 8.83 11.5l-2.4-2.39L5 10.5l4 4-4 4L6.41 20 10 16.41l2.87 2.87 2.13-2.13Z"/>
+                    <path d="M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12Zm-2.62 7 1.62-4.33L19.12 17h-3.24Z"/>
+                </svg>
+                <span>Translate</span>
+            </button>
+            <button class="quick-action-btn" data-action="suggest" title="Suggest conversation topics">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span>Suggest</span>
+            </button>
+        </div>
         <div class="chat-input-container">
-            <input type="text" class="chat-input" placeholder="Ask AI for help..." id="ai-input">
+            <input type="text" class="chat-input" placeholder="Type your message or select an action above..." id="ai-input">
             <button class="send-btn" id="send-ai-message">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="22" y1="2" x2="11" y2="13"/>

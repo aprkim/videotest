@@ -844,6 +844,7 @@ function setupVideoCallControls() {
     // Setup control buttons
     setupToggleButtons();
     setupAIChatBox();
+    setupAIPopout();
     setupMessageChannel();
     setupHelpMenu();
     setupFavoriteButton();
@@ -911,6 +912,118 @@ function setupToggleButtons() {
     });
 }
 
+// AI Language Coach - Conversation history
+let aiConversationHistory = [];
+
+// Build system prompt with session context
+function buildAISystemPrompt() {
+    const { selectedLanguage, matchedUser } = state;
+    const currentUser = users.find(u => u.name === "April") || {};
+    
+    let userLevel = "unknown";
+    if (selectedLanguage && currentUser.languages) {
+        userLevel = currentUser.languages[selectedLanguage.toLowerCase()] || "unknown";
+    }
+    
+    const partnerName = matchedUser ? matchedUser.name : "your partner";
+    const languageName = selectedLanguage || "the target language";
+    
+    return `You are an AI language coach for TabbiMate, a live language practice platform.
+
+CONTEXT:
+- Student: April (learning ${languageName})
+- Current level: ${userLevel}
+- Practice partner: ${partnerName}
+- Session type: Live video conversation
+
+YOUR ROLE:
+1. Correct mistakes gently and explain why
+2. Provide translations between English and ${languageName}
+3. Suggest conversation topics and follow-up questions
+4. Keep responses concise (1-3 sentences max)
+5. Be encouraging and supportive
+
+GUIDELINES:
+- When correcting: Show correct version → Explain briefly → Encourage
+- When translating: Provide translation → Add pronunciation tip if helpful
+- When suggesting: Offer 2-3 relevant conversation starters
+- Always be warm, professional, and motivating`;
+}
+
+// Call AI API
+async function callAIChat(userMessage, action = 'general') {
+    const systemPrompt = buildAISystemPrompt();
+    
+    // Build messages array
+    const messages = [
+        { role: 'system', content: systemPrompt },
+        ...aiConversationHistory,
+        { role: 'user', content: userMessage }
+    ];
+    
+    try {
+        const response = await fetch('/api/ai-chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                systemPrompt: systemPrompt,
+                messages: messages,
+                action: action // Pass action for backend optimization
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Update conversation history
+        aiConversationHistory.push(
+            { role: 'user', content: userMessage },
+            { role: 'assistant', content: data.content }
+        );
+        
+        // Keep history manageable (last 10 exchanges)
+        if (aiConversationHistory.length > 20) {
+            aiConversationHistory = aiConversationHistory.slice(-20);
+        }
+        
+        return data.content;
+    } catch (error) {
+        console.error('AI Chat error:', error);
+        
+        // Fallback responses for development/demo
+        if (error.message.includes('Failed to fetch') || error.message.includes('API error')) {
+            return generateFallbackResponse(userMessage, action);
+        }
+        
+        throw error;
+    }
+}
+
+// Generate fallback responses (for development without backend)
+function generateFallbackResponse(message, action) {
+    const { selectedLanguage } = state;
+    const lang = selectedLanguage || 'the target language';
+    
+    switch (action) {
+        case 'correct':
+            return `✓ **Corrected:** "${message}"\n\nGreat effort! Keep practicing and you'll get more comfortable with ${lang} grammar.`;
+        
+        case 'translate':
+            return `🌐 **Translation:** [Translation would appear here]\n\n*Note: Connect to backend for real-time translations.*`;
+        
+        case 'suggest':
+            return `💡 **Conversation starters:**\n1. What do you like to do in your free time?\n2. Have you tried any good restaurants recently?\n3. What are you working on these days?`;
+        
+        default:
+            return `I'm here to help! You can ask me to:\n• **Correct** your sentences\n• **Translate** words or phrases\n• **Suggest** conversation topics\n\n*Note: Connect to backend for full AI features.*`;
+    }
+}
+
 // Setup AI Chat Box with drag functionality
 function setupAIChatBox() {
     const chatBox = document.getElementById('ai-chat-box');
@@ -918,6 +1031,7 @@ function setupAIChatBox() {
     const closeBtn = document.getElementById('close-ai-chat');
     const sendBtn = document.getElementById('send-ai-message');
     const input = document.getElementById('ai-input');
+    const quickActionBtns = document.querySelectorAll('.quick-action-btn');
     
     // Make draggable
     makeDraggable(chatBox, chatHeader);
@@ -928,23 +1042,314 @@ function setupAIChatBox() {
         document.getElementById('toggle-ai').dataset.active = 'false';
     });
     
+    // Quick action buttons
+    quickActionBtns.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const action = btn.dataset.action;
+            let prompt = '';
+            
+            switch (action) {
+                case 'correct':
+                    prompt = await customPrompt(
+                        'Paste or type the sentence you want me to correct:',
+                        'Correct Sentence'
+                    );
+                    if (prompt) {
+                        handleAIRequest(`Please correct this sentence: "${prompt}"`, 'correct');
+                    }
+                    break;
+                
+                case 'translate':
+                    prompt = await customPrompt(
+                        'What would you like me to translate?',
+                        'Translate'
+                    );
+                    if (prompt) {
+                        handleAIRequest(`Please translate: "${prompt}"`, 'translate');
+                    }
+                    break;
+                
+                case 'suggest':
+                    handleAIRequest('Please suggest some conversation topics we could discuss.', 'suggest');
+                    break;
+            }
+        });
+    });
+    
     // Send message
     const sendAIMessage = () => {
         const message = input.value.trim();
         if (message) {
-            addAIMessage(message, 'user');
             input.value = '';
-            
-            // Simulate AI response
-            setTimeout(() => {
-                addAIMessage('I understand your question. How can I assist you with your language practice?', 'ai');
-            }, 1000);
+            handleAIRequest(message, 'general');
         }
     };
     
     sendBtn.addEventListener('click', sendAIMessage);
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendAIMessage();
+    });
+}
+
+// Handle AI request (show message, call API, show response)
+async function handleAIRequest(userMessage, action = 'general') {
+    // Add user message
+    addAIMessage(userMessage, 'user');
+    
+    // Show loading
+    const loadingId = addAIMessage('Thinking...', 'ai', true);
+    
+    try {
+        // Call AI
+        const response = await callAIChat(userMessage, action);
+        
+        // Remove loading, add response
+        removeAIMessage(loadingId);
+        addAIMessage(response, 'ai');
+        
+    } catch (error) {
+        removeAIMessage(loadingId);
+        addAIMessage('Sorry, I encountered an error. Please try again.', 'ai', false, true);
+        console.error('AI request failed:', error);
+    }
+}
+
+// Setup AI Pop-out Window
+function setupAIPopout() {
+    const popoutBtn = document.getElementById('popout-ai-chat');
+    
+    if (popoutBtn) {
+        popoutBtn.addEventListener('click', () => {
+            const { selectedLanguage, matchedUser } = state;
+            const lang = selectedLanguage || 'Language';
+            const partner = matchedUser ? matchedUser.name : 'Partner';
+            
+            const popout = window.open('', 'AI Assistant', 'width=450,height=650');
+            
+            popout.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>AI Language Coach - ${lang}</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body {
+                            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                            background: #FFFFFF;
+                            height: 100vh;
+                            display: flex;
+                            flex-direction: column;
+                        }
+                        .header {
+                            padding: 16px;
+                            background: #BF3143;
+                            color: white;
+                            font-weight: 600;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        }
+                        .header svg {
+                            width: 20px;
+                            height: 20px;
+                        }
+                        .messages {
+                            flex: 1;
+                            padding: 16px;
+                            overflow-y: auto;
+                            display: flex;
+                            flex-direction: column;
+                            gap: 12px;
+                        }
+                        .message {
+                            padding: 10px 14px;
+                            border-radius: 12px;
+                            max-width: 85%;
+                            line-height: 1.5;
+                        }
+                        .ai-message {
+                            background: #F7F7F8;
+                            border: 1px solid #E5E5E7;
+                            align-self: flex-start;
+                        }
+                        .ai-message strong {
+                            color: #BF3143;
+                            font-weight: 600;
+                        }
+                        .user-message {
+                            background: #BF3143;
+                            color: white;
+                            align-self: flex-end;
+                        }
+                        .quick-actions {
+                            padding: 12px;
+                            border-top: 1px solid #E5E5E7;
+                            display: flex;
+                            gap: 8px;
+                            background: #F7F7F8;
+                        }
+                        .quick-btn {
+                            flex: 1;
+                            padding: 8px;
+                            background: white;
+                            border: 1px solid #E5E5E7;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-size: 12px;
+                            font-weight: 500;
+                            transition: all 0.2s;
+                        }
+                        .quick-btn:hover {
+                            background: #BF3143;
+                            color: white;
+                            border-color: #BF3143;
+                        }
+                        .input-container {
+                            padding: 12px;
+                            border-top: 1px solid #E5E5E7;
+                            display: flex;
+                            gap: 8px;
+                        }
+                        input {
+                            flex: 1;
+                            padding: 10px;
+                            border: 1px solid #E5E5E7;
+                            border-radius: 8px;
+                            font-size: 14px;
+                            font-family: inherit;
+                        }
+                        input:focus {
+                            outline: none;
+                            border-color: #BF3143;
+                        }
+                        button.send {
+                            padding: 10px 16px;
+                            background: #BF3143;
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 500;
+                        }
+                        button.send:hover {
+                            background: #a52938;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            <circle cx="9" cy="10" r="1" fill="currentColor"/>
+                            <circle cx="15" cy="10" r="1" fill="currentColor"/>
+                            <path d="M9 14h6" stroke-linecap="round"/>
+                        </svg>
+                        AI Language Coach - ${lang} with ${partner}
+                    </div>
+                    <div class="messages" id="messages">
+                        <div class="message ai-message">
+                            Hi! I'm your AI language coach. I can help you with corrections, translations, and conversation suggestions.
+                        </div>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="askCorrect()">✓ Correct</button>
+                        <button class="quick-btn" onclick="askTranslate()">🌐 Translate</button>
+                        <button class="quick-btn" onclick="askSuggest()">💡 Suggest</button>
+                    </div>
+                    <div class="input-container">
+                        <input type="text" id="input" placeholder="Ask me anything...">
+                        <button class="send" onclick="sendMessage()">Send</button>
+                    </div>
+                    <script>
+                        // Sync with main window
+                        function sendMessage() {
+                            const input = document.getElementById('input');
+                            const message = input.value.trim();
+                            if (message) {
+                                addMessage(message, 'user');
+                                input.value = '';
+                                // Send to parent window
+                                window.opener.postMessage({ type: 'ai-chat', message: message, action: 'general' }, '*');
+                            }
+                        }
+                        
+                        function askCorrect() {
+                            const text = prompt('Paste or type the sentence you want me to correct:');
+                            if (text) {
+                                const message = 'Please correct this sentence: "' + text + '"';
+                                addMessage(message, 'user');
+                                window.opener.postMessage({ type: 'ai-chat', message: message, action: 'correct' }, '*');
+                            }
+                        }
+                        
+                        function askTranslate() {
+                            const text = prompt('What would you like me to translate?');
+                            if (text) {
+                                const message = 'Please translate: "' + text + '"';
+                                addMessage(message, 'user');
+                                window.opener.postMessage({ type: 'ai-chat', message: message, action: 'translate' }, '*');
+                            }
+                        }
+                        
+                        function askSuggest() {
+                            const message = 'Please suggest some conversation topics we could discuss.';
+                            addMessage(message, 'user');
+                            window.opener.postMessage({ type: 'ai-chat', message: message, action: 'suggest' }, '*');
+                        }
+                        
+                        function addMessage(text, type) {
+                            const messagesDiv = document.getElementById('messages');
+                            const messageEl = document.createElement('div');
+                            messageEl.className = 'message ' + type + '-message';
+                            messageEl.innerHTML = '<p>' + text.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>').replace(/\\n/g, '<br>') + '</p>';
+                            messagesDiv.appendChild(messageEl);
+                            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                        }
+                        
+                        // Listen for responses from parent
+                        window.addEventListener('message', (event) => {
+                            if (event.data.type === 'ai-response') {
+                                addMessage(event.data.content, 'ai');
+                            }
+                        });
+                        
+                        // Enter key support
+                        document.getElementById('input').addEventListener('keypress', (e) => {
+                            if (e.key === 'Enter') sendMessage();
+                        });
+                    </script>
+                </body>
+                </html>
+            `);
+            
+            popout.document.close();
+        });
+    }
+    
+    // Listen for messages from pop-out
+    window.addEventListener('message', async (event) => {
+        if (event.data.type === 'ai-chat') {
+            const { message, action } = event.data;
+            
+            // Add to main window
+            addAIMessage(message, 'user');
+            const loadingId = addAIMessage('Thinking...', 'ai', true);
+            
+            try {
+                const response = await callAIChat(message, action);
+                removeAIMessage(loadingId);
+                addAIMessage(response, 'ai');
+                
+                // Send response back to pop-out
+                event.source.postMessage({ type: 'ai-response', content: response }, '*');
+            } catch (error) {
+                removeAIMessage(loadingId);
+                const errorMsg = 'Sorry, I encountered an error. Please try again.';
+                addAIMessage(errorMsg, 'ai', false, true);
+                event.source.postMessage({ type: 'ai-response', content: errorMsg }, '*');
+            }
+        }
     });
 }
 
@@ -977,13 +1382,48 @@ function setupMessageChannel() {
 }
 
 // Add message to AI chat
-function addAIMessage(text, type) {
+function addAIMessage(text, type, isLoading = false, isError = false) {
     const messagesDiv = document.getElementById('ai-messages');
     const messageEl = document.createElement('div');
+    const messageId = `ai-msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    messageEl.id = messageId;
     messageEl.className = `chat-message ${type}-message`;
-    messageEl.innerHTML = `<p>${text}</p>`;
+    
+    if (isLoading) {
+        messageEl.classList.add('loading-message');
+        messageEl.innerHTML = `
+            <p>
+                <span class="loading-dots">
+                    <span>.</span><span>.</span><span>.</span>
+                </span>
+                ${text}
+            </p>
+        `;
+    } else if (isError) {
+        messageEl.classList.add('error-message');
+        messageEl.innerHTML = `<p>⚠️ ${text}</p>`;
+    } else {
+        // Parse markdown-style formatting
+        const formattedText = text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+            .replace(/\n/g, '<br>'); // Line breaks
+        
+        messageEl.innerHTML = `<p>${formattedText}</p>`;
+    }
+    
     messagesDiv.appendChild(messageEl);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    return messageId;
+}
+
+// Remove AI message by ID
+function removeAIMessage(messageId) {
+    const messageEl = document.getElementById(messageId);
+    if (messageEl) {
+        messageEl.remove();
+    }
 }
 
 // Add message to channel
