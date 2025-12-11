@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TabbiMate - Live Language Practice</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="modal.css">
+</head>
+<body>
+    <!-- Background Map Container -->
+    <div class="map-container">
+        <!-- World map background with animation and dots -->
+        <div class="world-map">
+            <!-- Active user dots will be inserted here by JS -->
+            <div id="dots-container"></div>
+        </div>
+    </div>
+
+    <!-- Center Card Container -->
+    <div class="center-container">
+        <div class="card" id="main-card">
+            <div class="card-drag-handle"></div>
+            <!-- State 1: Language Selection -->
+            <div class="card-content" id="language-selection">
+                <div class="header-with-profile">
+                    <h1 class="card-title">
+                        <span class="tabbi-red">Tabbi</span>Mate
+                    </h1>
+                    <div class="header-actions">
+                        <a href="profile.html" class="profile-link" title="Edit Profile">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                        <button id="signout-btn" class="signout-link" title="Sign Out">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="language-btn" data-language="English">English</button>
+                    <button class="language-btn" data-language="Spanish">Spanish</button>
+                    <button class="language-btn" data-language="Korean">Korean</button>
+                </div>
+                <a href="#" class="request-link">Request a new language?</a>
+            </div>
+
+            <!-- State 2: Session Levels (hidden initially) -->
+            <div class="card-content hidden" id="session-levels">
+                <h1 class="card-title">
+                    Talk in <span id="selected-language">English</span> <span class="live-badge">LIVE</span>
+                </h1>
+                <div class="level-group">
+                    <button class="level-btn" data-level="Basic" data-duration="3">
+                        <span class="level-info">
+                            <span class="level-name">Basic</span>
+                            <span class="level-duration">(3 min)</span>
+                        </span>
+                        <span class="level-badge">X1</span>
+                    </button>
+                    <button class="level-btn" data-level="Intermediate" data-duration="15">
+                        <span class="level-info">
+                            <span class="level-name">Intermediate</span>
+                            <span class="level-duration">(15 min)</span>
+                        </span>
+                        <span class="level-badge">X2</span>
+                    </button>
+                    <button class="level-btn" data-level="Professional" data-duration="30">
+                        <span class="level-info">
+                            <span class="level-name">Professional</span>
+                            <span class="level-duration">(30 min)</span>
+                        </span>
+                        <span class="level-badge">X3</span>
+                    </button>
+                    <button class="level-btn" data-level="Native" data-duration="30">
+                        <span class="level-info">
+                            <span class="level-name">Talk with Native</span>
+                            <span class="level-duration">(30 min)</span>
+                        </span>
+                        <span class="level-badge">X5</span>
+                    </button>
+                </div>
+                <a href="#" class="back-link" id="back-to-languages">← Change language</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Chat Interface (hidden initially) -->
+    <div class="video-chat-container hidden" id="video-chat">
+        <!-- Top Bar -->
+        <div class="video-header">
+            <div class="header-left">
+                <button class="header-btn timer-btn" id="timer-display">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span id="call-timer">Ends in 4:22</span>
+                </button>
+                <button class="header-btn" id="help-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span>Help</span>
+                </button>
+                <button class="header-btn leave-btn" id="leave-call">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Leave</span>
+                </button>
+            </div>
+            <div class="header-center">
+                <h1 class="video-title"><span class="tabbi-red">Tabbi</span>Mate</h1>
+            </div>
+            <div class="header-right">
+                <span class="partner-name" id="matched-user-name">Marty</span>
+                <span class="session-count" id="session-count">21 sessions</span>
+                <button class="favorite-btn" id="favorite-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span class="favorite-tooltip">Add to Favorites</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Video Grid -->
+        <div class="video-grid">
+            <div class="video-panel">
+                <div class="video-placeholder">
+                    <div class="video-name">aprkim (You)</div>
+                </div>
+            </div>
+            <div class="video-panel">
+                <div class="video-placeholder">
+                    <div class="video-name" id="remote-name">marty</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Controls -->
+        <div class="video-controls">
+            <button class="control-btn" id="toggle-camera" data-active="true">
+                <div class="icon-wrapper">
+                    <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 7l-7 5 7 5V7z"/>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                    </svg>
+                    <div class="icon-slash"></div>
+                </div>
+                <span class="control-label">Video</span>
+            </button>
+            <button class="control-btn" id="toggle-mic" data-active="true">
+                <div class="icon-wrapper">
+                    <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                    <div class="icon-slash"></div>
+                </div>
+                <span class="control-label">Audio</span>
+            </button>
+            <button class="control-btn ai-btn" id="toggle-ai" data-active="false">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    <circle cx="9" cy="10" r="1" fill="currentColor"/>
+                    <circle cx="15" cy="10" r="1" fill="currentColor"/>
+                    <path d="M9 14h6" stroke-linecap="round"/>
+                </svg>
+                <span class="control-label">AI</span>
+            </button>
+            <button class="control-btn" id="toggle-chat" data-active="false">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+                <span class="control-label">Chat</span>
+            </button>
+            <button class="control-btn" id="toggle-share">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                    <path d="M7 13l5-5 5 5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="control-label">Share</span>
+            </button>
+        </div>
+        
+        <!-- Help Menu (hidden initially) -->
+        <div class="help-menu hidden" id="help-menu">
+            <button class="help-menu-item" id="session-guidelines">
+                <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 16v-4"/>
+                    <path d="M12 8h.01"/>
+                </svg>
+                Review Session Guidelines
+            </button>
+            <button class="help-menu-item" id="block-user">
+                <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                </svg>
+                Block <span id="block-username">User</span>
+            </button>
+            <button class="help-menu-item danger" id="report-user">
+                <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Report <span id="report-username">User</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- AI Chat Box (movable, hidden initially) -->
+    <div class="ai-chat-box hidden" id="ai-chat-box">
+        <div class="chat-header" id="ai-chat-header">
+            <span class="chat-title">
+                <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    <circle cx="9" cy="10" r="1" fill="currentColor"/>
+                    <circle cx="15" cy="10" r="1" fill="currentColor"/>
+                    <path d="M9 14h6" stroke-linecap="round"/>
+                </svg>
+                AI Assistant
+            </span>
+            <div class="chat-header-buttons">
+                <button class="popout-btn" id="popout-ai-chat" title="Pop out to new window">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                </button>
+                <button class="close-chat-btn" id="close-ai-chat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="chat-messages" id="ai-messages">
+            <div class="chat-message ai-message">
+                <p>Hi! I'm your AI language coach. I can help you with:</p>
+                <ul style="margin: 8px 0; padding-left: 20px; font-size: 13px;">
+                    <li>Correcting your sentences</li>
+                    <li>Translating phrases</li>
+                    <li>Suggesting conversation topics</li>
+                </ul>
+            </div>
+        </div>
+        <div class="ai-quick-actions" id="ai-quick-actions">
+            <button class="quick-action-btn" data-action="correct" title="Correct my sentence">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Correct</span>
+            </button>
+            <button class="quick-action-btn" data-action="translate" title="Translate">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17A15.4 15.4 0 0 1 8.83 11.5l-2.4-2.39L5 10.5l4 4-4 4L6.41 20 10 16.41l2.87 2.87 2.13-2.13Z"/>
+                    <path d="M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12Zm-2.62 7 1.62-4.33L19.12 17h-3.24Z"/>
+                </svg>
+                <span>Translate</span>
+            </button>
+            <button class="quick-action-btn" data-action="suggest" title="Suggest conversation topics">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span>Suggest</span>
+            </button>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" placeholder="Type your message or select an action above..." id="ai-input">
+            <button class="send-btn" id="send-ai-message">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Message Channel (hidden initially) -->
+    <div class="message-channel hidden" id="message-channel">
+        <div class="channel-header" id="channel-header">
+            <span class="channel-title">
+                <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+                Messages
+            </span>
+            <div class="chat-header-buttons">
+                <button class="popout-btn" id="popout-channel" title="Pop out to new window">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                </button>
+                <button class="close-channel-btn" id="close-channel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="channel-messages" id="channel-messages">
+            <div class="chat-message system-message">
+                <p>Chat started</p>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" placeholder="Type a message..." id="channel-input">
+            <button class="send-btn" id="send-channel-message">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div class="modal-overlay hidden" id="modal-overlay">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Confirm</h3>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <p>Are you sure?</p>
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="modal-cancel">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="modal-confirm">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Request Modal -->
+    <div class="modal-overlay hidden" id="language-request-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Request a New Language</h3>
+            </div>
+            <div class="modal-body">
+                <form id="language-request-form">
+                    <div class="form-group">
+                        <label for="requested-language">Which language would you like to practice?</label>
+                        <input type="text" id="requested-language" class="modal-input" placeholder="e.g., French, German, Japanese..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="requester-email">Your email (optional)</label>
+                        <input type="email" id="requester-email" class="modal-input" placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="additional-notes">Why this language? (optional)</label>
+                        <textarea id="additional-notes" class="modal-input modal-textarea" rows="3" placeholder="Tell us why you'd like to learn this language..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancel-request">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="submit-request">Submit Request</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Summary -->
+    <div class="session-summary hidden" id="session-summary">
+        <div class="summary-container">
+            <h2 class="summary-title">Session Summary</h2>
+            
+            <div class="summary-content">
+                <div class="summary-row">
+                    <span class="summary-label">Language</span>
+                    <span class="summary-value" id="summary-language">English</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span class="summary-label">Level</span>
+                    <span class="summary-value" id="summary-level">Basic</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span class="summary-label">Partner</span>
+                    <span class="summary-value" id="summary-partner">Marty</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span class="summary-label">Duration</span>
+                    <span class="summary-value" id="summary-duration">3 minutes</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span class="summary-label">Date</span>
+                    <span class="summary-value" id="summary-date">Dec 11, 2025</span>
+                </div>
+            </div>
+            
+            <div class="summary-phrases">
+                <h3 class="phrases-title">Phrases to Memorize</h3>
+                <p class="phrases-subtitle">Key phrases from your conversation</p>
+                <div id="summary-phrases-list" class="phrases-list"></div>
+            </div>
+            
+            <div class="summary-actions">
+                <button class="summary-btn" id="summary-done">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+    <!-- Firebase Config & Service -->
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
+
+    <!-- Custom Modal -->
+    <script src="modal.js"></script>
+
+    <!-- App Script -->
+    <script src="script.js"></script>
+</body>
+</html>
+
