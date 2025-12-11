@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - TabbiMate</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body class="auth-page">
+    <!-- Background Map Container -->
+    <div class="map-container">
+        <div class="world-map">
+            <div id="dots-container"></div>
+        </div>
+    </div>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Logo/Title -->
+            <h1 class="auth-title">
+                <span class="tabbi-red">Tabbi</span>Mate
+            </h1>
+            <p class="auth-subtitle">Connect with language learners worldwide</p>
+
+            <!-- Sign In Form -->
+            <form id="signin-form" class="auth-form">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" class="auth-input" placeholder="you@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" class="auth-input" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="auth-btn primary-btn">
+                    <span id="signin-btn-text">Sign In</span>
+                    <span id="signin-spinner" class="spinner hidden"></span>
+                </button>
+
+                <a href="#" id="forgot-password" class="forgot-link">Forgot password?</a>
+            </form>
+
+            <!-- Divider -->
+            <div class="divider">
+                <span>or</span>
+            </div>
+
+            <!-- Google Sign In -->
+            <button id="google-signin" class="auth-btn google-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19.8 10.2273C19.8 9.51818 19.7364 8.83636 19.6182 8.18182H10V12.05H15.4818C15.2364 13.3 14.5273 14.3591 13.4727 15.0682V17.5773H16.7636C18.6727 15.8364 19.8 13.2727 19.8 10.2273Z" fill="#4285F4"/>
+                    <path d="M10 20C12.7 20 14.9636 19.1045 16.7636 17.5773L13.4727 15.0682C12.5727 15.6682 11.3864 16.0227 10 16.0227C7.39545 16.0227 5.19091 14.2636 4.40455 11.9H0.995455V14.4909C2.78636 18.0591 6.10909 20 10 20Z" fill="#34A853"/>
+                    <path d="M4.40455 11.9C4.19091 11.3 4.06818 10.6591 4.06818 10C4.06818 9.34091 4.19091 8.7 4.40455 8.1V5.50909H0.995455C0.322727 6.85 0 8.38636 0 10C0 11.6136 0.322727 13.15 0.995455 14.4909L4.40455 11.9Z" fill="#FBBC04"/>
+                    <path d="M10 3.97727C11.5182 3.97727 12.8727 4.48182 13.9682 5.52727L16.8909 2.60455C14.9591 0.790909 12.6955 0 10 0C6.10909 0 2.78636 1.94091 0.995455 5.50909L4.40455 8.1C5.19091 5.73636 7.39545 3.97727 10 3.97727Z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
+            </button>
+
+            <!-- Sign Up Link -->
+            <p class="toggle-form">
+                Don't have an account? <a href="#" id="show-signup">Sign up</a>
+            </p>
+        </div>
+
+        <!-- Sign Up Form (Hidden Initially) -->
+        <div class="auth-card hidden" id="signup-card">
+            <h1 class="auth-title">
+                Create Account
+            </h1>
+            <p class="auth-subtitle">Join TabbiMate today</p>
+
+            <form id="signup-form" class="auth-form">
+                <div class="form-group">
+                    <label for="signup-email" class="form-label">Email</label>
+                    <input type="email" id="signup-email" class="auth-input" placeholder="you@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-password" class="form-label">Password</label>
+                    <input type="password" id="signup-password" class="auth-input" placeholder="••••••••" required minlength="6">
+                    <small class="form-hint">At least 6 characters</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm-password" class="form-label">Confirm Password</label>
+                    <input type="password" id="confirm-password" class="auth-input" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="auth-btn primary-btn">
+                    <span id="signup-btn-text">Create Account</span>
+                    <span id="signup-spinner" class="spinner hidden"></span>
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>or</span>
+            </div>
+
+            <button id="google-signup" class="auth-btn google-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19.8 10.2273C19.8 9.51818 19.7364 8.83636 19.6182 8.18182H10V12.05H15.4818C15.2364 13.3 14.5273 14.3591 13.4727 15.0682V17.5773H16.7636C18.6727 15.8364 19.8 13.2727 19.8 10.2273Z" fill="#4285F4"/>
+                    <path d="M10 20C12.7 20 14.9636 19.1045 16.7636 17.5773L13.4727 15.0682C12.5727 15.6682 11.3864 16.0227 10 16.0227C7.39545 16.0227 5.19091 14.2636 4.40455 11.9H0.995455V14.4909C2.78636 18.0591 6.10909 20 10 20Z" fill="#34A853"/>
+                    <path d="M4.40455 11.9C4.19091 11.3 4.06818 10.6591 4.06818 10C4.06818 9.34091 4.19091 8.7 4.40455 8.1V5.50909H0.995455C0.322727 6.85 0 8.38636 0 10C0 11.6136 0.322727 13.15 0.995455 14.4909L4.40455 11.9Z" fill="#FBBC04"/>
+                    <path d="M10 3.97727C11.5182 3.97727 12.8727 4.48182 13.9682 5.52727L16.8909 2.60455C14.9591 0.790909 12.6955 0 10 0C6.10909 0 2.78636 1.94091 0.995455 5.50909L4.40455 8.1C5.19091 5.73636 7.39545 3.97727 10 3.97727Z" fill="#EA4335"/>
+                </svg>
+                Sign up with Google
+            </button>
+
+            <p class="toggle-form">
+                Already have an account? <a href="#" id="show-signin">Sign in</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <!-- Firebase Config -->
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>
+
