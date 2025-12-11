@@ -30,7 +30,7 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    animation: mapZoomPan 60s linear infinite;
+    animation: mapZoomPan 120s linear infinite;
 }
 
 .world-map::before {
@@ -486,16 +486,16 @@ body {
 }
 
 .favorite-btn:hover {
-    background: rgba(102, 126, 234, 0.1);
+    background: rgba(191, 49, 67, 0.1);
 }
 
 .favorite-btn:hover svg {
-    stroke: #667eea;
+    stroke: #BF3143;
 }
 
 .favorite-btn.favorited svg {
-    fill: #FFD700;
-    stroke: #FFD700;
+    fill: #BF3143;
+    stroke: #BF3143;
 }
 
 .favorite-btn.favorited:hover {

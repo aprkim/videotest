@@ -585,6 +585,176 @@ function setupFavoriteButton() {
     });
 }
 
+// Setup username click to show profile
+function setupUsernameClick() {
+    const partnerNameEl = document.getElementById('matched-user-name');
+    if (!partnerNameEl) return;
+    
+    partnerNameEl.addEventListener('click', () => {
+        if (!currentMatchedUser) return;
+        showUserProfile(currentMatchedUser);
+    });
+}
+
+// Show user profile in modal
+function showUserProfile(user) {
+    const languages = formatLanguages(user.languages);
+    const interests = user.interests.join(', ');
+    
+    const profileHTML = `
+        <div style="text-align: left;">
+            <div style="margin-bottom: 16px;">
+                <h3 style="margin: 0 0 8px 0; color: #333; font-size: 20px;">${user.name}</h3>
+                <p style="margin: 0; color: #666; font-size: 14px;">📍 ${getLocationName(user)}</p>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <p style="margin: 0 0 8px 0; color: #333; font-weight: 600; font-size: 14px;">Languages:</p>
+                <p style="margin: 0; color: #666; font-size: 14px;">${languages}</p>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <p style="margin: 0 0 8px 0; color: #333; font-weight: 600; font-size: 14px;">Interests:</p>
+                <p style="margin: 0; color: #666; font-size: 14px;">${interests}</p>
+            </div>
+        </div>
+    `;
+    
+    customAlert({ html: profileHTML }, `${user.name}'s Profile`);
+}
+
+// Helper function to get readable location name
+function getLocationName(user) {
+    const locationMap = {
+        'April': 'Berkeley, CA',
+        'Marty': 'Chicago, IL',
+        'Sofia': 'Bogotá, Colombia',
+        'Kenji': 'Tokyo, Japan',
+        'Hyejin': 'Seoul, Korea',
+        'Carlos': 'Mexico City, Mexico',
+        'Ravi': 'Mumbai, India',
+        'Maria': 'Manila, Philippines',
+        'Liam': 'Sydney, Australia',
+        'Emma': 'London, UK',
+        'Yuki': 'Tokyo, Japan',
+        'Diego': 'Buenos Aires, Argentina',
+        'Amelie': 'Paris, France',
+        'Chen': 'Beijing, China',
+        'Isabella': 'Rio de Janeiro, Brazil',
+        'Ahmed': 'Cairo, Egypt',
+        'Nina': 'Cape Town, South Africa',
+        'Paolo': 'Rome, Italy',
+        'Fatima': 'Karachi, Pakistan',
+        'Lars': 'Stockholm, Sweden'
+    };
+    
+    return locationMap[user.name] || 'Unknown';
+}
+
+// Setup Help Menu
+function setupHelpMenu() {
+    const helpBtn = document.getElementById('help-btn');
+    const helpMenu = document.getElementById('help-menu');
+    const guidelinesBtn = document.getElementById('session-guidelines');
+    const blockBtn = document.getElementById('block-user');
+    const reportBtn = document.getElementById('report-user');
+    
+    if (!helpBtn || !helpMenu) return;
+    
+    // Toggle help menu
+    helpBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        helpMenu.classList.toggle('hidden');
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!helpMenu.contains(e.target) && e.target !== helpBtn) {
+            helpMenu.classList.add('hidden');
+        }
+    });
+    
+    // Session Guidelines
+    if (guidelinesBtn) {
+        guidelinesBtn.addEventListener('click', () => {
+            helpMenu.classList.add('hidden');
+            showSessionGuidelines();
+        });
+    }
+    
+    // Block User
+    if (blockBtn) {
+        blockBtn.addEventListener('click', () => {
+            helpMenu.classList.add('hidden');
+            if (currentMatchedUser) {
+                blockUser(currentMatchedUser.name);
+            }
+        });
+    }
+    
+    // Report User
+    if (reportBtn) {
+        reportBtn.addEventListener('click', () => {
+            helpMenu.classList.add('hidden');
+            if (currentMatchedUser) {
+                reportUser(currentMatchedUser.name);
+            }
+        });
+    }
+}
+
+// Show Session Guidelines
+async function showSessionGuidelines() {
+    const message = `Be respectful and kind to your language partner.
+
+Practice the selected language during your session.
+
+Use the AI assistant for real-time help and translations.`;
+    
+    await customAlert(message, 'Session Guidelines');
+}
+
+// Block User
+async function blockUser(username) {
+    const message = `Are you sure you want to block ${username}?
+
+This will end the session immediately and you won't be matched with this user again.
+
+This action cannot be undone.`;
+    
+    const confirmed = await showModal(`Block ${username}`, message, [
+        { text: 'Cancel', value: false, className: 'modal-btn-secondary' },
+        { text: 'Block', value: true, className: 'modal-btn-danger' }
+    ]);
+    
+    if (confirmed) {
+        console.log('Blocking user:', username);
+        await customAlert(`${username} has been blocked.`, 'User Blocked');
+        endVideoChat();
+    }
+}
+
+// Report User
+async function reportUser(username) {
+    const reason = await customPrompt(
+        `Please describe why you are reporting ${username}.`,
+        `Report ${username}`,
+        ''
+    );
+    
+    if (reason && reason.trim()) {
+        console.log('Reporting user:', username, 'Reason:', reason);
+        
+        await customAlert(`Thank you for your report. Our team will review it shortly.`, 'Report Submitted');
+        
+        // Optionally end the call
+        const endCall = await customConfirm('Would you like to end this session now?', 'End Session');
+        if (endCall) {
+            endVideoChat();
+        }
+    }
+}
+
 // Start video chat with matched user
 function startVideoChat(matchedUser, durationMinutes) {
     console.log('Starting video chat with:', matchedUser.name, 'Duration:', durationMinutes, 'minutes');
@@ -675,6 +845,9 @@ function setupVideoCallControls() {
     setupToggleButtons();
     setupAIChatBox();
     setupMessageChannel();
+    setupHelpMenu();
+    setupFavoriteButton();
+    setupUsernameClick();
 }
 
 // Setup toggle buttons (video, audio, AI, chat, share)
@@ -875,8 +1048,9 @@ function startCallTimer(durationMinutes) {
         
         if (seconds < 0) {
             clearInterval(timerInterval);
-            // Session ended naturally
-            customAlert('Session time is up!', 'Time\'s Up').then(() => {
+            // Session ended naturally - celebrate!
+            showConfetti();
+            customAlert('🎉 Congratulations! You practiced speaking! Great job on your language learning journey!', 'Time\'s Up!').then(() => {
                 endVideoChat();
             });
         }
@@ -932,6 +1106,7 @@ function setupCardDrag() {
     let initialY;
     let xOffset = 0;
     let yOffset = 0;
+    let isFirstDrag = true;
     
     card.addEventListener('mousedown', dragStart);
     document.addEventListener('mousemove', drag);
@@ -946,6 +1121,14 @@ function setupCardDrag() {
         // Only drag if clicking on the card itself or drag handle, not on buttons/inputs
         if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) {
             return;
+        }
+        
+        // On first drag, set initial position to card's current center position
+        if (isFirstDrag) {
+            const rect = card.getBoundingClientRect();
+            xOffset = rect.left + (rect.width / 2) - (window.innerWidth / 2);
+            yOffset = rect.top + (rect.height / 2) - (window.innerHeight / 2);
+            isFirstDrag = false;
         }
         
         if (e.type === 'touchstart') {
@@ -1212,6 +1395,62 @@ function setupLanguageRequest() {
             form.reset();
         }
     });
+}
+
+// Confetti celebration effect
+function showConfetti() {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const colors = ['#BF3143', '#FF6B6B', '#667eea', '#FFD700', '#41B883'];
+
+    function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+            return clearInterval(interval);
+        }
+
+        const particleCount = 3;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '10px';
+            particle.style.height = '10px';
+            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = '-10px';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '999999';
+            particle.style.opacity = '1';
+            
+            document.body.appendChild(particle);
+            
+            const xDrift = randomInRange(-100, 100);
+            const fallDuration = randomInRange(2000, 4000);
+            
+            particle.animate([
+                { 
+                    transform: 'translateY(0) translateX(0) rotate(0deg)',
+                    opacity: 1
+                },
+                { 
+                    transform: `translateY(${window.innerHeight + 50}px) translateX(${xDrift}px) rotate(${randomInRange(0, 720)}deg)`,
+                    opacity: 0
+                }
+            ], {
+                duration: fallDuration,
+                easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+            }).onfinish = () => {
+                particle.remove();
+            };
+        }
+    }, 50);
 }
 
 // Initialize when DOM is ready
