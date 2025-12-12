@@ -28,6 +28,12 @@
             justify-content: center;
             min-height: 100vh;
             padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        body.show {
+            opacity: 1;
         }
 
         .container {
@@ -168,15 +174,12 @@
                 shouldRedirect = true;
             }
             
-            // If matched routing pattern, redirect
+            // If matched routing pattern, redirect immediately without showing 404
             if (shouldRedirect) {
-                const redirectMsg = document.getElementById('redirect-msg');
-                if (redirectMsg) {
-                    redirectMsg.classList.add('show');
-                }
-                setTimeout(() => {
-                    window.location.replace(redirectUrl);
-                }, 100);
+                window.location.replace(redirectUrl);
+            } else {
+                // Only show 404 page if it's a real 404 (not a redirect)
+                document.body.classList.add('show');
             }
         })();
     </script>
