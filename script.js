@@ -288,21 +288,21 @@ function startVideoSession(sessionId) {
         const user = JSON.parse(userData);
         console.log('User data loaded:', user);
         
-        // Get duration based on level
+        // Get duration based on level (in seconds for testing)
         const levelDurations = {
-            'Basic': 3,
-            'Intermediate': 15,
-            'Advanced': 30,
-            'Professional': 30,
-            'Native': 30
+            'Basic': 10,  // 10 seconds for testing (change to 3 for production = 3 minutes)
+            'Intermediate': 900,  // 15 minutes
+            'Advanced': 1800,  // 30 minutes
+            'Professional': 1800,  // 30 minutes
+            'Native': 1800  // 30 minutes
         };
         
         if (user.level && levelDurations[user.level]) {
             duration = levelDurations[user.level];
-            console.log(`Duration set to ${duration} minutes based on level: ${user.level}`);
+            console.log(`Duration set to ${duration} seconds based on level: ${user.level}`);
         }
     } else {
-        console.log('No user data found, using default 3 minutes');
+        console.log('No user data found, using default 10 seconds');
     }
     
     // Check if user is logged in via Firebase
@@ -368,16 +368,19 @@ function startVideoSession(sessionId) {
 function setupVideoControls() {
     console.log('Setting up video controls...');
     
-    // Initialize all video chat components
-    setupToggleButtons();
-    setupVideoCallControls();
-    setupFavoriteButton();
-    setupHelpMenu();
-    setupAIChatBox();
-    setupMessageChannel();
-    setupSessionSummary();
-    
-    console.log('Video controls initialized');
+    // Wait a brief moment for DOM to be ready
+    setTimeout(() => {
+        // Initialize all video chat components
+        setupToggleButtons();
+        setupVideoCallControls();
+        setupFavoriteButton();
+        setupHelpMenu();
+        setupAIChatBox();
+        setupMessageChannel();
+        setupSessionSummary();
+        
+        console.log('Video controls initialized');
+    }, 100);
 }
 
 // Store dot and tooltip references for filtering
@@ -1014,12 +1017,13 @@ function startVideoChat(matchedUser, durationMinutes) {
     startCallTimer(durationMinutes);
 }
 
-// Helper to get level name from duration
-function getLevelName(durationMinutes) {
-    switch(durationMinutes) {
-        case 3: return 'Basic';
-        case 15: return 'Intermediate';
-        case 30: return 'Professional / Talk with Native';
+// Helper to get level name from duration (in seconds)
+function getLevelName(durationSeconds) {
+    switch(durationSeconds) {
+        case 10: return 'Basic';  // Testing: 10 seconds
+        case 180: return 'Basic';  // Production: 3 minutes
+        case 900: return 'Intermediate';  // 15 minutes
+        case 1800: return 'Advanced / Professional';  // 30 minutes
         default: return 'Practice Session';
     }
 }
@@ -1072,12 +1076,17 @@ function showAllDots() {
 // Setup video call controls
 function setupVideoCallControls() {
     console.log('Setting up video call controls...');
+    console.log('Looking for leave-call button...');
     const leaveBtn = document.getElementById('leave-call');
     
     if (!leaveBtn) {
         console.error('Leave button not found!');
+        console.log('Available buttons:', document.querySelectorAll('button').length);
         return;
     }
+    
+    console.log('Leave button found:', leaveBtn);
+    console.log('Leave button already has listener?', leaveBtn.dataset.listenerAttached);
     
     // Check if already setup
     if (leaveBtn.dataset.listenerAttached === 'true') {
@@ -1088,21 +1097,25 @@ function setupVideoCallControls() {
     leaveBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('Leave button clicked');
+        console.log('=== Leave button clicked ===');
+        console.log('customConfirm function exists?', typeof customConfirm);
         const confirmed = await customConfirm('Are you sure you want to leave this session?', 'Leave Session');
         console.log('User confirmed:', confirmed);
         if (confirmed) {
+            console.log('User confirmed leave, clearing timer and showing summary');
             // Clear timer
             if (timerInterval) {
                 clearInterval(timerInterval);
             }
             // Show session summary
             showSessionSummary();
+        } else {
+            console.log('User cancelled leave');
         }
     });
     
     leaveBtn.dataset.listenerAttached = 'true';
-    console.log('Leave button listener attached');
+    console.log('Leave button listener attached successfully');
 }
 
 // Setup toggle buttons (video, audio, AI, chat, share)
@@ -1780,16 +1793,16 @@ function generateSessionId() {
     const max = 9999999999; // 10 digits maximum
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-function startCallTimer(durationMinutes) {
-    console.log(`Starting call timer for ${durationMinutes} minutes`);
+function startCallTimer(durationSeconds) {
+    console.log(`Starting call timer for ${durationSeconds} seconds`);
     
     // Clear any existing timer
     if (timerInterval) {
         clearInterval(timerInterval);
     }
     
-    // Convert minutes to seconds
-    let seconds = durationMinutes * 60;
+    // Duration is already in seconds
+    let seconds = durationSeconds;
     console.log(`Timer will run for ${seconds} seconds`);
     
     const timerElement = document.getElementById('call-timer');
@@ -1821,9 +1834,9 @@ function startCallTimer(durationMinutes) {
     console.log('Timer started successfully');
 }
 
-// Start 3-minute cool-down timer
+// Start cool-down timer (10 seconds for testing)
 function startCooldownTimer() {
-    let seconds = 3 * 60; // 3 minutes
+    let seconds = 10; // 10 seconds for testing (change to 3 * 60 for production = 3 minutes)
     
     const updateTimer = () => {
         const minutes = Math.floor(seconds / 60);
