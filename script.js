@@ -2256,8 +2256,11 @@ function setupInterestButton() {
                 };
                 localStorage.setItem('tabbimate_new_user_data', JSON.stringify(profileData));
                 
-                // Redirect to profile page with the new user ID (clean URL format)
-                window.location.href = `profile/${userId}`;
+                // Redirect to profile page with the new user ID (absolute path)
+                const basePath = window.location.pathname.includes('tabbimate') 
+                    ? '/tabbimate/profile' 
+                    : '/profile';
+                window.location.href = `${basePath}/${userId}`;
             }
         });
     }

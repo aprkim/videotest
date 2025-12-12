@@ -122,15 +122,21 @@ function init() {
             if (storedUserId) {
                 profile.userId = storedUserId;
                 loadProfile();
-                // Redirect to clean URL with ID
-                window.location.href = `profile/${storedUserId}`;
+                // Redirect to clean URL with ID (absolute path)
+                const basePath = window.location.pathname.includes('tabbimate') 
+                    ? '/tabbimate/profile' 
+                    : '/profile';
+                window.location.href = `${basePath}/${storedUserId}`;
             } else {
                 // Create new user ID and redirect
                 const newUserId = Math.floor(10000000 + Math.random() * 90000000).toString();
                 profile.userId = newUserId;
                 localStorage.setItem('tabbimate_user_id', newUserId);
-                // Redirect to clean URL with ID
-                window.location.href = `profile/${newUserId}`;
+                // Redirect to clean URL with ID (absolute path)
+                const basePath = window.location.pathname.includes('tabbimate') 
+                    ? '/tabbimate/profile' 
+                    : '/profile';
+                window.location.href = `${basePath}/${newUserId}`;
             }
         }
     }
