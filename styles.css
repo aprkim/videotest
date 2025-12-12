@@ -609,9 +609,12 @@ body {
     padding: 80px 20px;
     margin: 24px 0;
     color: #999;
+    min-height: 200px;
 }
 
 .video-placeholder svg {
+    width: 120px;
+    height: 120px;
     opacity: 0.6;
     transition: all 0.2s ease;
 }
