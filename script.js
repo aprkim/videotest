@@ -993,6 +993,7 @@ async function reportUser(username) {
 // Show matching screen
 function showMatchingScreen(language, level) {
     console.log('=== Showing matching screen ===');
+    console.log('Matching source:', matchingSource);
     
     // Hide map and card
     document.querySelector('.map-container').style.display = 'none';
@@ -1010,9 +1011,48 @@ function showMatchingScreen(language, level) {
     const cancelBtn = document.getElementById('cancel-matching');
     cancelBtn.onclick = () => {
         console.log('Matching cancelled by user');
+        
+        // Clear the matching timeout to prevent race condition
+        if (matchingTimeoutId) {
+            clearTimeout(matchingTimeoutId);
+            matchingTimeoutId = null;
+            console.log('Matching timeout cleared');
+        }
+        
+        // Hide matching screen
         matchingScreen.classList.add('hidden');
-        document.querySelector('.map-container').style.display = 'block';
-        document.querySelector('.center-container').style.display = 'flex';
+        
+        // Hide video chat if it was shown
+        const videoChat = document.getElementById('video-chat');
+        if (videoChat) {
+            videoChat.classList.add('hidden');
+        }
+        
+        // If user came from profile page, redirect back to profile
+        if (matchingSource === 'profile') {
+            console.log('Redirecting back to profile page...');
+            const userId = localStorage.getItem('tabbimate_user_id');
+            if (userId) {
+                const basePath = window.location.pathname.includes('tabbimate') 
+                    ? '/tabbimate/profile' 
+                    : '/profile';
+                window.location.href = `${basePath}/${userId}`;
+            } else {
+                // Fallback to index if no user ID
+                window.location.href = window.location.pathname.includes('tabbimate') 
+                    ? '/tabbimate/' 
+                    : '/';
+            }
+        } else {
+            // User came from app.html language selection, show map and card again
+            console.log('Returning to language selection screen...');
+            document.querySelector('.map-container').style.display = 'block';
+            document.querySelector('.center-container').style.display = 'flex';
+            
+            // Clear URL parameters
+            const cleanUrl = window.location.pathname.replace(/\/session\/\d+$/, '');
+            window.history.replaceState({}, '', cleanUrl);
+        }
     };
     
     console.log('Matching screen shown, waiting 1 minute...');
