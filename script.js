@@ -2613,9 +2613,20 @@ function setupSessionSummary() {
     const doneBtn = document.getElementById('summary-done');
     if (doneBtn) {
         doneBtn.addEventListener('click', () => {
-            // Return to main page (remove /session/sessionID from URL)
-            const basePath = window.location.pathname.replace(/\/session\/\d{10}$/, '');
-            window.location.href = `${window.location.origin}${basePath}`;
+            // Get user ID from localStorage
+            const userId = localStorage.getItem('tabbimate_user_id');
+            
+            if (userId) {
+                // Redirect to profile page
+                const basePath = window.location.pathname.includes('tabbimate') 
+                    ? '/tabbimate/profile' 
+                    : '/profile';
+                window.location.href = `${window.location.origin}${basePath}/${userId}`;
+            } else {
+                // If no user ID, return to main page
+                const basePath = window.location.pathname.replace(/\/session\/\d{10}$/, '');
+                window.location.href = `${window.location.origin}${basePath}`;
+            }
         });
     }
     

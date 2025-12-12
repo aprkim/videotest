@@ -1227,6 +1227,8 @@ body {
     font-size: 14px;
     margin-top: 6px;
     text-align: center;
+    background: none;
+    border: none;
 }
 
 .system-message {
