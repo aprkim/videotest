@@ -299,7 +299,7 @@ function startVideoSession(sessionId) {
     
     // Initialize video controls and UI
     setupVideoControls();
-    startTimer(duration * 60); // Convert minutes to seconds
+    startCallTimer(duration); // Start timer with duration in minutes
 }
 
 // Setup video controls
