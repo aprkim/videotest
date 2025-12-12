@@ -246,10 +246,11 @@ function init() {
     
     if (sessionId) {
         console.log('Starting session:', sessionId);
-        // Hide language selection card
-        const mainCard = document.getElementById('main-card');
-        if (mainCard) {
-            mainCard.style.display = 'none';
+        
+        // Hide the entire center container with the card
+        const centerContainer = document.querySelector('.center-container');
+        if (centerContainer) {
+            centerContainer.style.display = 'none';
         }
         
         // Show video chat interface
