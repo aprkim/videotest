@@ -2411,18 +2411,35 @@ function setupInterestChips() {
 // Update the continue button state
 function updateInterestButton() {
     const continueBtn = document.getElementById('interests-continue-btn');
+    const errorMsg = document.getElementById('interest-error');
+    
     if (continueBtn) {
         continueBtn.textContent = `Continue (${selectedInterests.length}/3)`;
         // Enable button when at least 1 interest is selected
         continueBtn.disabled = selectedInterests.length === 0;
+        
+        // Hide error message when interests are selected
+        if (selectedInterests.length > 0 && errorMsg) {
+            errorMsg.classList.add('hidden');
+        }
     }
 }
 
 // Setup interest selection continue button
 function setupInterestButton() {
     const continueBtn = document.getElementById('interests-continue-btn');
+    const errorMsg = document.getElementById('interest-error');
+    
     if (continueBtn) {
         continueBtn.addEventListener('click', () => {
+            // Show error if no interests selected
+            if (selectedInterests.length === 0) {
+                if (errorMsg) {
+                    errorMsg.classList.remove('hidden');
+                }
+                return;
+            }
+            
             // Allow continuing with 1-3 interests
             if (selectedInterests.length >= 1 && selectedInterests.length <= 3) {
                 // Generate NEW unique user ID when guest completes interest selection

@@ -1225,6 +1225,11 @@ body {
     background: #FFF6F7;
     border: 1px solid #D64545;
     color: #D64545;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    text-align: center;
 }
 
 .system-message {
