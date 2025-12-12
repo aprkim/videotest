@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - TabbiMate</title>
+    <title>Profile - Tabbi Mate</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -12,15 +12,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Cropper.js CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
-    
-    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="profile.css">
-    <link rel="stylesheet" href="modal.css">
 </head>
-<body class="profile-page">
+<body>
     <!-- Background Map Container -->
     <div class="map-container">
         <div class="world-map">
@@ -28,160 +22,69 @@
         </div>
     </div>
 
-    <!-- Full Screen Profile Container -->
-    <div class="profile-fullscreen">
-        <div class="profile-container">
-            <!-- Header -->
-            <header class="profile-page-header">
-                <a href="index.html" class="back-button" title="Back to Home">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </a>
-                <h1 class="profile-page-title">
-                    Profile
-                </h1>
-                <button id="profile-signout-btn" class="signout-button" title="Sign Out">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    Sign Out
-                </button>
-            </header>
+    <!-- Main Profile Container -->
+    <div class="profile-container">
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <!-- Close Button -->
+            <a href="index.html" class="close-btn" title="Back to Home">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
 
             <!-- Profile Content -->
             <div class="profile-content">
-                <div class="profile-grid">
-                    <!-- Profile Photo Section -->
-                    <section class="profile-section">
-                    <h2 class="section-title">Profile Photo</h2>
-                    <div class="photo-upload-container">
-                        <div class="avatar-preview" id="avatar-preview">
-                            <div class="avatar-placeholder" id="avatar-placeholder">
-                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M24 24C28.4183 24 32 20.4183 32 16C32 11.5817 28.4183 8 24 8C19.5817 8 16 11.5817 16 16C16 20.4183 19.5817 24 24 24Z" fill="currentColor" opacity="0.3"/>
-                                    <path d="M8 40C8 32.268 14.268 26 22 26H26C33.732 26 40 32.268 40 40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                                </svg>
-                            </div>
-                            <img id="avatar-image" class="avatar-image hidden" alt="Profile photo">
-                            <button class="edit-photo-btn hidden" id="edit-photo-btn" title="Edit photo">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.4187 1.44775 12.6667 1.44775C12.9146 1.44775 13.1598 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38271 14.4088 2.61149C14.5036 2.84027 14.5523 3.08545 14.5523 3.33337C14.5523 3.58129 14.5036 3.82647 14.4088 4.05525C14.314 4.28403 14.1751 4.49161 14 4.66671L5.00001 13.6667L1.33334 14.6667L2.33334 11L11.3333 2.00004Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <label for="photo-upload" class="upload-btn">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M11.3333 5.33333L8 2L4.66667 5.33333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M8 2V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Profile Avatar -->
+                <div class="profile-avatar">
+                    <div class="avatar-circle" id="avatar-display">
+                        <span class="avatar-placeholder">👤</span>
+                    </div>
+                </div>
+
+                <!-- Profile Info -->
+                <div class="profile-info">
+                    <h1 class="profile-name" id="profile-name">Guest User</h1>
+                    <div class="profile-details">
+                        <div class="detail-item" id="language-display">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/>
+                                <path d="M2 12H22" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 2C14.5013 4.73835 15.9228 8.29203 16 12C15.9228 15.708 14.5013 19.2616 12 22C9.49872 19.2616 8.07725 15.708 8 12C8.07725 8.29203 9.49872 4.73835 12 2Z" stroke="currentColor" stroke-width="2"/>
                             </svg>
-                            <span id="upload-btn-text">Upload Photo</span>
-                        </label>
-                        <input type="file" id="photo-upload" accept="image/*" class="hidden">
-                        <button id="remove-photo" class="text-btn hidden">Remove Photo</button>
+                            <span>English • Basic</span>
+                        </div>
+                        <div class="detail-item" id="interests-display">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>Travel, Food, Music</span>
+                        </div>
                     </div>
-                </section>
+                </div>
 
-                <!-- Location Section -->
-                <section class="profile-section">
-                    <h2 class="section-title">Location</h2>
-                    <p class="section-description">Enter your location to appear on the global map. We'll verify it automatically.</p>
-                    <div class="location-inputs">
-                        <input type="text" id="city-input" class="profile-input" placeholder="City (e.g., San Francisco)">
-                        <input type="text" id="country-input" class="profile-input" placeholder="Country (e.g., United States)">
-                    </div>
-                    <div class="location-status" id="location-status">
-                        <!-- Status will be inserted here -->
-                    </div>
-                </section>
-
-                <!-- Languages Section -->
-                <section class="profile-section">
-                    <h2 class="section-title">Languages</h2>
-                    <p class="section-description">Add languages you speak or want to practice. Select your proficiency level and toggle "Use for matching" to control which languages are used when finding conversation partners.</p>
-                    
-                    <div class="add-language-container">
-                        <input type="text" id="language-input" class="profile-input" placeholder="Add a language (e.g., English, Korean)">
-                        <button id="add-language-btn" class="add-btn">Add</button>
-                    </div>
-
-                    <div id="languages-list" class="languages-list">
-                        <!-- Languages will be dynamically inserted here -->
-                    </div>
-                </section>
-
-                <!-- Interests Section -->
-                <section class="profile-section">
-                    <h2 class="section-title">Interests</h2>
-                    <p class="section-description">Add up to 3 interests to help match with people who share similar passions.</p>
-                    
-                    <div class="add-interest-container">
-                        <input type="text" id="interest-input" class="profile-input" placeholder="Add an interest (e.g., Cooking, Travel)">
-                        <button id="add-interest-btn" class="add-btn">Add</button>
-                    </div>
-                    <div class="interest-limit-hint" id="interest-limit">
-                        <span id="interest-count">0</span>/3 interests
-                    </div>
-
-                    <div id="interests-list" class="interests-list">
-                        <!-- Interest tags will be dynamically inserted here -->
-                    </div>
-                </section>
+                <!-- Action Buttons -->
+                <div class="profile-actions">
+                    <button class="btn btn-primary" id="start-video-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor"/>
+                            <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Start Video Chat
+                    </button>
+                    <button class="btn btn-secondary" id="join-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="8.5" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M20 8V14M17 11H23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Join & Create Account
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Image Cropper Modal -->
-    <div id="crop-modal" class="crop-modal hidden">
-        <div class="crop-modal-overlay"></div>
-        <div class="crop-modal-content">
-            <div class="crop-modal-header">
-                <h3 class="crop-modal-title">Adjust Your Photo</h3>
-                <button class="crop-close-btn" id="crop-close-btn" title="Cancel">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="crop-container">
-                <img id="crop-image" alt="Image to crop">
-            </div>
-            <div class="crop-modal-footer">
-                <button class="crop-btn crop-cancel-btn" id="crop-cancel-btn">Cancel</button>
-                <button class="crop-btn crop-save-btn" id="crop-save-btn">Save Photo</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Save Status -->
-    <div class="save-status" id="save-status">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M13.3333 4L6 11.3333L2.66667 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Changes saved
-    </div>
-
-    <!-- Cropper.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-
-    <!-- Firebase Config & Service -->
-    <script src="firebase-config.js"></script>
-    <script src="firebase-service.js"></script>
-
-    <!-- Custom Modal -->
-    <script src="modal.js"></script>
-
-    <!-- App Script -->
     <script src="profile.js"></script>
 </body>
 </html>
