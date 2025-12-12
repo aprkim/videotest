@@ -304,8 +304,17 @@ function startVideoSession(sessionId) {
 
 // Setup video controls
 function setupVideoControls() {
-    // Video controls are already set up in the HTML
-    // Add any additional initialization here if needed
+    console.log('Setting up video controls...');
+    
+    // Initialize all video chat components
+    setupToggleButtons();
+    setupVideoCallControls();
+    setupFavoriteButton();
+    setupHelpMenu();
+    setupAIChatBox();
+    setupMessageChannel();
+    setupSessionSummary();
+    
     console.log('Video controls initialized');
 }
 
