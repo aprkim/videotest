@@ -44,8 +44,8 @@ function init() {
     // Check if user is already signed in
     firebaseService.onAuthStateChanged((user) => {
         if (user) {
-            // User is signed in, redirect to profile or home
-            window.location.href = 'index.html';
+            // User is signed in, redirect to app
+            window.location.href = 'app.html';
         }
     });
 
@@ -92,8 +92,8 @@ async function handleSignIn(e) {
     const result = await firebaseService.signIn(email, password);
 
     if (result.success) {
-        // Redirect to home
-        window.location.href = 'index.html';
+        // Redirect to app
+        window.location.href = 'app.html';
     } else {
         setLoading('signin', false);
         showError(result.error || 'Sign in failed. Please try again.');
@@ -148,8 +148,8 @@ async function handleGoogleSignIn() {
     const result = await firebaseService.signInWithGoogle();
 
     if (result.success) {
-        // Redirect to home
-        window.location.href = 'index.html';
+        // Redirect to app
+        window.location.href = 'app.html';
     } else {
         showError(result.error || 'Google sign in failed. Please try again.');
     }
