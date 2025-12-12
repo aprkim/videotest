@@ -277,14 +277,28 @@ function startVideoSession(sessionId) {
     
     // Load user data from localStorage
     const userData = localStorage.getItem('tabbimate_current_user');
+    let duration = 3; // default 3 minutes
+    
     if (userData) {
         const user = JSON.parse(userData);
         console.log('User data loaded:', user);
+        
+        // Get duration based on level
+        const levelDurations = {
+            'Basic': 3,
+            'Intermediate': 15,
+            'Professional': 30,
+            'Native': 30
+        };
+        
+        if (user.level && levelDurations[user.level]) {
+            duration = levelDurations[user.level];
+        }
     }
     
     // Initialize video controls and UI
     setupVideoControls();
-    startTimer(3 * 60); // 3 minutes for demo
+    startTimer(duration * 60); // Convert minutes to seconds
 }
 
 // Setup video controls
