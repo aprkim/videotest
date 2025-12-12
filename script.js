@@ -2415,12 +2415,14 @@ function updateInterestButton() {
     
     if (continueBtn) {
         continueBtn.textContent = `Continue (${selectedInterests.length}/3)`;
-        // Enable button when at least 1 interest is selected
-        continueBtn.disabled = selectedInterests.length === 0;
         
-        // Hide error message when interests are selected
-        if (selectedInterests.length > 0 && errorMsg) {
-            errorMsg.classList.add('hidden');
+        // Show/hide error message based on selection
+        if (errorMsg) {
+            if (selectedInterests.length === 0) {
+                errorMsg.classList.remove('hidden');
+            } else {
+                errorMsg.classList.add('hidden');
+            }
         }
     }
 }
@@ -2428,15 +2430,11 @@ function updateInterestButton() {
 // Setup interest selection continue button
 function setupInterestButton() {
     const continueBtn = document.getElementById('interests-continue-btn');
-    const errorMsg = document.getElementById('interest-error');
     
     if (continueBtn) {
         continueBtn.addEventListener('click', () => {
-            // Show error if no interests selected
+            // Prevent action if no interests selected (error message already showing)
             if (selectedInterests.length === 0) {
-                if (errorMsg) {
-                    errorMsg.classList.remove('hidden');
-                }
                 return;
             }
             
