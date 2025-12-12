@@ -1011,6 +1011,7 @@ function showMatchingScreen(language, level) {
     const cancelBtn = document.getElementById('cancel-matching');
     cancelBtn.onclick = () => {
         console.log('Matching cancelled by user');
+        console.log('Source was:', matchingSource);
         
         // Clear the matching timeout to prevent race condition
         if (matchingTimeoutId) {
@@ -1036,12 +1037,12 @@ function showMatchingScreen(language, level) {
                 const basePath = window.location.pathname.includes('tabbimate') 
                     ? '/tabbimate/profile' 
                     : '/profile';
-                window.location.href = `${basePath}/${userId}`;
+                window.location.href = `${window.location.origin}${basePath}/${userId}`;
             } else {
                 // Fallback to index if no user ID
                 window.location.href = window.location.pathname.includes('tabbimate') 
-                    ? '/tabbimate/' 
-                    : '/';
+                    ? window.location.origin + '/tabbimate/' 
+                    : window.location.origin + '/';
             }
         } else {
             // User came from app.html language selection, show map and card again
@@ -1051,7 +1052,7 @@ function showMatchingScreen(language, level) {
             
             // Clear URL parameters
             const cleanUrl = window.location.pathname.replace(/\/session\/\d+$/, '');
-            window.history.replaceState({}, '', cleanUrl);
+            window.history.replaceState({}, '', window.location.origin + cleanUrl);
         }
     };
     
