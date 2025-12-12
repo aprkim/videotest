@@ -40,7 +40,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400'%3E%3Cpath d='M50,100 L80,90 L110,110 L140,95 L170,120 L200,110 L230,130 L260,115 M300,150 L330,140 L360,160 L390,145 L420,165 L450,150 L480,170 L510,155 M550,200 L580,190 L610,210 L640,195 L670,220 L700,210 L730,230 L760,215' stroke='rgba(255,255,255,0.3)' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400'%3E%3Cpath d='M50,100 L80,90 L110,110 L140,95 L170,120 L200,110 L230,130 L260,115 M300,150 L330,140 L360,160 L390,145 L420,165 L450,150 L480,170 L510,155 M550,200 L580,190 L610,210 L640,195 L670,220 L700,210 L730,230 L760,215' stroke='rgba(255,255,255,0.5)' stroke-width='2' fill='none'/%3E%3C/svg%3E");
             background-size: 200% 200%;
             animation: mapZoomPan 60s linear infinite;
             position: relative;
@@ -158,7 +158,6 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 16px;
-            animation: fadeInUp 0.6s ease-out;
         }
 
         .hero-title {
@@ -168,7 +167,6 @@
             line-height: 1.15;
             margin: 0 0 24px 0;
             text-shadow: none;
-            animation: fadeInUp 0.8s ease-out 0.1s both;
         }
 
         .hero-subtitle {
@@ -178,7 +176,6 @@
             margin: 0 0 40px 0;
             max-width: 600px;
             text-shadow: none;
-            animation: fadeInUp 1s ease-out 0.2s both;
         }
 
         .hero-cta {
@@ -186,7 +183,6 @@
             flex-direction: column;
             gap: 16px;
             align-items: center;
-            animation: fadeInUp 1.2s ease-out 0.3s both;
         }
 
         .hero-btn {
@@ -265,6 +261,15 @@
         }
 
         /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
