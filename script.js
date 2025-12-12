@@ -6,6 +6,9 @@ const state = {
     matchedUser: null
 };
 
+// Guest mode toggle - set to true to test as a new user (non-logged-in)
+const GUEST_MODE = true;
+
 // User database - structured format for easy expansion
 const users = [
     {
@@ -421,7 +424,7 @@ function setupLevelButtons() {
             console.log('Level button clicked:', level, 'Duration:', duration);
             
             // Check if user is logged in
-            const currentUser = users.find(u => u.name === 'April');
+            const currentUser = GUEST_MODE ? null : users.find(u => u.name === 'April');
             if (!currentUser) {
                 // Show tutorial for non-logged-in users
                 showTutorial(level);
@@ -435,7 +438,7 @@ function setupLevelButtons() {
 
 // Update level buttons based on current user's ability in selected language
 function updateLevelButtonsAvailability() {
-    const currentUser = users.find(u => u.name === 'April');
+    const currentUser = GUEST_MODE ? null : users.find(u => u.name === 'April');
     
     // If no user is logged in (guest mode), keep all buttons active
     if (!currentUser) {
@@ -515,7 +518,7 @@ async function selectLevel(level, durationMinutes) {
 // Find a matching user
 function findMatch(selectedLanguage, level) {
     const langKey = selectedLanguage.toLowerCase();
-    const currentUser = users.find(u => u.name === 'April');
+    const currentUser = GUEST_MODE ? null : users.find(u => u.name === 'April');
     
     if (!currentUser) return null;
     
