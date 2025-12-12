@@ -368,18 +368,16 @@ function startVideoSession(sessionId) {
     
     // Show matching screen first
     console.log('Showing matching screen before starting session...');
-    console.log('Language:', userData2.language || 'English', 'Level:', userData2.level || 'Basic');
     showMatchingScreen(userData2.language || 'English', userData2.level || 'Basic');
     
     // Wait 1 minute then start the video chat
-    matchingTimeoutId = setTimeout(() => {
+    setTimeout(() => {
         console.log('Match found! Starting video session...');
         
         // Hide matching screen
         const matchingScreen = document.getElementById('matching-screen');
         if (matchingScreen) {
             matchingScreen.classList.add('hidden');
-            console.log('Matching screen hidden');
         }
         
         // Show video chat
@@ -396,8 +394,6 @@ function startVideoSession(sessionId) {
         
         console.log('=== Video session initialization complete ===');
     }, 60000); // 60 seconds = 1 minute
-    
-    console.log('Matching timeout set, ID:', matchingTimeoutId);
 }
 
 // Setup video controls
