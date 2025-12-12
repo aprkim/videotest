@@ -114,10 +114,19 @@ async function handleSignIn(e) {
     console.log('Sign in result:', result);
 
     if (result.success) {
-        console.log('Sign in successful, redirecting to dashboard.html');
+        console.log('Sign in successful, redirecting to dashboard with user ID');
         console.log('Current URL:', window.location.href);
-        // Redirect to dashboard for logged-in users
-        const dashboardUrl = window.location.origin + '/tabbimate/dashboard.html';
+        
+        // Get user ID from Firebase
+        const userId = result.user.uid;
+        console.log('User ID:', userId);
+        
+        // Store user info in localStorage
+        localStorage.setItem('tabbimate_user_id', userId);
+        localStorage.setItem('tabbimate_user_email', result.user.email);
+        
+        // Redirect to user-specific dashboard
+        const dashboardUrl = window.location.origin + '/tabbimate/dashboard/' + userId;
         console.log('Redirecting to:', dashboardUrl);
         window.location.href = dashboardUrl;
     } else {
@@ -160,10 +169,19 @@ async function handleSignUp(e) {
         // Show success
         showSuccess('Account created! Redirecting...', 'signup');
         
-        // Redirect to dashboard for logged-in users
+        // Redirect to user-specific dashboard
         setTimeout(() => {
-            console.log('Sign up successful, redirecting to dashboard.html');
-            const dashboardUrl = window.location.origin + '/tabbimate/dashboard.html';
+            console.log('Sign up successful, redirecting to dashboard with user ID');
+            
+            // Get user ID from Firebase
+            const userId = result.user.uid;
+            console.log('User ID:', userId);
+            
+            // Store user info in localStorage
+            localStorage.setItem('tabbimate_user_id', userId);
+            localStorage.setItem('tabbimate_user_email', result.user.email);
+            
+            const dashboardUrl = window.location.origin + '/tabbimate/dashboard/' + userId;
             console.log('Redirecting to:', dashboardUrl);
             window.location.href = dashboardUrl;
         }, 1500);
@@ -178,9 +196,18 @@ async function handleGoogleSignIn() {
     const result = await firebaseService.signInWithGoogle();
 
     if (result.success) {
-        console.log('Google sign in successful, redirecting to dashboard.html');
-        // Redirect to dashboard for logged-in users
-        const dashboardUrl = window.location.origin + '/tabbimate/dashboard.html';
+        console.log('Google sign in successful, redirecting to dashboard with user ID');
+        
+        // Get user ID from Firebase
+        const userId = result.user.uid;
+        console.log('User ID:', userId);
+        
+        // Store user info in localStorage
+        localStorage.setItem('tabbimate_user_id', userId);
+        localStorage.setItem('tabbimate_user_email', result.user.email);
+        
+        // Redirect to user-specific dashboard
+        const dashboardUrl = window.location.origin + '/tabbimate/dashboard/' + userId;
         console.log('Redirecting to:', dashboardUrl);
         window.location.href = dashboardUrl;
     } else {

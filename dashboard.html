@@ -841,6 +841,78 @@
     </div>
     
     <script>
+        // Initialize dashboard
+        let userId = null;
+        let userEmail = null;
+        
+        // Get user ID from URL path
+        function init() {
+            // First, check URL parameter (from 404 redirect)
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlUserId = urlParams.get('uid');
+            
+            if (urlUserId) {
+                userId = urlUserId;
+                localStorage.setItem('tabbimate_user_id', userId);
+                
+                // Clean up URL to remove query parameter
+                const basePath = window.location.pathname.includes('tabbimate') 
+                    ? '/tabbimate/dashboard' 
+                    : '/dashboard';
+                const cleanUrl = `${basePath}/${userId}`;
+                window.history.replaceState({}, '', cleanUrl);
+            } else {
+                // Check URL path for user ID (format: /dashboard/USER_ID)
+                const pathParts = window.location.pathname.split('/');
+                const lastPart = pathParts[pathParts.length - 1];
+                
+                // If last part looks like a user ID (not .html), use it
+                if (lastPart && !lastPart.includes('.html') && lastPart !== 'dashboard') {
+                    userId = lastPart;
+                    localStorage.setItem('tabbimate_user_id', userId);
+                    
+                    // Clean up URL to remove the ID from the visible path
+                    const basePath = window.location.pathname.includes('tabbimate') 
+                        ? '/tabbimate/dashboard' 
+                        : '/dashboard';
+                    const cleanUrl = `${basePath}/${userId}`;
+                    window.history.replaceState({}, '', cleanUrl);
+                } else {
+                    // Try to get from localStorage
+                    userId = localStorage.getItem('tabbimate_user_id');
+                }
+            }
+            
+            // Get user email from localStorage
+            userEmail = localStorage.getItem('tabbimate_user_email');
+            
+            // If no user ID, redirect to login
+            if (!userId) {
+                console.log('No user ID found, redirecting to auth page');
+                window.location.href = 'auth.html';
+                return;
+            }
+            
+            console.log('Dashboard initialized for user:', userId);
+            
+            // Load user data
+            loadUserData();
+        }
+        
+        // Load user data from Firebase or localStorage
+        function loadUserData() {
+            // Update email display if available
+            if (userEmail) {
+                const emailElement = document.querySelector('.info-value');
+                if (emailElement) {
+                    emailElement.textContent = userEmail;
+                }
+            }
+            
+            // TODO: Load other user-specific data from Firebase
+            // For now, using placeholder data
+        }
+        
         // Photo preview
         const photoUpload = document.getElementById('photo-upload');
         const profilePreview = document.getElementById('profile-preview');
@@ -867,6 +939,13 @@
                 // Redirect to home page
                 window.location.href = 'index.html';
             }
+        }
+        
+        // Initialize when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
         }
     </script>
 </body>

@@ -142,6 +142,22 @@
             let shouldRedirect = false;
             let redirectUrl = '';
             
+            // Check if URL matches /dashboard/[user-id]
+            const dashboardMatch = path.match(/^\/tabbimate\/dashboard\/([a-zA-Z0-9_-]+)$/);
+            if (dashboardMatch) {
+                const userId = dashboardMatch[1];
+                redirectUrl = `/tabbimate/dashboard.html?uid=${userId}`;
+                shouldRedirect = true;
+            }
+            
+            // Check if URL matches /dashboard/[user-id] (without /tabbimate prefix for local)
+            const dashboardMatchLocal = path.match(/^\/dashboard\/([a-zA-Z0-9_-]+)$/);
+            if (dashboardMatchLocal) {
+                const userId = dashboardMatchLocal[1];
+                redirectUrl = `/dashboard.html?uid=${userId}`;
+                shouldRedirect = true;
+            }
+            
             // Check if URL matches /profile/[8-digit-id]
             const profileMatch = path.match(/^\/tabbimate\/profile\/(\d{8})$/);
             if (profileMatch) {
