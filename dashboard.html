@@ -252,6 +252,106 @@
             margin-top: 6px;
         }
         
+        /* Interests */
+        .interests-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+            min-height: 32px;
+        }
+        
+        .interest-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(191, 49, 67, 0.08);
+            color: #374151;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .interest-pill:hover {
+            background: rgba(191, 49, 67, 0.12);
+        }
+        
+        .interest-pill button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            color: #9CA3AF;
+            transition: color 0.2s ease;
+        }
+        
+        .interest-pill button:hover {
+            color: #BF3143;
+        }
+        
+        .interest-pill button svg {
+            width: 14px;
+            height: 14px;
+        }
+        
+        .interests-input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .interests-input-wrapper .form-input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .add-interest-btn {
+            background: white;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        
+        .add-interest-btn:hover:not(:disabled) {
+            background: #F9FAFB;
+            border-color: #BF3143;
+        }
+        
+        .add-interest-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .add-interest-btn svg {
+            color: #6B7280;
+        }
+        
+        .btn-save {
+            width: 100%;
+            margin-top: 24px;
+            position: relative;
+        }
+        
+        .btn-save:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-save.saved {
+            background: #10B981;
+        }
+        
         /* Languages Card */
         .language-row {
             display: grid;
@@ -679,6 +779,25 @@
                         <label for="bio" class="form-label">Bio</label>
                         <textarea id="bio" class="form-textarea" aria-label="Your bio">Mom of two, love learning languages and connecting with people around the world. Interested in AI, cooking, and parenting.</textarea>
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="interests-input" class="form-label">Interests</label>
+                        <div class="interests-pills" id="interests-pills"></div>
+                        <div class="interests-input-wrapper">
+                            <input type="text" id="interests-input" class="form-input" placeholder="Add an interest (max 3)" aria-label="Add interest" maxlength="30">
+                            <button type="button" class="add-interest-btn" id="add-interest-btn" aria-label="Add interest">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="form-hint" id="interests-hint"></p>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary btn-save" id="save-profile-btn" disabled>
+                        Save Changes
+                    </button>
                 </div>
                 
                 <!-- Languages & Levels Card -->
@@ -757,19 +876,6 @@
                             <div class="action-content">
                                 <div class="action-title">Start Practice Session</div>
                                 <div class="action-description">Connect with a language partner now</div>
-                            </div>
-                        </a>
-                        
-                        <a href="profileold.html" class="action-item">
-                            <div class="action-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
-                                </svg>
-                            </div>
-                            <div class="action-content">
-                                <div class="action-title">Edit Profile</div>
-                                <div class="action-description">Update your information and photo</div>
                             </div>
                         </a>
                         
@@ -882,6 +988,8 @@
         // Initialize dashboard
         let userId = null;
         let userEmail = null;
+        let interests = [];
+        let hasUnsavedChanges = false;
         
         // Get user ID from URL path
         function init() {
@@ -993,10 +1101,19 @@
                             defaultAvatar.style.display = 'none';
                         }
                     }
+                    
+                    if (profile.interests && Array.isArray(profile.interests)) {
+                        interests = profile.interests;
+                        renderInterests();
+                    }
                 } catch (error) {
                     console.error('Error loading profile data:', error);
                 }
             }
+            
+            // Reset unsaved changes state
+            hasUnsavedChanges = false;
+            updateSaveButton();
         }
         
         // Photo preview
@@ -1025,16 +1142,164 @@
             const nameInput = document.getElementById('name');
             const locationInput = document.getElementById('location');
             const bioTextarea = document.getElementById('bio');
+            const saveBtn = document.getElementById('save-profile-btn');
+            
+            // Mark as changed when any field is edited
+            function markAsChanged() {
+                hasUnsavedChanges = true;
+                updateSaveButton();
+            }
             
             if (nameInput) {
-                nameInput.addEventListener('blur', saveProfileData);
+                nameInput.addEventListener('input', markAsChanged);
             }
             if (locationInput) {
-                locationInput.addEventListener('blur', saveProfileData);
+                locationInput.addEventListener('input', markAsChanged);
             }
             if (bioTextarea) {
-                bioTextarea.addEventListener('blur', saveProfileData);
+                bioTextarea.addEventListener('input', markAsChanged);
             }
+            
+            // Setup save button
+            if (saveBtn) {
+                saveBtn.addEventListener('click', handleSaveProfile);
+            }
+            
+            // Setup interests functionality
+            setupInterests();
+        }
+        
+        // Setup interests add/remove
+        function setupInterests() {
+            const interestsInput = document.getElementById('interests-input');
+            const addBtn = document.getElementById('add-interest-btn');
+            
+            if (interestsInput) {
+                // Add on Enter key
+                interestsInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addInterest();
+                    }
+                });
+            }
+            
+            if (addBtn) {
+                addBtn.addEventListener('click', addInterest);
+            }
+            
+            updateInterestsUI();
+        }
+        
+        // Add new interest
+        function addInterest() {
+            const input = document.getElementById('interests-input');
+            const value = input.value.trim();
+            
+            if (!value) return;
+            
+            if (interests.length >= 3) {
+                return; // Already at max
+            }
+            
+            if (!interests.includes(value)) {
+                interests.push(value);
+                renderInterests();
+                hasUnsavedChanges = true;
+                updateSaveButton();
+            }
+            
+            input.value = '';
+            updateInterestsUI();
+        }
+        
+        // Remove interest
+        function removeInterest(index) {
+            interests.splice(index, 1);
+            renderInterests();
+            hasUnsavedChanges = true;
+            updateSaveButton();
+            updateInterestsUI();
+        }
+        
+        // Render interests pills
+        function renderInterests() {
+            const container = document.getElementById('interests-pills');
+            if (!container) return;
+            
+            container.innerHTML = interests.map((interest, index) => `
+                <div class="interest-pill">
+                    ${interest}
+                    <button type="button" onclick="removeInterest(${index})" aria-label="Remove ${interest}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        // Update interests UI state
+        function updateInterestsUI() {
+            const input = document.getElementById('interests-input');
+            const addBtn = document.getElementById('add-interest-btn');
+            const hint = document.getElementById('interests-hint');
+            
+            const atMax = interests.length >= 3;
+            
+            if (input) {
+                input.disabled = atMax;
+                input.placeholder = atMax ? 'Maximum 3 interests' : 'Add an interest (max 3)';
+            }
+            
+            if (addBtn) {
+                addBtn.disabled = atMax;
+            }
+            
+            if (hint) {
+                if (atMax) {
+                    hint.textContent = 'Maximum 3 interests';
+                    hint.style.color = '#6B7280';
+                } else {
+                    hint.textContent = '';
+                }
+            }
+        }
+        
+        // Update save button state
+        function updateSaveButton() {
+            const saveBtn = document.getElementById('save-profile-btn');
+            if (!saveBtn) return;
+            
+            saveBtn.disabled = !hasUnsavedChanges;
+        }
+        
+        // Handle save profile
+        function handleSaveProfile() {
+            const saveBtn = document.getElementById('save-profile-btn');
+            if (!saveBtn || !hasUnsavedChanges) return;
+            
+            // Validate interests count
+            if (interests.length > 3) {
+                alert('You can only have up to 3 interests.');
+                return;
+            }
+            
+            // Save to localStorage
+            saveProfileData();
+            
+            // Show success state
+            hasUnsavedChanges = false;
+            saveBtn.classList.add('saved');
+            saveBtn.textContent = 'Saved ✓';
+            saveBtn.disabled = true;
+            
+            // Revert after 2 seconds
+            setTimeout(() => {
+                saveBtn.classList.remove('saved');
+                saveBtn.textContent = 'Save Changes';
+            }, 2000);
         }
         
         // Save profile data to localStorage
@@ -1046,7 +1311,8 @@
                 name: document.getElementById('name')?.value || '',
                 location: document.getElementById('location')?.value || '',
                 bio: document.getElementById('bio')?.value || '',
-                photoUrl: document.getElementById('profile-preview')?.src || null
+                photoUrl: document.getElementById('profile-preview')?.src || null,
+                interests: interests
             };
             
             localStorage.setItem(profileKey, JSON.stringify(profile));
