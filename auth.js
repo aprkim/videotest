@@ -41,16 +41,6 @@ function init() {
     // Setup event listeners
     setupEventListeners();
 
-    // Check if user is already signed in (wait for Firebase to initialize)
-    setTimeout(() => {
-        firebaseService.onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in, redirect to app
-                window.location.href = 'app.html';
-            }
-        });
-    }, 100);
-
     // Setup map dots
     setupMapDots();
 }
