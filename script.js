@@ -287,6 +287,7 @@ function startVideoSession(sessionId) {
         const levelDurations = {
             'Basic': 3,
             'Intermediate': 15,
+            'Advanced': 30,
             'Professional': 30,
             'Native': 30
         };

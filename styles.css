@@ -454,16 +454,17 @@ body {
 
 .level-btn {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-    padding: 0 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 16px 20px;
     border-radius: 12px;
     background: white;
     border: 1px solid #DDDDDD;
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: inherit;
+    text-align: left;
 }
 
 .level-btn:hover {
@@ -503,22 +504,31 @@ body {
     color: #A1A1A6;
 }
 
-.level-info {
+.level-header {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
 }
 
 .level-name {
     font-size: 16px;
-    font-weight: 500;
-    color: #333;
-    margin-bottom: 2px;
+    font-weight: 600;
+    color: #1A1A1A;
 }
 
 .level-duration {
+    font-size: 14px;
+    color: #666;
+    font-weight: 400;
+}
+
+.level-description {
     font-size: 13px;
-    color: #999;
+    color: #8E8E93;
+    font-style: italic;
+    line-height: 1.4;
 }
 
 .level-badge {
