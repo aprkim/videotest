@@ -1010,23 +1010,9 @@ function showMatchingScreen(language, level) {
     const cancelBtn = document.getElementById('cancel-matching');
     cancelBtn.onclick = () => {
         console.log('Matching cancelled by user');
-        
-        // Hide matching screen
         matchingScreen.classList.add('hidden');
-        
-        // Hide video chat (in case it was shown prematurely)
-        const videoChat = document.getElementById('video-chat');
-        if (videoChat) {
-            videoChat.classList.add('hidden');
-        }
-        
-        // Show map and card
         document.querySelector('.map-container').style.display = 'block';
         document.querySelector('.center-container').style.display = 'flex';
-        
-        // Reset URL to remove session parameter
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, '', cleanUrl);
     };
     
     console.log('Matching screen shown, waiting 1 minute...');
