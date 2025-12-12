@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Tabbi Mate</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #ffffff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        header {
+            margin-bottom: 48px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            text-decoration: none;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .tabbi-red {
+            color: #BF3143;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #6B7280;
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 24px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #BF3143;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+        }
+
+        .page-title svg {
+            color: #BF3143;
+        }
+
+        .hero-tagline {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+            text-align: center;
+            margin-bottom: 48px;
+            line-height: 1.4;
+        }
+
+        .intro-section {
+            background: #F9FAFB;
+            border-left: 4px solid #BF3143;
+            padding: 32px;
+            margin-bottom: 48px;
+            border-radius: 8px;
+        }
+
+        .intro-section p {
+            font-size: 18px;
+            color: #1a1a1a;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .intro-section p:last-child {
+            margin-bottom: 0;
+        }
+
+        .intro-section strong {
+            color: #BF3143;
+            font-weight: 600;
+        }
+
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .section-header svg {
+            flex-shrink: 0;
+            color: #BF3143;
+        }
+
+        .section-header h2 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .section-content p {
+            font-size: 16px;
+            color: #4B5563;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .section-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .values-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .value-item {
+            font-size: 16px;
+            color: #1a1a1a;
+            padding: 20px 24px;
+            background: #F9FAFB;
+            border-radius: 8px;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #BF3143 0%, #a52938 100%);
+            color: white;
+            padding: 48px 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .cta-section h2 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .cta-section p {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 32px;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: white;
+            color: #BF3143;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        footer {
+            margin-top: 60px;
+            padding-top: 24px;
+            border-top: 1px solid #E5E7EB;
+            text-align: center;
+            color: #6B7280;
+            font-size: 14px;
+        }
+
+        footer a {
+            color: #6B7280;
+            text-decoration: none;
+            margin: 0 12px;
+        }
+
+        footer a:hover {
+            color: #BF3143;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+
+            .page-title {
+                font-size: 28px;
+            }
+
+            .hero-tagline {
+                font-size: 20px;
+            }
+
+            .section-header h2 {
+                font-size: 24px;
+            }
+
+            .intro-section,
+            .cta-section {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Home
+        </a>
+
+        <header>
+            <a href="index.html" class="logo">
+                <span class="tabbi-red">Tabbi</span> Mate
+            </a>
+            <h1 class="page-title">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="2" y1="12" x2="22" y2="12"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                About TabbiMate
+            </h1>
+        </header>
+
+        <div class="hero-tagline">
+            Live talk. Real mates. Anytime.
+        </div>
+
+        <div class="intro-section">
+            <p>TabbiMate exists for one simple reason: <strong>language is meant to be spoken — with real people.</strong></p>
+            <p>Many learners study for years but still hesitate to speak. We believe confidence grows through real conversations, not just lessons.</p>
+            <p>TabbiMate connects people around the world for live, friendly language chats, supported by AI that helps when you get stuck and helps you learn afterward.</p>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <h2>Real People, Supported by AI</h2>
+            </div>
+            <div class="section-content">
+                <p>You talk with real language mates — learners and native speakers alike.</p>
+                <p>Our AI stays in the background, helping you continue the conversation, spot mistakes, and improve naturally.</p>
+                <div class="values-list">
+                    <div class="value-item">No scripts.</div>
+                    <div class="value-item">No pressure.</div>
+                    <div class="value-item">Just real conversation.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="6"/>
+                    <circle cx="12" cy="12" r="2"/>
+                </svg>
+                <h2>Our Mission</h2>
+            </div>
+            <div class="section-content">
+                <p>To make speaking a new language feel natural, human, and accessible — anytime, anywhere.</p>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <h2>Ready to start speaking?</h2>
+            <p>Join thousands of language learners having real conversations every day.</p>
+            <a href="app.html" class="cta-btn">Try TabbiMate</a>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 Tabbi AI. All rights reserved.</p>
+            <div>
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="privacy.html">Privacy</a>
+                <a href="terms.html">Terms</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
+
