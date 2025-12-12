@@ -87,7 +87,7 @@ function init() {
     const urlUserId = urlParams.get('id');
     
     if (urlUserId) {
-        // User ID from URL (new or returning user)
+        // User ID from URL query param (e.g., ?id=12345678)
         profile.userId = urlUserId;
         localStorage.setItem('tabbimate_user_id', urlUserId);
         
@@ -100,11 +100,14 @@ function init() {
             loadProfile();
         }
         
-        // Update URL to clean format without showing query param
-        const cleanUrl = `${window.location.pathname}/${urlUserId}`;
+        // Update URL to clean format: /profile/12345678
+        const basePath = window.location.pathname.includes('tabbimate') 
+            ? '/tabbimate/profile' 
+            : '/profile';
+        const cleanUrl = `${basePath}/${urlUserId}`;
         window.history.replaceState({}, '', cleanUrl);
     } else {
-        // Check if URL has ID in path format (e.g., /profile.html/12345678)
+        // Check if URL has ID in path format (e.g., /profile/12345678)
         const pathParts = window.location.pathname.split('/');
         const lastPart = pathParts[pathParts.length - 1];
         
@@ -119,15 +122,15 @@ function init() {
             if (storedUserId) {
                 profile.userId = storedUserId;
                 loadProfile();
-                // Redirect to URL with ID
-                window.location.href = `profile.html?id=${storedUserId}`;
+                // Redirect to clean URL with ID
+                window.location.href = `profile/${storedUserId}`;
             } else {
-                // Create new user ID
+                // Create new user ID and redirect
                 const newUserId = Math.floor(10000000 + Math.random() * 90000000).toString();
                 profile.userId = newUserId;
                 localStorage.setItem('tabbimate_user_id', newUserId);
-                // Redirect to URL with ID
-                window.location.href = `profile.html?id=${newUserId}`;
+                // Redirect to clean URL with ID
+                window.location.href = `profile/${newUserId}`;
             }
         }
     }

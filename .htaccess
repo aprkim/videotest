@@ -1,0 +1,8 @@
+RewriteEngine On
+
+# Redirect /profile/[8-digit-id] to profile.html?id=[8-digit-id]
+RewriteRule ^profile/([0-9]{8})$ profile.html?id=$1 [L,QSA]
+
+# Redirect /app to app.html
+RewriteRule ^app$ app.html [L]
+

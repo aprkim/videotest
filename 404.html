@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <script>
+        // Handle client-side routing for clean URLs
+        (function() {
+            const path = window.location.pathname;
+            
+            // Check if URL matches /profile/[8-digit-id]
+            const profileMatch = path.match(/^\/tabbimate\/profile\/(\d{8})$/);
+            if (profileMatch) {
+                const userId = profileMatch[1];
+                window.location.replace(`/tabbimate/profile.html?id=${userId}`);
+                return;
+            }
+            
+            // Check if URL matches /profile/[8-digit-id] (without /tabbimate prefix for local)
+            const profileMatchLocal = path.match(/^\/profile\/(\d{8})$/);
+            if (profileMatchLocal) {
+                const userId = profileMatchLocal[1];
+                window.location.replace(`/profile.html?id=${userId}`);
+                return;
+            }
+            
+            // Otherwise redirect to home
+            window.location.replace('/tabbimate/');
+        })();
+    </script>
+</head>
+<body>
+    <p>Redirecting...</p>
+</body>
+</html>
+
