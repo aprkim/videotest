@@ -240,16 +240,25 @@ function formatLanguages(languagesObj) {
 
 // Initialize the page
 function init() {
-    // Check if URL contains a session ID pattern: /session/1234567890
-    const urlPath = window.location.pathname;
-    const sessionIdMatch = urlPath.match(/\/session\/(\d{10})$/);
+    // Check if URL contains a session parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session');
     
-    if (sessionIdMatch) {
-        const sessionId = sessionIdMatch[1];
-        console.log('Loading session from URL:', sessionId);
-        // If there's a session ID in URL, the session is active
-        // The session data should already be in sessionData global
-        // This handles page refreshes during active sessions
+    if (sessionId) {
+        console.log('Starting session:', sessionId);
+        // Hide language selection card
+        const mainCard = document.getElementById('main-card');
+        if (mainCard) {
+            mainCard.style.display = 'none';
+        }
+        
+        // Show video chat interface
+        const videoChat = document.getElementById('video-chat');
+        if (videoChat) {
+            videoChat.classList.remove('hidden');
+            // Start the video chat session
+            startVideoSession(sessionId);
+        }
     } else {
         // Normal home page initialization
         renderDots();
@@ -259,6 +268,29 @@ function init() {
         setupCardDrag();
         setupLanguageRequest();
     }
+}
+
+// Start video chat session
+function startVideoSession(sessionId) {
+    console.log('Video session started:', sessionId);
+    
+    // Load user data from localStorage
+    const userData = localStorage.getItem('tabbimate_current_user');
+    if (userData) {
+        const user = JSON.parse(userData);
+        console.log('User data loaded:', user);
+    }
+    
+    // Initialize video controls and UI
+    setupVideoControls();
+    startTimer(3 * 60); // 3 minutes for demo
+}
+
+// Setup video controls
+function setupVideoControls() {
+    // Video controls are already set up in the HTML
+    // Add any additional initialization here if needed
+    console.log('Video controls initialized');
 }
 
 // Store dot and tooltip references for filtering
