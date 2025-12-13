@@ -1331,6 +1331,32 @@
         
         // Handle start call
         function handleStartCall() {
+            // Save current profile data before starting call
+            saveProfileDataSync();
+            
+            // Redirect to app.html
+            window.location.href = 'app.html';
+        }
+        
+        // Save profile data synchronously (for navigation)
+        function saveProfileDataSync() {
+            if (!userId) return;
+            
+            const profileKey = `tabbimate_profile_${userId}`;
+            const profile = {
+                name: document.getElementById('name')?.value || '',
+                location: document.getElementById('location')?.value || '',
+                bio: document.getElementById('bio')?.value || '',
+                photoUrl: document.getElementById('profile-preview')?.src || null,
+                interests: interests
+            };
+            
+            localStorage.setItem(profileKey, JSON.stringify(profile));
+            console.log('Profile data saved before navigation');
+        }
+        
+        // Handle start call
+        function handleStartCall() {
             // Make sure user data is available
             if (!userId) {
                 alert('Please log in first');
