@@ -1331,6 +1331,8 @@
         
         // Handle start call
         function handleStartCall() {
+            console.log('=== Starting call from dashboard ===');
+            
             // Save current profile data before starting call
             saveProfileDataSync();
             
@@ -1361,12 +1363,19 @@
             
             // Generate a session ID
             const sessionId = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+            console.log('Generated session ID:', sessionId);
             
-            // Redirect to session page
+            // Build the redirect URL
             const basePath = window.location.pathname.includes('tabbimate') 
-                ? '/tabbimate/session' 
-                : '/session';
-            window.location.href = `${window.location.origin}${basePath}/${sessionId}`;
+                ? '/tabbimate/app.html' 
+                : '/app.html';
+            const redirectUrl = `${basePath}?session=${sessionId}`;
+            
+            console.log('Redirecting to:', redirectUrl);
+            console.log('Full URL:', window.location.origin + redirectUrl);
+            
+            // Redirect directly to app.html with session parameter
+            window.location.href = redirectUrl;
         }
         
         // Save profile data synchronously (for navigation)
