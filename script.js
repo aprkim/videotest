@@ -2448,6 +2448,9 @@ function showSessionSummary() {
     const endTime = new Date();
     const actualDuration = Math.max(1, Math.round((endTime - sessionData.startTime) / 60000)); // minutes, minimum 1
     
+    // Update user statistics
+    updateUserStatsInLocalStorage(actualDuration);
+    
     // Populate summary data
     document.getElementById('summary-language').textContent = sessionData.language || 'English';
     document.getElementById('summary-level').textContent = sessionData.level || 'Basic';
@@ -2913,6 +2916,87 @@ function setupTutorialButton() {
     if (tutorialCompleteBtn) {
         tutorialCompleteBtn.addEventListener('click', showJoinPrompt);
     }
+}
+
+// Update user statistics in localStorage after a session
+function updateUserStatsInLocalStorage(sessionMinutes) {
+    // Get the current user data to find userId
+    const userData = localStorage.getItem('tabbimate_current_user');
+    if (!userData) {
+        console.log('No user data found, cannot update stats');
+        return;
+    }
+    
+    let userId;
+    try {
+        const user = JSON.parse(userData);
+        userId = user.userId;
+    } catch (error) {
+        console.error('Error parsing user data:', error);
+        return;
+    }
+    
+    if (!userId) {
+        console.log('No userId found, cannot update stats');
+        return;
+    }
+    
+    const statsKey = `tabbimate_stats_${userId}`;
+    const savedStats = localStorage.getItem(statsKey);
+    
+    let stats = {
+        totalSessions: 0,
+        totalMinutes: 0,
+        dayStreak: 0,
+        lastSessionDate: null,
+        sessionDates: []
+    };
+    
+    if (savedStats) {
+        try {
+            stats = JSON.parse(savedStats);
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+    
+    // Update session count and minutes
+    stats.totalSessions += 1;
+    stats.totalMinutes += sessionMinutes;
+    
+    // Update day streak
+    const today = new Date().toDateString();
+    if (!stats.sessionDates.includes(today)) {
+        stats.sessionDates.push(today);
+    }
+    
+    // Calculate day streak
+    if (stats.lastSessionDate) {
+        const lastDate = new Date(stats.lastSessionDate);
+        const currentDate = new Date();
+        const diffTime = currentDate - lastDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+            // Consecutive day
+            stats.dayStreak += 1;
+        } else if (diffDays === 0) {
+            // Same day, don't increment
+        } else {
+            // Streak broken, reset to 1
+            stats.dayStreak = 1;
+        }
+    } else {
+        // First session ever
+        stats.dayStreak = 1;
+    }
+    
+    stats.lastSessionDate = today;
+    
+    // Save updated stats
+    localStorage.setItem(statsKey, JSON.stringify(stats));
+    
+    console.log('Stats updated for user', userId, ':', stats);
 }
 
 // Setup sign out button
