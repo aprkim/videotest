@@ -264,7 +264,7 @@ function init() {
         startVideoSession(sessionId);
     } else {
         // Check if this is a signed-in user with languages
-        const userData = localStorage.getItem('tabbimate_current_user');
+        const userData = localStorage.getItem('videotest_current_user');
         if (userData) {
             try {
                 const user = JSON.parse(userData);
@@ -419,7 +419,7 @@ function startVideoSession(sessionId) {
     
     // Set the matched user (for now, we'll randomly pick one or use from session storage)
     // In the future, this would come from the actual matching algorithm
-    const storedMatchedUser = localStorage.getItem('tabbimate_matched_user');
+    const storedMatchedUser = localStorage.getItem('videotest_matched_user');
     if (storedMatchedUser) {
         currentMatchedUser = JSON.parse(storedMatchedUser);
         console.log('Matched user loaded from storage:', currentMatchedUser.name);
@@ -699,7 +699,7 @@ function setupLevelButtons() {
                 
                 // Get user's interests from localStorage profile
                 const userId = firebase.auth().currentUser.uid;
-                const profileKey = `tabbimate_profile_${userId}`;
+                const profileKey = `videotest_profile_${userId}`;
                 const savedProfile = localStorage.getItem(profileKey);
                 let userInterests = [];
                 
@@ -715,7 +715,7 @@ function setupLevelButtons() {
                 }
                 
                 // Store user data for the session
-                localStorage.setItem('tabbimate_current_user', JSON.stringify({
+                localStorage.setItem('videotest_current_user', JSON.stringify({
                     userId: userId,
                     language: state.selectedLanguage,
                     level: level,
@@ -1191,16 +1191,12 @@ function showMatchingScreen(language, level) {
             // Signed-in user - redirect to their dashboard
             const userId = firebase.auth().currentUser.uid;
             console.log('User ID:', userId);
-            const dashboardUrl = window.location.pathname.includes('tabbimate')
-                ? `${window.location.origin}/tabbimate/dashboard/${userId}`
-                : `${window.location.origin}/dashboard/${userId}`;
+            const dashboardUrl = `${window.location.origin}/dashboard.html`;
             console.log('Signed-in user, redirecting to dashboard:', dashboardUrl);
             window.location.href = dashboardUrl;
         } else {
             // Guest user - redirect to index page
-            const indexUrl = window.location.pathname.includes('tabbimate') 
-                ? `${window.location.origin}/tabbimate/index.html`
-                : `${window.location.origin}/index.html`;
+            const indexUrl = `${window.location.origin}/index.html`;
             console.log('Guest user, redirecting to index:', indexUrl);
             window.location.href = indexUrl;
         }
@@ -2394,7 +2390,7 @@ function setupCardDrag() {
 // Favorites system - stores user favorites in localStorage
 const FavoritesManager = {
     getFavorites() {
-        const favorites = localStorage.getItem('tabbimate_favorites');
+        const favorites = localStorage.getItem('videotest_favorites');
         return favorites ? JSON.parse(favorites) : {};
     },
     
@@ -2409,14 +2405,14 @@ const FavoritesManager = {
             addedDate: new Date().toISOString(),
             sessionCount: favorites[username] ? favorites[username].sessionCount + 1 : 1
         };
-        localStorage.setItem('tabbimate_favorites', JSON.stringify(favorites));
+        localStorage.setItem('videotest_favorites', JSON.stringify(favorites));
         return favorites[username];
     },
     
     removeFavorite(username) {
         const favorites = this.getFavorites();
         delete favorites[username];
-        localStorage.setItem('tabbimate_favorites', JSON.stringify(favorites));
+        localStorage.setItem('videotest_favorites', JSON.stringify(favorites));
     },
     
     getFavoriteData(username) {
@@ -2727,12 +2723,12 @@ const LanguageRequestManager = {
             status: 'pending'
         };
         requests.push(newRequest);
-        localStorage.setItem('tabbimate_language_requests', JSON.stringify(requests));
+        localStorage.setItem('videotest_language_requests', JSON.stringify(requests));
         return newRequest;
     },
     
     getRequests() {
-        const requests = localStorage.getItem('tabbimate_language_requests');
+        const requests = localStorage.getItem('videotest_language_requests');
         return requests ? JSON.parse(requests) : [];
     },
     
@@ -3243,7 +3239,7 @@ function setupSessionSummary() {
     if (doneBtn) {
         doneBtn.addEventListener('click', () => {
             // Get user ID from localStorage
-            const userId = localStorage.getItem('tabbimate_user_id');
+            const userId = localStorage.getItem('videotest_user_id');
             
             if (userId) {
                 // Redirect to profile page
@@ -3419,7 +3415,7 @@ function setupTutorialButton() {
     if (tutorialCompleteBtn) {
         tutorialCompleteBtn.addEventListener('click', () => {
             // Check if user has selected interests (guest flow)
-            const userData = localStorage.getItem('tabbimate_current_user');
+            const userData = localStorage.getItem('videotest_current_user');
             
             if (userData) {
                 // Guest user has selected interests - proceed to matching

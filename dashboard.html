@@ -946,7 +946,7 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <a href="/tabbimate/index.html" class="logo">
+            <a href="index.html" class="logo">
                 <div class="logo-text">
                     <span class="tabbi">Tabbi</span><span class="mate"> Mate</span>
                 </div>
@@ -1239,12 +1239,10 @@
             
             if (urlUserId) {
                 userId = urlUserId;
-                localStorage.setItem('tabbimate_user_id', userId);
+                localStorage.setItem('videotest_user_id', userId);
                 
                 // Clean up URL to remove query parameter
-                const basePath = window.location.pathname.includes('tabbimate') 
-                    ? '/tabbimate/dashboard' 
-                    : '/dashboard';
+                const basePath = '/dashboard';
                 const cleanUrl = `${basePath}/${userId}`;
                 window.history.replaceState({}, '', cleanUrl);
             } else {
@@ -1255,7 +1253,7 @@
                 // If last part looks like a user ID (not .html), use it
                 if (lastPart && !lastPart.includes('.html') && lastPart !== 'dashboard') {
                     userId = lastPart;
-                    localStorage.setItem('tabbimate_user_id', userId);
+                    localStorage.setItem('videotest_user_id', userId);
                     
                     // Clean up URL to remove the ID from the visible path
                     const basePath = window.location.pathname.includes('tabbimate') 
@@ -1265,12 +1263,12 @@
                     window.history.replaceState({}, '', cleanUrl);
                 } else {
                     // Try to get from localStorage
-                    userId = localStorage.getItem('tabbimate_user_id');
+                    userId = localStorage.getItem('videotest_user_id');
                 }
             }
             
             // Get user email from localStorage
-            userEmail = localStorage.getItem('tabbimate_user_email');
+            userEmail = localStorage.getItem('videotest_user_email');
             
             // If no user ID, redirect to login
             if (!userId) {
@@ -1312,7 +1310,7 @@
             }
             
             // Load profile data from localStorage if exists
-            const profileKey = `tabbimate_profile_${userId}`;
+            const profileKey = `videotest_profile_${userId}`;
             const savedProfile = localStorage.getItem(profileKey);
             
             if (savedProfile) {
@@ -1373,7 +1371,7 @@
         
         // Load user statistics
         function loadUserStats() {
-            const statsKey = `tabbimate_stats_${userId}`;
+            const statsKey = `videotest_stats_${userId}`;
             const savedStats = localStorage.getItem(statsKey);
             
             let stats = {
@@ -1403,7 +1401,7 @@
         
         // Update user statistics after a session
         function updateUserStats(sessionMinutes) {
-            const statsKey = `tabbimate_stats_${userId}`;
+            const statsKey = `videotest_stats_${userId}`;
             const savedStats = localStorage.getItem(statsKey);
             
             let stats = {
@@ -1896,7 +1894,7 @@
         function saveProfileData() {
             if (!userId) return;
             
-            const profileKey = `tabbimate_profile_${userId}`;
+            const profileKey = `videotest_profile_${userId}`;
             const profile = {
                 name: document.getElementById('name')?.value || '',
                 location: document.getElementById('location')?.value || '',
@@ -1940,7 +1938,7 @@
             const photoURL = document.getElementById('profile-preview')?.src || '';
             
             // Store user data for the session (will be used by app.html)
-            localStorage.setItem('tabbimate_current_user', JSON.stringify({
+            localStorage.setItem('videotest_current_user', JSON.stringify({
                 userId: userId,
                 name: name,
                 location: location,
@@ -1957,9 +1955,7 @@
             // Redirect to app.html
             // If user has only 1 language: skip language selection, go straight to matching
             // If user has 2+ languages: show language selection first
-            const basePath = window.location.pathname.includes('tabbimate') 
-                ? '/tabbimate/app.html' 
-                : 'app.html';
+            const basePath = 'app.html';
             
             console.log('Redirecting to app.html');
             window.location.href = basePath;
@@ -1969,7 +1965,7 @@
         function saveProfileDataSync() {
             if (!userId) return;
             
-            const profileKey = `tabbimate_profile_${userId}`;
+            const profileKey = `videotest_profile_${userId}`;
             const profile = {
                 name: document.getElementById('name')?.value || '',
                 location: document.getElementById('location')?.value || '',
@@ -2019,7 +2015,7 @@
         
         // Helper functions for localStorage
         function getFavorites() {
-            const favorites = localStorage.getItem('tabbimate_favorites');
+            const favorites = localStorage.getItem('videotest_favorites');
             return favorites ? JSON.parse(favorites) : [];
         }
         
@@ -2027,7 +2023,7 @@
             const favorites = getFavorites();
             if (!favorites.includes(partnerId)) {
                 favorites.push(partnerId);
-                localStorage.setItem('tabbimate_favorites', JSON.stringify(favorites));
+                localStorage.setItem('videotest_favorites', JSON.stringify(favorites));
             }
         }
         

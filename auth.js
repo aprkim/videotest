@@ -122,8 +122,8 @@ async function handleSignIn(e) {
         console.log('User ID:', userId);
         
         // Store user info in localStorage
-        localStorage.setItem('tabbimate_user_id', userId);
-        localStorage.setItem('tabbimate_user_email', result.user.email);
+        localStorage.setItem('videotest_user_id', userId);
+        localStorage.setItem('videotest_user_email', result.user.email);
         
         // Redirect to dashboard
         const dashboardUrl = window.location.origin + '/dashboard.html';
@@ -203,8 +203,8 @@ async function handleGoogleSignIn() {
         console.log('User ID:', userId);
         
         // Store user info in localStorage
-        localStorage.setItem('tabbimate_user_id', userId);
-        localStorage.setItem('tabbimate_user_email', result.user.email);
+        localStorage.setItem('videotest_user_id', userId);
+        localStorage.setItem('videotest_user_email', result.user.email);
         
         // Redirect to dashboard
         const dashboardUrl = window.location.origin + '/dashboard.html';

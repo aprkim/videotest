@@ -24,11 +24,10 @@ function init() {
     
     if (urlUserId) {
         profileData.userId = urlUserId;
-        localStorage.setItem('tabbimate_user_id', urlUserId);
+        localStorage.setItem('videotest_user_id', urlUserId);
         
         // Update URL to clean format
-        const basePath = window.location.pathname.includes('tabbimate') 
-            ? '/tabbimate/profile' 
+        const basePath = '/profile' 
             : '/profile';
         const cleanUrl = `${basePath}/${urlUserId}`;
         window.history.replaceState({}, '', cleanUrl);
@@ -39,12 +38,10 @@ function init() {
         
         if (lastPart && /^\d{8}$/.test(lastPart)) {
             profileData.userId = lastPart;
-            localStorage.setItem('tabbimate_user_id', lastPart);
+            localStorage.setItem('videotest_user_id', lastPart);
         } else {
             // No valid ID, redirect to home
-            window.location.href = window.location.pathname.includes('tabbimate') 
-                ? '/tabbimate/' 
-                : '/';
+            window.location.href = '/';
             return;
         }
     }
@@ -62,18 +59,18 @@ function init() {
 // Load profile data from localStorage
 function loadProfileData() {
     // Check for new user onboarding data
-    const newUserData = localStorage.getItem('tabbimate_new_user_data');
+    const newUserData = localStorage.getItem('videotest_new_user_data');
     if (newUserData) {
         try {
             const data = JSON.parse(newUserData);
             profileData = { ...profileData, ...data };
-            localStorage.removeItem('tabbimate_new_user_data');
+            localStorage.removeItem('videotest_new_user_data');
         } catch (error) {
             console.error('Error loading new user data:', error);
         }
     } else {
         // Load existing profile
-        const storageKey = `tabbimate_profile_${profileData.userId}`;
+        const storageKey = `videotest_profile_${profileData.userId}`;
         const stored = localStorage.getItem(storageKey);
         if (stored) {
             try {
@@ -143,7 +140,7 @@ function handleStartVideo() {
     localStorage.setItem(storageKey, JSON.stringify(profileData));
     
     // Store user data for the session
-    localStorage.setItem('tabbimate_current_user', JSON.stringify({
+    localStorage.setItem('videotest_current_user', JSON.stringify({
         userId: profileData.userId,
         language: profileData.language,
         level: profileData.level,
@@ -158,14 +155,13 @@ function handleStartVideo() {
         { name: "Kenji", languages: { english: "Advanced", japanese: "Native" }, interests: ["Gaming", "Anime", "Tech"] }
     ];
     const randomMatchedUser = mockUsers[Math.floor(Math.random() * mockUsers.length)];
-    localStorage.setItem('tabbimate_matched_user', JSON.stringify(randomMatchedUser));
+    localStorage.setItem('videotest_matched_user', JSON.stringify(randomMatchedUser));
     
     // Generate a session ID
     const sessionId = Math.floor(1000000000 + Math.random() * 9000000000).toString();
     
     // Redirect to session page with session ID
-    const basePath = window.location.pathname.includes('tabbimate') 
-        ? '/tabbimate/session' 
+    const basePath = '/session' 
         : '/session';
     window.location.href = `${basePath}/${sessionId}`;
 }
