@@ -385,3 +385,154 @@ body {
         font-size: 16px;
     }
 }
+
+/* Video Connection Section */
+.video-connection-section {
+    margin: 24px 0;
+    padding: 20px;
+    background: #f7f7f8;
+    border-radius: 12px;
+    border: 1px solid #e5e5e7;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111214;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.video-status {
+    margin-bottom: 16px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.status-badge.status-disconnected {
+    background: #fee;
+    color: #c33;
+}
+
+.status-badge.status-connected {
+    background: #e6f7ed;
+    color: #1e7e34;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.status-disconnected .status-dot {
+    background: #ef4444;
+}
+
+.status-connected .status-dot {
+    background: #28a745;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.status-description {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.video-account-info {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.video-account-info.hidden {
+    display: none;
+}
+
+.account-detail {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 14px;
+}
+
+.detail-label {
+    color: #666;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #111214;
+}
+
+.detail-value.status-active {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.btn-secondary {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-secondary:hover {
+    background: #5568d3;
+    transform: translateY(-1px);
+}
+
+.btn-tertiary {
+    background: transparent;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+}
+
+.btn-tertiary:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-tertiary.hidden {
+    display: none;
+}
