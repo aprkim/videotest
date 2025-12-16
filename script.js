@@ -2546,7 +2546,7 @@ function showMakedoLoginModal() {
         const handleSubmit = async (e) => {
             if (e) e.preventDefault();
             
-            const email = emailInput.value.trim();
+            const email = emailInput.value.trim().toLowerCase();
             const password = passwordInput.value;
             
             if (!email || !password) {
@@ -2575,10 +2575,11 @@ function showMakedoLoginModal() {
                 }
                 
                 // Attempt login through Makedo/VibeChat
-                console.log('Attempting Makedo login...');
+                console.log('Attempting Makedo login with email:', email);
                 const result = await Fetch.login({ email, password });
                 
                 console.log('Login result:', result);
+                console.log('Result status:', result.status);
                 
                 if (result.status === 'loggedIn') {
                     // Success!
