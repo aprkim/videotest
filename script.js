@@ -250,19 +250,8 @@ function init() {
     if (sessionId) {
         console.log('Starting session:', sessionId);
         
-        // Hide the entire center container with the card
-        const centerContainer = document.querySelector('.center-container');
-        if (centerContainer) {
-            centerContainer.style.display = 'none';
-        }
-        
-        // Show video chat interface
-        const videoChat = document.getElementById('video-chat');
-        if (videoChat) {
-            videoChat.classList.remove('hidden');
-            // Start the video chat session
-            startVideoSession(sessionId);
-        }
+        // Start the video chat session (which will show matching screen first)
+        startVideoSession(sessionId);
     } else {
         // Normal home page initialization
         renderDots();
