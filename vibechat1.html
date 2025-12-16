@@ -1,0 +1,512 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeChat - Simple Video Chat</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src='https://proto2.makedo.com:8883/ux/scripts/protocol.js'></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Login Screen */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .login-box {
+            background: #2a2a2a;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .login-box h1 {
+            margin-bottom: 30px;
+            text-align: center;
+            color: #fff;
+            font-size: 28px;
+        }
+        
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background-color: #333;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .login-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .login-box button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .login-box button:active {
+            transform: translateY(0);
+        }
+        
+        /* Main App Layout */
+        .app-container {
+            display: none; /* Hidden until logged in */
+            height: 100vh;
+            flex-direction: column;
+        }
+        
+        .app-container.visible {
+            display: flex;
+        }
+        
+        /* Header */
+        .header {
+            background-color: #2a2a2a;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #444;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #667eea;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info {
+            font-size: 14px;
+            color: #aaa;
+        }
+        
+        .logout-btn {
+            padding: 8px 16px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* User List Sidebar */
+        .user-list-sidebar {
+            width: 280px;
+            background-color: #2a2a2a;
+            border-right: 2px solid #444;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-list-header {
+            padding: 15px;
+            background-color: #333;
+            border-bottom: 1px solid #444;
+            font-weight: bold;
+        }
+        
+        .user-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .user-item:hover {
+            background-color: #444;
+        }
+        
+        .user-item.selected {
+            background-color: #667eea;
+        }
+        
+        .user-item.has-invite {
+            background-color: #2d4a2e;
+            border: 2px solid #4ade80;
+            box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
+            animation: pulse-invite 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-invite {
+            0%, 100% {
+                box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(74, 222, 128, 0.7);
+            }
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+            border: 2px solid #555;
+        }
+        
+        .user-details {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .user-status {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        /* Video Area */
+        .video-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #1a1a1a;
+        }
+        
+        .video-container {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .video-box {
+            flex: 1;
+            background-color: #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #444;
+        }
+        
+        .video-box.active {
+            border-color: #667eea;
+        }
+        
+        .video-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .track-status {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            background-color: rgba(0,0,0,0.85);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 10;
+            border: 1px solid #555;
+        }
+        
+        .track-status .track-audio {
+            color: #4ade80;
+        }
+        
+        .track-status .track-audio.off {
+            color: #ef4444;
+        }
+        
+        .track-status .track-video {
+            color: #4ade80;
+        }
+        
+        .track-status .track-video.off {
+            color: #ef4444;
+        }
+        
+        .video-element {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #1a1a1a;
+        }
+        
+        .video-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            color: #666;
+            font-size: 18px;
+        }
+        
+        /* Controls */
+        .controls {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-top: 2px solid #444;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .control-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 100px;
+        }
+        
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .control-btn.audio {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .control-btn.audio.off {
+            background-color: #dc3545;
+        }
+        
+        .control-btn.video {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .control-btn.video.off {
+            background-color: #6c757d;
+        }
+        
+        .control-btn.join {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .control-btn.exit {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .control-btn:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .status-message {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background-color: #333;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .status-message.visible {
+            display: block;
+        }
+        
+        /* Scrollbar Styling */
+        .user-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .user-list::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        
+        .user-list::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+        
+        .user-list::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+    </style>
+    
+    <script>
+        // Pass server-side config to JavaScript
+        window.APP_CONFIG = {
+            loggedIn: false,
+            userEmail: "",
+            userId: ""
+        };
+    </script>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-container" id="loginContainer">
+    <div class="login-box">
+        <h1>🎥 VibeChat</h1>
+        <input type="email" id="emailInput" placeholder="Email" value="">
+        <input type="password" id="passwordInput" placeholder="Password">
+        <button id="loginBtn">Login</button>
+    </div>
+</div>
+
+<!-- Main App -->
+<div class="app-container" id="appContainer">
+    <!-- Header -->
+    <div class="header">
+        <h1>🎥 VibeChat</h1>
+        <div class="header-right">
+            <span class="user-info" id="userInfo"></span>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- User List Sidebar -->
+        <div class="user-list-sidebar">
+            <div class="user-list-header">Available Users</div>
+            <div class="user-list" id="userList">
+                <!-- Users will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Video Area -->
+        <div class="video-area">
+            <div class="video-container">
+                <!-- My Video -->
+                <div class="video-box" id="myVideoBox">
+                    <div class="video-label" id="myLabel">Me</div>
+                    <div class="track-status" id="myTrackStatus">
+                        <span class="track-audio off">🎤 OFF</span> | <span class="track-video off">📹 OFF</span>
+                    </div>
+                    <video class="video-element" id="myVideo" autoplay muted playsinline
+                           poster="/ux/data/avatars/group0/avatar0.png"></video>
+                    <div class="video-placeholder" id="myPlaceholder">Camera Off</div>
+                </div>
+                
+                <!-- Remote Video -->
+                <div class="video-box" id="remoteVideoBox">
+                    <div class="video-label" id="remoteLabel">Select a user</div>
+                    <div class="track-status" id="remoteTrackStatus">
+                        <span class="track-audio off">🎤 OFF</span> | <span class="track-video off">📹 OFF</span>
+                    </div>
+                    <video class="video-element" id="remoteVideo" autoplay playsinline
+                           poster="/ux/data/avatars/group0/avatar1.png"></video>
+                    <div class="video-placeholder" id="remotePlaceholder">Waiting for user...</div>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <button class="control-btn audio" id="audioBtn" disabled>🎤 Audio: OFF</button>
+                <button class="control-btn video" id="videoBtn" disabled>📹 Video: OFF</button>
+                <button class="control-btn join" id="joinBtn" disabled>JOIN</button>
+                <button class="control-btn exit" id="exitBtn" disabled>EXIT</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Message -->
+<div class="status-message" id="statusMessage"></div>
+
+<!-- Scripts -->
+<script type="module">
+    import VibeChat from './vibechat1_ux.js';
+    
+    // Initialize VibeChat
+    window.vibeChat = new VibeChat();
+    
+    // Show/hide login based on session
+    if (window.APP_CONFIG.loggedIn) {
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('appContainer').classList.add('visible');
+        window.vibeChat.onLoginSuccess({
+            email: window.APP_CONFIG.userEmail,
+            userId: window.APP_CONFIG.userId
+        });
+    }
+</script>
+
+</body>
+</html>
