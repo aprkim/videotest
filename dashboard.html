@@ -13,6 +13,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- VibeChat Dependencies - MUST load before dashboard script -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src='https://proto2.makedo.com:8883/ux/scripts/protocol.js'></script>
+    
     <style>
         * {
             margin: 0;
@@ -2116,6 +2120,10 @@
                     errorDiv.classList.add('hidden');
                     
                     try {
+                        // Check if Fetch module is loaded
+                        console.log('window.Fetch exists?', !!window.Fetch);
+                        console.log('window.Fetch:', window.Fetch);
+                        
                         // Initialize VibeChat if not already done
                         if (!window.vibeChat && window.VibeChat) {
                             console.log('Initializing VibeChat...');
@@ -2125,11 +2133,16 @@
                         // Use the Fetch module from the VibeChat protocol.js
                         const Fetch = window.Fetch;
                         if (!Fetch) {
+                            console.error('Fetch module not found! protocol.js may not have loaded.');
                             throw new Error('Video service not available. Please refresh the page.');
                         }
                         
+                        console.log('Fetch.login function exists?', typeof Fetch.login === 'function');
+                        
                         // Attempt login through Makedo/VibeChat
                         console.log('Attempting Makedo login with email:', email);
+                        console.log('Calling Fetch.login...');
+                        
                         const result = await Fetch.login({ email, password });
                         
                         console.log('Login result:', result);
@@ -2371,10 +2384,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- VibeChat Dependencies -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src='https://proto2.makedo.com:8883/ux/scripts/protocol.js'></script>
     
     <!-- VibeChat Module -->
     <script type="module">
