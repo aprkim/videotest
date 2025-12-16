@@ -2081,6 +2081,7 @@
         
         // Show Makedo login modal
         function showMakedoLoginModal() {
+            console.log('=== showMakedoLoginModal() called ===');
             return new Promise((resolve, reject) => {
                 const modal = document.getElementById('makedo-login-modal');
                 const emailInput = document.getElementById('makedo-email');
@@ -2091,7 +2092,15 @@
                 const loginText = document.getElementById('makedo-login-text');
                 const loginSpinner = document.getElementById('makedo-login-spinner');
                 
+                console.log('Modal elements found:');
+                console.log('- modal:', !!modal);
+                console.log('- submitBtn:', !!submitBtn);
+                console.log('- cancelBtn:', !!cancelBtn);
+                console.log('- emailInput:', !!emailInput);
+                console.log('- passwordInput:', !!passwordInput);
+                
                 // Show modal
+                console.log('Showing modal...');
                 modal.classList.remove('hidden');
                 errorDiv.classList.add('hidden');
                 
@@ -2262,9 +2271,12 @@
                 };
                 
                 // Attach listeners
+                console.log('Attaching event listeners to modal buttons...');
                 submitBtn.addEventListener('click', handleSubmit);
                 cancelBtn.addEventListener('click', handleCancel);
                 passwordInput.addEventListener('keypress', handleKeyPress);
+                console.log('Event listeners attached successfully');
+                console.log('Modal is now interactive');
             });
         }
         
@@ -2307,16 +2319,25 @@
         
         // Setup video connection button listeners
         function setupVideoConnectionButtons() {
+            console.log('=== setupVideoConnectionButtons() called ===');
             const connectBtn = document.getElementById('connect-video-account-btn');
             const disconnectBtn = document.getElementById('disconnect-video-account-btn');
             
+            console.log('Connect button found:', !!connectBtn);
+            console.log('Disconnect button found:', !!disconnectBtn);
+            
             if (connectBtn) {
+                console.log('Attaching click listener to Connect Video Account button');
                 connectBtn.addEventListener('click', async () => {
+                    console.log('=== CONNECT VIDEO ACCOUNT BUTTON CLICKED ===');
                     const result = await showMakedoLoginModal();
                     if (result.success) {
                         updateVideoConnectionStatus();
                     }
                 });
+                console.log('Connect button listener attached');
+            } else {
+                console.error('Connect button NOT found!');
             }
             
             if (disconnectBtn) {
