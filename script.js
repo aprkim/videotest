@@ -253,7 +253,22 @@ function init() {
         // Start the video chat session (which will show matching screen first)
         startVideoSession(sessionId);
     } else {
-        // Normal home page initialization
+        // Check if this is a signed-in user with languages
+        const userData = localStorage.getItem('tabbimate_current_user');
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                if (user.isSignedInUser && user.languages && user.languages.length > 0) {
+                    console.log('Signed-in user detected with languages:', user.languages);
+                    handleSignedInUserLanguages(user);
+                    return;
+                }
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+            }
+        }
+        
+        // Normal home page initialization (for guest users)
         renderDots();
         setupLanguageButtons();
         setupLevelButtons();
@@ -261,6 +276,91 @@ function init() {
         setupCardDrag();
         setupLanguageRequest();
     }
+}
+
+// Handle signed-in users with languages
+function handleSignedInUserLanguages(user) {
+    if (user.languages.length === 1) {
+        // Only one language - skip language selection, go straight to matching
+        console.log('User has only one language, skipping selection');
+        const lang = user.languages[0];
+        state.selectedLanguage = lang.language;
+        state.selectedLevel = lang.level;
+        
+        // Show matching screen directly
+        showMatchingScreen(lang.language, lang.level);
+        
+        // Create a matched user and start video chat after matching
+        setTimeout(() => {
+            const availableUsers = users.filter(u => u.name !== user.name);
+            const matchedUser = availableUsers[Math.floor(Math.random() * availableUsers.length)];
+            const levelDurations = {
+                'Basic': 10,
+                'Intermediate': 900,
+                'Advanced': 1800,
+                'Professional': 1800,
+                'Native': 1800
+            };
+            const duration = levelDurations[lang.level] || 10;
+            startActualVideoChat(matchedUser, duration);
+        }, 60000); // 60 seconds matching time
+    } else {
+        // Multiple languages - show language selection but only with user's languages
+        console.log('User has multiple languages, showing selection');
+        setupSignedInUserLanguageSelection(user);
+    }
+}
+
+// Setup language selection for signed-in users
+function setupSignedInUserLanguageSelection(user) {
+    renderDots();
+    setupBackButton();
+    setupCardDrag();
+    
+    // Modify language buttons to show only user's languages
+    const languageSelection = document.getElementById('language-selection');
+    if (!languageSelection) return;
+    
+    const buttonGroup = languageSelection.querySelector('.button-group');
+    if (!buttonGroup) return;
+    
+    // Clear and rebuild with only user's languages
+    buttonGroup.innerHTML = user.languages.map(lang => `
+        <button class="language-btn" data-language="${lang.language}" data-level="${lang.level}">${lang.language}</button>
+    `).join('');
+    
+    // Setup click handlers for language buttons
+    const languageBtns = buttonGroup.querySelectorAll('.language-btn');
+    languageBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const language = this.getAttribute('data-language');
+            const level = this.getAttribute('data-level');
+            
+            console.log('Language selected:', language, 'with level:', level);
+            state.selectedLanguage = language;
+            state.selectedLevel = level;
+            
+            // Skip level selection since we already have it from profile
+            // Go straight to matching
+            document.querySelector('.center-container').style.display = 'none';
+            showMatchingScreen(language, level);
+            
+            // Create a matched user and start video chat after matching
+            setTimeout(() => {
+                const availableUsers = users.filter(u => u.name !== user.name);
+                const matchedUser = availableUsers[Math.floor(Math.random() * availableUsers.length)];
+                const levelDurations = {
+                    'Basic': 10,
+                    'Intermediate': 900,
+                    'Advanced': 1800,
+                    'Professional': 1800,
+                    'Native': 1800
+                };
+                const duration = levelDurations[level] || 10;
+                startActualVideoChat(matchedUser, duration);
+            }, 60000); // 60 seconds matching time
+        });
+    });
 }
 
 // Start video chat session

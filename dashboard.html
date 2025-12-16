@@ -934,57 +934,12 @@
                     <h2 class="card-title">Languages & Levels</h2>
                     
                     <div class="form-group">
-                        <label class="form-label">Practice Language</label>
-                        <div class="language-row">
-                            <select class="form-select" aria-label="Select language to practice">
-                                <option value="english" selected>English</option>
-                                <option value="spanish">Spanish</option>
-                                <option value="french">French</option>
-                                <option value="german">German</option>
-                                <option value="korean">Korean</option>
-                                <option value="japanese">Japanese</option>
-                                <option value="mandarin">Mandarin</option>
-                            </select>
-                            <select class="form-select" aria-label="Select your level">
-                                <option value="basic">Basic</option>
-                                <option value="intermediate">Intermediate</option>
-                                <option value="advanced" selected>Advanced</option>
-                                <option value="professional">Professional</option>
-                            </select>
+                        <label class="form-label">Your Languages</label>
+                        <div id="languages-container">
+                            <!-- Languages will be dynamically rendered here -->
                         </div>
-                        <p class="form-hint">Choose the language you want to practice and your current level</p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Additional Languages</label>
-                        <div class="language-tags">
-                            <span class="language-tag">
-                                Spanish - Intermediate
-                                <button type="button" aria-label="Remove Spanish">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="18" y1="6" x2="6" y2="18"/>
-                                        <line x1="6" y1="6" x2="18" y2="18"/>
-                                    </svg>
-                                </button>
-                            </span>
-                            <span class="language-tag">
-                                Korean - Native
-                                <button type="button" aria-label="Remove Korean">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="18" y1="6" x2="6" y2="18"/>
-                                        <line x1="6" y1="6" x2="18" y2="18"/>
-                                    </svg>
-                                </button>
-                            </span>
-                        </div>
-                        <button type="button" class="add-language-btn">+ Add another language</button>
-                    </div>
-                    
-                    <div class="match-preference">
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="use-for-matching" checked aria-label="Use this language for matching">
-                            <label for="use-for-matching">Use for matching with language partners</label>
-                        </div>
+                        <button type="button" class="add-language-btn" onclick="addLanguageRow()">+ Add a language</button>
+                        <p class="form-hint">Add all languages you can practice</p>
                     </div>
                 </div>
             </div>
@@ -1238,9 +1193,21 @@
                         interests = profile.interests;
                         renderInterests();
                     }
+                    
+                    if (profile.languages && Array.isArray(profile.languages)) {
+                        userLanguages = profile.languages;
+                    } else {
+                        // Default language for existing users
+                        userLanguages = [{ language: 'English', level: 'Professional' }];
+                    }
+                    renderLanguages();
                 } catch (error) {
                     console.error('Error loading profile data:', error);
                 }
+            } else {
+                // New user - show at least one language field
+                userLanguages = [{ language: 'English', level: 'Basic' }];
+                renderLanguages();
             }
             
             // Reset unsaved changes state
@@ -1539,6 +1506,71 @@
             img.src = cropImage.src;
         }
         
+        // Languages Management
+        let userLanguages = []; // Array of {language: "English", level: "Professional"}
+        
+        function renderLanguages() {
+            const container = document.getElementById('languages-container');
+            if (!container) return;
+            
+            if (userLanguages.length === 0) {
+                container.innerHTML = '<p class="form-hint">Add at least one language to start matching</p>';
+                return;
+            }
+            
+            container.innerHTML = userLanguages.map((lang, index) => `
+                <div class="language-row">
+                    <select class="form-select" onchange="updateLanguage(${index}, this.value, null)" aria-label="Select language">
+                        <option value="English" ${lang.language === 'English' ? 'selected' : ''}>English</option>
+                        <option value="Spanish" ${lang.language === 'Spanish' ? 'selected' : ''}>Spanish</option>
+                        <option value="Korean" ${lang.language === 'Korean' ? 'selected' : ''}>Korean</option>
+                        <option value="French" ${lang.language === 'French' ? 'selected' : ''}>French</option>
+                        <option value="German" ${lang.language === 'German' ? 'selected' : ''}>German</option>
+                        <option value="Japanese" ${lang.language === 'Japanese' ? 'selected' : ''}>Japanese</option>
+                        <option value="Mandarin" ${lang.language === 'Mandarin' ? 'selected' : ''}>Mandarin</option>
+                    </select>
+                    <select class="form-select" onchange="updateLanguage(${index}, null, this.value)" aria-label="Select level">
+                        <option value="Basic" ${lang.level === 'Basic' ? 'selected' : ''}>Basic</option>
+                        <option value="Intermediate" ${lang.level === 'Intermediate' ? 'selected' : ''}>Intermediate</option>
+                        <option value="Advanced" ${lang.level === 'Advanced' ? 'selected' : ''}>Advanced</option>
+                        <option value="Professional" ${lang.level === 'Professional' ? 'selected' : ''}>Professional</option>
+                        <option value="Native" ${lang.level === 'Native' ? 'selected' : ''}>Native</option>
+                    </select>
+                    <button type="button" class="btn btn-secondary" onclick="removeLanguage(${index})" style="padding: 8px 12px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        function addLanguageRow() {
+            userLanguages.push({ language: 'English', level: 'Basic' });
+            renderLanguages();
+            hasUnsavedChanges = true;
+            updateSaveButton();
+        }
+        
+        function removeLanguage(index) {
+            userLanguages.splice(index, 1);
+            renderLanguages();
+            hasUnsavedChanges = true;
+            updateSaveButton();
+        }
+        
+        function updateLanguage(index, language, level) {
+            if (language !== null) {
+                userLanguages[index].language = language;
+            }
+            if (level !== null) {
+                userLanguages[index].level = level;
+            }
+            hasUnsavedChanges = true;
+            updateSaveButton();
+        }
+        
         // Auto-save profile data when inputs change
         function setupAutoSave() {
             const nameInput = document.getElementById('name');
@@ -1714,7 +1746,8 @@
                 location: document.getElementById('location')?.value || '',
                 bio: document.getElementById('bio')?.value || '',
                 photoUrl: document.getElementById('profile-preview')?.src || null,
-                interests: interests
+                interests: interests,
+                languages: userLanguages
             };
             
             localStorage.setItem(profileKey, JSON.stringify(profile));
@@ -1735,6 +1768,12 @@
         function handleStartCall() {
             console.log('=== Starting video chat from dashboard ===');
             
+            // Check if user has languages set up
+            if (!userLanguages || userLanguages.length === 0) {
+                alert('Please add at least one language to your profile before starting a video chat.');
+                return;
+            }
+            
             // Save current profile data before starting call
             saveProfileDataSync();
             
@@ -1742,7 +1781,7 @@
             const name = document.getElementById('name')?.value || 'User';
             const location = document.getElementById('location')?.value || '';
             const bio = document.getElementById('bio')?.value || '';
-            const photoURL = document.getElementById('profile-photo-preview')?.src || '';
+            const photoURL = document.getElementById('profile-preview')?.src || '';
             
             // Store user data for the session (will be used by app.html)
             localStorage.setItem('tabbimate_current_user', JSON.stringify({
@@ -1752,22 +1791,21 @@
                 bio: bio,
                 photoURL: photoURL,
                 email: userEmail,
-                interests: interests
+                interests: interests,
+                languages: userLanguages,
+                isSignedInUser: true
             }));
             
-            console.log('User data saved for session');
+            console.log('User data saved for session, languages:', userLanguages);
             
-            // Redirect to app.html (language selection page)
-            // Signed-in users will go through the same flow as guest users:
-            // 1. Select language
-            // 2. Select level
-            // 3. See matching screen with countdown
-            // 4. Start video chat
+            // Redirect to app.html
+            // If user has only 1 language: skip language selection, go straight to matching
+            // If user has 2+ languages: show language selection first
             const basePath = window.location.pathname.includes('tabbimate') 
                 ? '/tabbimate/app.html' 
                 : 'app.html';
             
-            console.log('Redirecting to app.html for language selection');
+            console.log('Redirecting to app.html');
             window.location.href = basePath;
         }
         
@@ -1781,7 +1819,8 @@
                 location: document.getElementById('location')?.value || '',
                 bio: document.getElementById('bio')?.value || '',
                 photoUrl: document.getElementById('profile-preview')?.src || null,
-                interests: interests
+                interests: interests,
+                languages: userLanguages
             };
             
             localStorage.setItem(profileKey, JSON.stringify(profile));
