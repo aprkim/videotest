@@ -2562,21 +2562,34 @@ function showMakedoLoginModal() {
             errorDiv.classList.add('hidden');
             
             try {
-                // Initialize VibeChat if not already done
-                if (!window.vibeChat && window.VibeChat) {
-                    console.log('Initializing VibeChat...');
-                    window.vibeChat = new window.VibeChat();
-                }
-                
-                // Use the Fetch module from the VibeChat protocol.js
-                const Fetch = window.Fetch;
-                if (!Fetch) {
-                    throw new Error('Video service not available. Please refresh the page.');
-                }
-                
-                // Attempt login through Makedo/VibeChat
+                // Attempt login through Makedo server
                 console.log('Attempting Makedo login with email:', email);
-                const result = await Fetch.login({ email, password });
+                
+                let result;
+                
+                // Try using protocol.js Fetch module first
+                if (window.Fetch && typeof window.Fetch.login === 'function') {
+                    console.log('Using protocol.js Fetch.login...');
+                    result = await window.Fetch.login({ email, password });
+                } else {
+                    // Fallback: Direct HTTP call to Makedo server
+                    console.log('protocol.js not available, using direct HTTP call...');
+                    
+                    const response = await fetch('https://proto2.makedo.com:8883/auth.jsp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'login',
+                            type: 'user',
+                            email: email,
+                            password: password
+                        })
+                    });
+                    
+                    result = await response.json();
+                }
                 
                 console.log('Login result:', result);
                 console.log('Result status:', result.status);
@@ -2589,11 +2602,27 @@ function showMakedoLoginModal() {
                     
                     console.log('Makedo login successful:', makedoState);
                     
-                    // Initialize VibeChat with login data
-                    await window.vibeChat.onLoginSuccess({
-                        email: makedoState.userEmail,
-                        userId: makedoState.userId
-                    });
+                    // Initialize VibeChat with login data if available
+                    if (window.vibeChat && window.vibeChat.onLoginSuccess) {
+                        try {
+                            await window.vibeChat.onLoginSuccess({
+                                email: makedoState.userEmail,
+                                userId: makedoState.userId
+                            });
+                        } catch (err) {
+                            console.warn('VibeChat initialization warning:', err);
+                        }
+                    } else if (window.VibeChat) {
+                        window.vibeChat = new window.VibeChat();
+                        try {
+                            await window.vibeChat.onLoginSuccess({
+                                email: makedoState.userEmail,
+                                userId: makedoState.userId
+                            });
+                        } catch (err) {
+                            console.warn('VibeChat initialization warning:', err);
+                        }
+                    }
                     
                     // Save login state
                     saveMakedoLoginState();
@@ -2607,7 +2636,8 @@ function showMakedoLoginModal() {
                     // Resolve promise
                     resolve({ success: true, data: makedoState });
                 } else {
-                    throw new Error(result.message || 'Login failed');
+                    console.error('Login failed. Result:', result);
+                    throw new Error(result.message || result.error || 'Login failed. Please check your credentials.');
                 }
                 
             } catch (error) {
