@@ -2102,22 +2102,31 @@
                 
                 // Handle submit
                 const handleSubmit = async (e) => {
+                    console.log('=== CONNECT BUTTON CLICKED ===');
                     if (e) e.preventDefault();
                     
                     const email = emailInput.value.trim().toLowerCase();
                     const password = passwordInput.value;
                     
+                    console.log('Email:', email);
+                    console.log('Password length:', password.length);
+                    
                     if (!email || !password) {
+                        console.error('Validation failed: missing email or password');
                         errorDiv.textContent = 'Please enter both email and password';
                         errorDiv.classList.remove('hidden');
                         return;
                     }
+                    
+                    console.log('Validation passed, showing loading state...');
                     
                     // Show loading state
                     loginText.textContent = 'Connecting...';
                     loginSpinner.classList.remove('hidden');
                     submitBtn.disabled = true;
                     errorDiv.classList.add('hidden');
+                    
+                    console.log('Starting login attempt...');
                     
                     try {
                         // Check if Fetch module is loaded
@@ -2208,7 +2217,12 @@
                         }
                         
                     } catch (error) {
-                        console.error('Makedo login error:', error);
+                        console.error('=== MAKEDO LOGIN ERROR ===');
+                        console.error('Error type:', error.constructor.name);
+                        console.error('Error message:', error.message);
+                        console.error('Error stack:', error.stack);
+                        console.error('Full error:', error);
+                        
                         errorDiv.textContent = error.message || 'Connection failed. Please try again.';
                         errorDiv.classList.remove('hidden');
                         
@@ -2218,6 +2232,10 @@
                         submitBtn.disabled = false;
                     }
                 };
+                
+                console.log('=== Makedo Login Modal Setup Complete ===');
+                console.log('Submit button:', submitBtn);
+                console.log('Cancel button:', cancelBtn);
                 
                 // Handle cancel
                 const handleCancel = () => {
