@@ -1053,15 +1053,54 @@ body {
     align-items: flex-end;
     justify-content: center;
     padding-bottom: 20px;
+    position: relative;
+}
+
+/* Video name container with mute indicator */
+.video-name-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+}
+
+/* Mute indicator */
+.mute-indicator {
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 6px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.mute-indicator svg {
+    width: 18px;
+    height: 18px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .video-name {
     font-size: 16px;
     font-weight: 500;
     color: #333;
-    background: white;
-    padding: 8px 16px;
-    border-radius: 8px;
     text-decoration: underline;
 }
 
