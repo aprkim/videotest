@@ -16,6 +16,13 @@ const GUEST_MODE = true;
 // Store selected interests for new users
 let selectedInterests = [];
 
+// Makedo/VibeChat state
+const makedoState = {
+    isLoggedIn: false,
+    userEmail: null,
+    userId: null
+};
+
 // Generate unique 8-digit user ID
 function generateUserId() {
     return Math.floor(10000000 + Math.random() * 90000000).toString();
@@ -1200,8 +1207,29 @@ function showMatchingScreen(language, level) {
 }
 
 // Start video chat with matched user
-function startVideoChat(matchedUser, durationSeconds) {
+async function startVideoChat(matchedUser, durationSeconds) {
     console.log('Starting video chat with:', matchedUser.name, 'Duration:', durationSeconds, 'seconds');
+    
+    // Check if Makedo is already logged in
+    if (!makedoState.isLoggedIn) {
+        console.log('Makedo not logged in, showing login modal...');
+        
+        const loginResult = await showMakedoLoginModal();
+        
+        if (!loginResult.success) {
+            // User skipped or login failed
+            if (loginResult.skipped) {
+                console.log('User skipped video login - proceeding without video');
+                await customAlert(
+                    'Video chat is disabled. You can still use text chat and AI features during your session.',
+                    'Video Unavailable'
+                );
+            }
+            // Continue with regular flow (video will be placeholders)
+        } else {
+            console.log('Makedo login successful, proceeding with real video...');
+        }
+    }
     
     // First show matching screen
     showMatchingScreen(state.selectedLanguage, getLevelName(durationSeconds));
@@ -1211,6 +1239,73 @@ function startVideoChat(matchedUser, durationSeconds) {
         console.log('Match found! Starting video chat...');
         startActualVideoChat(matchedUser, durationSeconds);
     }, 10000); // 10 seconds matching time (testing)
+}
+
+// Initialize video connection with matched user
+async function initializeVideoConnection(matchedUser) {
+    console.log('=== Initializing video connection with:', matchedUser.name, '===');
+    
+    if (!window.vibeChat || !window.vibeChat.bridge) {
+        console.error('VibeChat not initialized properly!');
+        return;
+    }
+    
+    try {
+        // For demo purposes, we'll use the matched user's name to find them
+        // In production, you'd map matchedUser to actual Makedo user PIDs
+        console.log('Searching for user:', matchedUser.name);
+        
+        // Get available users from Makedo
+        const users = await window.vibeChat.bridge.getUsersByQuery({ 
+            query: matchedUser.name, 
+            count: 5, 
+            depth: 1 
+        });
+        
+        console.log('Found users:', users);
+        
+        // Find matching user (case insensitive)
+        const vibechatUser = users.find(u => 
+            u.username && u.username.toLowerCase() === matchedUser.name.toLowerCase()
+        );
+        
+        if (!vibechatUser) {
+            console.warn('Could not find matching Makedo user for:', matchedUser.name);
+            console.log('Proceeding without video connection');
+            return;
+        }
+        
+        console.log('Found matching user:', vibechatUser);
+        
+        // Create channel with the user
+        await window.vibeChat.handleUserClick(vibechatUser);
+        
+        // Wait a moment for channel setup
+        setTimeout(async () => {
+            try {
+                console.log('Enabling video and audio...');
+                
+                // Enable video and audio
+                await window.vibeChat.handleVideoToggle();
+                await window.vibeChat.handleAudioToggle();
+                
+                // Wait another moment for streams to initialize
+                setTimeout(async () => {
+                    // Join the channel (start broadcasting)
+                    console.log('Joining video channel...');
+                    await window.vibeChat.performJoin();
+                    
+                    console.log('✓ Video connection established!');
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error enabling video/audio:', error);
+            }
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error initializing video connection:', error);
+    }
 }
 
 // Actually start the video chat (called after matching)
@@ -1273,6 +1368,13 @@ function startActualVideoChat(matchedUser, durationSeconds) {
     
     // Setup all video controls (buttons, chat, etc.)
     setupVideoControls();
+    
+    // Initialize video connection if Makedo is logged in
+    if (makedoState.isLoggedIn) {
+        initializeVideoConnection(matchedUser);
+    } else {
+        console.log('Makedo not logged in - video will remain as placeholders');
+    }
     
     // Start the call timer
     startCallTimer(durationSeconds);
@@ -1409,10 +1511,21 @@ function setupToggleButtons() {
     // Video toggle
     const cameraBtn = document.getElementById('toggle-camera');
     if (cameraBtn && !cameraBtn.dataset.listenerAttached) {
-        cameraBtn.addEventListener('click', function() {
+        cameraBtn.addEventListener('click', async function() {
             const isActive = this.dataset.active === 'true';
             this.dataset.active = !isActive;
-            console.log('Video:', !isActive ? 'ON' : 'OFF');
+            
+            // If VibeChat is available, toggle actual video
+            if (window.vibeChat && makedoState.isLoggedIn) {
+                try {
+                    await window.vibeChat.handleVideoToggle();
+                    console.log('VibeChat Video:', window.vibeChat.state.videoActive ? 'ON' : 'OFF');
+                } catch (error) {
+                    console.error('Error toggling video:', error);
+                }
+            } else {
+                console.log('Video:', !isActive ? 'ON' : 'OFF', '(placeholder mode)');
+            }
         });
         cameraBtn.dataset.listenerAttached = 'true';
     }
@@ -1420,7 +1533,7 @@ function setupToggleButtons() {
     // Audio toggle
     const micBtn = document.getElementById('toggle-mic');
     if (micBtn && !micBtn.dataset.listenerAttached) {
-        micBtn.addEventListener('click', function() {
+        micBtn.addEventListener('click', async function() {
             const isActive = this.dataset.active === 'true';
             this.dataset.active = !isActive;
             
@@ -1430,12 +1543,22 @@ function setupToggleButtons() {
                 if (isActive) {
                     // Was active, now muted
                     localMuteIndicator.classList.remove('hidden');
-                    console.log('Audio: OFF (Muted)');
                 } else {
                     // Was muted, now active
                     localMuteIndicator.classList.add('hidden');
-                    console.log('Audio: ON (Unmuted)');
                 }
+            }
+            
+            // If VibeChat is available, toggle actual audio
+            if (window.vibeChat && makedoState.isLoggedIn) {
+                try {
+                    await window.vibeChat.handleAudioToggle();
+                    console.log('VibeChat Audio:', window.vibeChat.state.audioActive ? 'ON' : 'OFF');
+                } catch (error) {
+                    console.error('Error toggling audio:', error);
+                }
+            } else {
+                console.log('Audio:', !isActive ? 'ON' : 'OFF', '(placeholder mode)');
             }
         });
         micBtn.dataset.listenerAttached = 'true';
@@ -2141,6 +2264,16 @@ function startCooldownTimer() {
 function endVideoChat() {
     console.log('Ending video chat');
     
+    // Clean up VibeChat video connection
+    if (window.vibeChat && makedoState.isLoggedIn) {
+        try {
+            console.log('Cleaning up VibeChat connection...');
+            window.vibeChat.handleExit();
+        } catch (error) {
+            console.error('Error cleaning up VibeChat:', error);
+        }
+    }
+    
     // Clear timer
     if (timerInterval) {
         clearInterval(timerInterval);
@@ -2386,6 +2519,174 @@ function customPrompt(message, title = 'Input', defaultValue = '') {
             if (input) input.focus();
         }, 100);
     });
+}
+
+// Show Makedo login modal
+function showMakedoLoginModal() {
+    return new Promise((resolve, reject) => {
+        const modal = document.getElementById('makedo-login-modal');
+        const emailInput = document.getElementById('makedo-email');
+        const passwordInput = document.getElementById('makedo-password');
+        const errorDiv = document.getElementById('makedo-login-error');
+        const submitBtn = document.getElementById('makedo-login-submit');
+        const cancelBtn = document.getElementById('makedo-cancel');
+        const loginText = document.getElementById('makedo-login-text');
+        const loginSpinner = document.getElementById('makedo-login-spinner');
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        errorDiv.classList.add('hidden');
+        
+        // Pre-fill email if Firebase user is logged in
+        if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+            emailInput.value = firebase.auth().currentUser.email;
+        }
+        
+        // Handle submit
+        const handleSubmit = async (e) => {
+            if (e) e.preventDefault();
+            
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            
+            if (!email || !password) {
+                errorDiv.textContent = 'Please enter both email and password';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            // Show loading state
+            loginText.textContent = 'Connecting...';
+            loginSpinner.classList.remove('hidden');
+            submitBtn.disabled = true;
+            errorDiv.classList.add('hidden');
+            
+            try {
+                // Initialize VibeChat if not already done
+                if (!window.vibeChat && window.VibeChat) {
+                    console.log('Initializing VibeChat...');
+                    window.vibeChat = new window.VibeChat();
+                }
+                
+                // Use the Fetch module from the VibeChat protocol.js
+                const Fetch = window.Fetch;
+                if (!Fetch) {
+                    throw new Error('Video service not available. Please refresh the page.');
+                }
+                
+                // Attempt login through Makedo/VibeChat
+                console.log('Attempting Makedo login...');
+                const result = await Fetch.login({ email, password });
+                
+                console.log('Login result:', result);
+                
+                if (result.status === 'loggedIn') {
+                    // Success!
+                    makedoState.isLoggedIn = true;
+                    makedoState.userEmail = result.email || email;
+                    makedoState.userId = result.pid;
+                    
+                    console.log('Makedo login successful:', makedoState);
+                    
+                    // Initialize VibeChat with login data
+                    await window.vibeChat.onLoginSuccess({
+                        email: makedoState.userEmail,
+                        userId: makedoState.userId
+                    });
+                    
+                    // Save login state
+                    saveMakedoLoginState();
+                    
+                    // Hide modal
+                    modal.classList.add('hidden');
+                    
+                    // Clean up
+                    cleanup();
+                    
+                    // Resolve promise
+                    resolve({ success: true, data: makedoState });
+                } else {
+                    throw new Error(result.message || 'Login failed');
+                }
+                
+            } catch (error) {
+                console.error('Makedo login error:', error);
+                errorDiv.textContent = error.message || 'Connection failed. Please try again.';
+                errorDiv.classList.remove('hidden');
+                
+                // Reset button
+                loginText.textContent = 'Connect';
+                loginSpinner.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        };
+        
+        // Handle cancel
+        const handleCancel = () => {
+            modal.classList.add('hidden');
+            cleanup();
+            resolve({ success: false, skipped: true });
+        };
+        
+        // Cleanup function
+        const cleanup = () => {
+            submitBtn.removeEventListener('click', handleSubmit);
+            cancelBtn.removeEventListener('click', handleCancel);
+            passwordInput.removeEventListener('keypress', handleKeyPress);
+            emailInput.value = '';
+            passwordInput.value = '';
+            loginText.textContent = 'Connect';
+            loginSpinner.classList.add('hidden');
+            submitBtn.disabled = false;
+        };
+        
+        // Handle Enter key
+        const handleKeyPress = (e) => {
+            if (e.key === 'Enter') handleSubmit(e);
+        };
+        
+        // Attach listeners
+        submitBtn.addEventListener('click', handleSubmit);
+        cancelBtn.addEventListener('click', handleCancel);
+        passwordInput.addEventListener('keypress', handleKeyPress);
+    });
+}
+
+// Save Makedo login state to localStorage
+function saveMakedoLoginState() {
+    if (makedoState.isLoggedIn) {
+        localStorage.setItem('makedo_logged_in', 'true');
+        localStorage.setItem('makedo_email', makedoState.userEmail);
+        localStorage.setItem('makedo_user_id', makedoState.userId);
+        console.log('Makedo login state saved');
+    }
+}
+
+// Load Makedo login state from localStorage
+function loadMakedoLoginState() {
+    const isLoggedIn = localStorage.getItem('makedo_logged_in') === 'true';
+    if (isLoggedIn) {
+        makedoState.isLoggedIn = true;
+        makedoState.userEmail = localStorage.getItem('makedo_email');
+        makedoState.userId = localStorage.getItem('makedo_user_id');
+        
+        console.log('Loaded Makedo login state:', makedoState);
+        
+        // Re-initialize VibeChat with saved credentials (done async after page load)
+        setTimeout(() => {
+            if (window.vibeChat && window.vibeChat.onLoginSuccess) {
+                window.vibeChat.onLoginSuccess({
+                    email: makedoState.userEmail,
+                    userId: makedoState.userId
+                }).catch(err => {
+                    console.warn('Failed to restore Makedo session:', err);
+                    // Clear invalid session
+                    localStorage.removeItem('makedo_logged_in');
+                    makedoState.isLoggedIn = false;
+                });
+            }
+        }, 1000);
+    }
 }
 
 const LanguageRequestManager = {
@@ -3207,6 +3508,7 @@ if (document.readyState === 'loading') {
         setupInterestChips();
         setupInterestButton();
         setupTutorialButton();
+        loadMakedoLoginState();
         setupSignOut();
     });
 } else {

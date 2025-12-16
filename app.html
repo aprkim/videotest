@@ -14,6 +14,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="modal.css">
+    
+    <!-- VibeChat Video Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src='https://proto2.makedo.com:8883/ux/scripts/protocol.js'></script>
 </head>
 <body>
     <!-- Background Map Container -->
@@ -271,8 +275,12 @@
         
         <!-- Video Grid -->
         <div class="video-grid">
-            <div class="video-panel">
-                <div class="video-placeholder">
+            <div class="video-panel" style="position: relative;">
+                <!-- Local Video Element -->
+                <video class="video-element" id="myVideo" autoplay muted playsinline 
+                       style="width: 100%; height: 100%; object-fit: cover; background-color: #1a1a1a; display: none;"></video>
+                
+                <div class="video-placeholder" id="myPlaceholder">
                     <div class="video-name-container">
                         <!-- Mute indicator for local user -->
                         <div class="mute-indicator hidden" id="local-mute-indicator">
@@ -288,8 +296,12 @@
                     </div>
                 </div>
             </div>
-            <div class="video-panel">
-                <div class="video-placeholder">
+            <div class="video-panel" style="position: relative;">
+                <!-- Remote Video Element -->
+                <video class="video-element" id="remoteVideo" autoplay playsinline
+                       style="width: 100%; height: 100%; object-fit: cover; background-color: #1a1a1a; display: none;"></video>
+                
+                <div class="video-placeholder" id="remotePlaceholder">
                     <div class="video-name-container">
                         <!-- Mute indicator for remote user -->
                         <div class="mute-indicator hidden" id="remote-mute-indicator">
@@ -301,7 +313,7 @@
                                 <line x1="8" y1="23" x2="16" y2="23"/>
                             </svg>
                         </div>
-                        <div class="video-name" id="remote-name">marty</div>
+                        <div class="video-name" id="remote-name">Waiting...</div>
                     </div>
                 </div>
             </div>
@@ -590,6 +602,61 @@
         </div>
     </div>
 
+    <!-- Makedo Video Login Modal -->
+    <div class="modal-overlay hidden" id="makedo-login-modal">
+        <div class="modal-dialog" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Connect to Video Server</h3>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
+                    To enable video chat, please sign in to the video service.
+                </p>
+                
+                <form id="makedo-login-form">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="makedo-email" style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Email</label>
+                        <input 
+                            type="email" 
+                            id="makedo-email" 
+                            class="modal-input" 
+                            placeholder="your@email.com" 
+                            required
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;"
+                        >
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="makedo-password" style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px;">Password</label>
+                        <input 
+                            type="password" 
+                            id="makedo-password" 
+                            class="modal-input" 
+                            placeholder="••••••••" 
+                            required
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;"
+                        >
+                    </div>
+                    
+                    <div id="makedo-login-error" class="hidden" style="padding: 10px; background: #fee; border: 1px solid #fcc; border-radius: 6px; color: #c33; font-size: 13px; margin-bottom: 16px;">
+                        Login failed. Please check your credentials.
+                    </div>
+                    
+                    <div style="font-size: 12px; color: #999; margin-bottom: 16px;">
+                        Don't have a video account? <a href="https://proto2.makedo.com:8883/signup" target="_blank" style="color: #BF3143; text-decoration: none;">Sign up here</a>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="makedo-cancel">Skip (No Video)</button>
+                <button class="modal-btn modal-btn-primary" id="makedo-login-submit">
+                    <span id="makedo-login-text">Connect</span>
+                    <span id="makedo-login-spinner" class="hidden" style="margin-left: 8px;">⏳</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -602,6 +669,17 @@
 
     <!-- Custom Modal -->
     <script src="modal.js"></script>
+
+    <!-- VibeChat Video Integration -->
+    <script type="module">
+        import VibeChat from './vibechat1_ux.js';
+        
+        // Make VibeChat available globally for script.js
+        window.VibeChat = VibeChat;
+        window.vibeChat = null; // Will be initialized after Makedo login
+        
+        console.log('VibeChat module loaded');
+    </script>
 
     <!-- App Script -->
     <script src="script.js"></script>
