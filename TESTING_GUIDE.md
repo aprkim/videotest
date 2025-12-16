@@ -54,7 +54,7 @@ A complete test interface to verify video chat between two users!
 #### Tab 2 (Marty)
 1. **Step 1**: Login with:
    - Email: `martybetz@gmail.com`
-   - Password: (Marty's password)
+   - Password: `test123456`
    - Click "Login as Marty"
 
 2. **Step 2**: Click "Get Users List"
