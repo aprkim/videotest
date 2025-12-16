@@ -1,3 +1,6 @@
+// Import Fetch from fetch.js for Makedo login
+import Fetch from 'https://proto2.makedo.com:8883/ux/scripts/fetch.js';
+
 // Profile data
 let profileData = {
     userId: null,
@@ -367,34 +370,11 @@ function showMakedoLoginModal() {
             errorDiv.classList.add('hidden');
             
             try {
-                // Attempt login through Makedo server
-                console.log('Attempting Makedo login with email:', email);
+                // Use Fetch.login() from fetch.js (imported at top of file)
+                console.log('Starting Makedo login with Fetch.login()...');
+                console.log('Email:', email);
                 
-                let result;
-                
-                // Try using protocol.js Fetch module first
-                if (window.Fetch && typeof window.Fetch.login === 'function') {
-                    console.log('Using protocol.js Fetch.login...');
-                    result = await window.Fetch.login({ email, password });
-                } else {
-                    // Fallback: Direct HTTP call to Makedo server
-                    console.log('protocol.js not available, using direct HTTP call...');
-                    
-                    const response = await fetch('https://proto2.makedo.com:8883/auth.jsp', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            action: 'login',
-                            type: 'user',
-                            email: email,
-                            password: password
-                        })
-                    });
-                    
-                    result = await response.json();
-                }
+                const result = await Fetch.login({ email, password });
                 
                 console.log('Login result:', result);
                 console.log('Result status:', result.status);
@@ -407,30 +387,14 @@ function showMakedoLoginModal() {
                     
                     console.log('Makedo login successful:', makedoState);
                     
-                    // Initialize VibeChat with login data if available
-                    if (window.vibeChat && window.vibeChat.onLoginSuccess) {
-                        try {
-                            await window.vibeChat.onLoginSuccess({
-                                email: makedoState.userEmail,
-                                userId: makedoState.userId
-                            });
-                        } catch (err) {
-                            console.warn('VibeChat initialization warning:', err);
-                        }
-                    } else if (window.VibeChat) {
-                        window.vibeChat = new window.VibeChat();
-                        try {
-                            await window.vibeChat.onLoginSuccess({
-                                email: makedoState.userEmail,
-                                userId: makedoState.userId
-                            });
-                        } catch (err) {
-                            console.warn('VibeChat initialization warning:', err);
-                        }
-                    }
+                    // Note: We don't initialize VibeChat here on the profile page
+                    // VibeChat will be initialized later on app.html when video chat is needed
                     
-                    // Save login state
+                    // Save login state to localStorage so app.html can use it
                     saveMakedoLoginState();
+                    
+                    // Update UI to show connected status
+                    updateVideoConnectionStatus();
                     
                     // Hide modal
                     modal.classList.add('hidden');

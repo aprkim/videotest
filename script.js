@@ -1,3 +1,6 @@
+// Import Fetch from fetch.js for Makedo login (via window.Fetch set in app.html)
+// Note: app.html loads Fetch and makes it globally available
+
 // State management
 const state = {
     selectedLanguage: null,
@@ -2562,34 +2565,26 @@ function showMakedoLoginModal() {
             errorDiv.classList.add('hidden');
             
             try {
-                // Attempt login through Makedo server
-                console.log('Attempting Makedo login with email:', email);
+                // Use Fetch.login() from fetch.js (loaded via window.Fetch in app.html)
+                console.log('Starting Makedo login with Fetch.login()...');
+                console.log('Email:', email);
                 
-                let result;
-                
-                // Try using protocol.js Fetch module first
-                if (window.Fetch && typeof window.Fetch.login === 'function') {
-                    console.log('Using protocol.js Fetch.login...');
-                    result = await window.Fetch.login({ email, password });
-                } else {
-                    // Fallback: Direct HTTP call to Makedo server
-                    console.log('protocol.js not available, using direct HTTP call...');
-                    
-                    const response = await fetch('https://proto2.makedo.com:8883/auth.jsp', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            action: 'login',
-                            type: 'user',
-                            email: email,
-                            password: password
-                        })
-                    });
-                    
-                    result = await response.json();
+                // Wait for Fetch to be available from window
+                if (typeof window.Fetch === 'undefined') {
+                    console.log('Waiting for window.Fetch to load...');
+                    for (let i = 0; i < 50; i++) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        if (typeof window.Fetch !== 'undefined') {
+                            console.log('Fetch loaded after', (i+1)*100, 'ms');
+                            break;
+                        }
+                    }
+                    if (typeof window.Fetch === 'undefined') {
+                        throw new Error('Fetch module failed to load');
+                    }
                 }
+                
+                const result = await window.Fetch.login({ email, password });
                 
                 console.log('Login result:', result);
                 console.log('Result status:', result.status);
@@ -3387,27 +3382,32 @@ function setupInterestButton() {
             
             // Allow continuing with 1-3 interests
             if (selectedInterests.length >= 1 && selectedInterests.length <= 3) {
-                // Generate NEW unique user ID when guest completes interest selection
+                // Generate unique user ID for guest user
                 const userId = generateUserId();
                 
-                // Store the new user ID
+                // Store the user ID
                 localStorage.setItem('tabbimate_user_id', userId);
                 
-                // Store onboarding data for profile page
-                const profileData = {
+                // Store guest user data for the session
+                const userData = {
                     userId: userId,
                     language: state.selectedLanguage,
                     level: state.selectedLevel,
                     interests: selectedInterests
                 };
-                console.log('Storing new user data:', profileData);
-                localStorage.setItem('tabbimate_new_user_data', JSON.stringify(profileData));
+                console.log('Storing guest user data:', userData);
+                localStorage.setItem('tabbimate_current_user', JSON.stringify(userData));
                 
-                // Redirect to profile page with the new user ID (absolute path)
-                const basePath = window.location.pathname.includes('tabbimate') 
-                    ? '/tabbimate/profile' 
-                    : '/profile';
-                window.location.href = `${basePath}/${userId}`;
+                // For guest users: show tutorial, then proceed to matching
+                // Hide interest selection
+                document.getElementById('interest-selection').classList.add('hidden');
+                
+                // Show tutorial video
+                const tutorialView = document.getElementById('tutorial-video');
+                tutorialView.classList.remove('hidden');
+                setTimeout(() => {
+                    tutorialView.classList.add('fade-in');
+                }, 10);
             }
         });
     }
@@ -3417,7 +3417,41 @@ function setupInterestButton() {
 function setupTutorialButton() {
     const tutorialCompleteBtn = document.getElementById('tutorial-complete-btn');
     if (tutorialCompleteBtn) {
-        tutorialCompleteBtn.addEventListener('click', showJoinPrompt);
+        tutorialCompleteBtn.addEventListener('click', () => {
+            // Check if user has selected interests (guest flow)
+            const userData = localStorage.getItem('tabbimate_current_user');
+            
+            if (userData) {
+                // Guest user has selected interests - proceed to matching
+                try {
+                    const user = JSON.parse(userData);
+                    
+                    // Hide tutorial
+                    document.getElementById('tutorial-video').classList.add('hidden');
+                    
+                    // Hide the center container
+                    document.querySelector('.center-container').style.display = 'none';
+                    
+                    // Show matching screen
+                    showMatchingScreen(state.selectedLanguage, state.selectedLevel);
+                    
+                    // Find a match and start video chat after matching period
+                    const duration = 600; // 10 minutes default
+                    setTimeout(() => {
+                        const availableUsers = users.filter(u => u.name !== 'Guest');
+                        const matchedUser = availableUsers[Math.floor(Math.random() * availableUsers.length)];
+                        startActualVideoChat(matchedUser, duration);
+                    }, 10000); // 10 seconds matching time (testing)
+                    
+                } catch (error) {
+                    console.error('Error processing guest user data:', error);
+                    showJoinPrompt();
+                }
+            } else {
+                // No user data - show join prompt (old flow)
+                showJoinPrompt();
+            }
+        });
     }
 }
 

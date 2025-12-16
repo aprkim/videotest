@@ -12,16 +12,15 @@
  * 8. Enable Storage (for profile photos)
  */
 
-// Firebase configuration - REPLACE WITH YOUR ACTUAL CONFIG
+// Firebase configuration for VideoTest Project
 const firebaseConfig = {
-    apiKey: "AIzaSyCCRUb4JjGMWa4j3O6JTg8OsbJpNnTSSbs",
-    authDomain: "tabbimate.firebaseapp.com",
-    projectId: "tabbimate",
-    storageBucket: "tabbimate.firebasestorage.app",
-    messagingSenderId: "954572245140",
-    appId: "1:954572245140:web:98fc71d28e2b4a9eca4c81",
-    measurementId: "G-ZC8PGD5LY4"
-  };
+    apiKey: "AIzaSyCDa8BY71QImZ2_SpSklCitqU4dKFdoJzs",
+    authDomain: "videotest-9435c.firebaseapp.com",
+    projectId: "videotest-9435c",
+    storageBucket: "videotest-9435c.firebasestorage.app",
+    messagingSenderId: "698822546154",
+    appId: "1:698822546154:web:e449341f3bee5e11333d93"
+};
   
 
 // Initialize Firebase

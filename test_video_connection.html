@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Video Connection - TabbiMate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 1200px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 10px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .login-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .user-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .user-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .video-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .video-box {
+            position: relative;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+        }
+        
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .controls button {
+            flex: 1;
+        }
+        
+        .log {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .user-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .user-item {
+            padding: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .user-item:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
+        }
+        
+        .user-item.selected {
+            background: #e0e7ff;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎥 Test Video Connection</h1>
+        <p class="subtitle">Test TabbiMate Video between aprkim@gmail.com and martybetz@gmail.com</p>
+        
+        <!-- Step 1: Login -->
+        <div class="section">
+            <h2>Step 1: Login to Makedo</h2>
+            <div class="login-section">
+                <div class="user-card">
+                    <h3>User 1: April</h3>
+                    <input type="email" id="email1" value="aprkim@gmail.com" placeholder="Email">
+                    <input type="password" id="password1" value="skycolor" placeholder="Password">
+                    <button id="login1">Login as April</button>
+                    <div id="status1" class="status hidden"></div>
+                </div>
+                
+                <div class="user-card">
+                    <h3>User 2: Marty</h3>
+                    <input type="email" id="email2" value="martybetz@gmail.com" placeholder="Email">
+                    <input type="password" id="password2" placeholder="Password">
+                    <button id="login2">Login as Marty</button>
+                    <div id="status2" class="status hidden"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 2: Get Users -->
+        <div class="section">
+            <h2>Step 2: Get Available Users</h2>
+            <button id="getUsers" disabled>Get Users List</button>
+            <div id="usersList" class="user-list"></div>
+            <div id="usersStatus" class="status hidden"></div>
+        </div>
+        
+        <!-- Step 3: Create Channel -->
+        <div class="section">
+            <h2>Step 3: Create Video Channel</h2>
+            <p style="margin-bottom: 10px; color: #666;">Select a user from the list above, then:</p>
+            <button id="createChannel" disabled>Create Channel & Start Video</button>
+            <div id="channelStatus" class="status hidden"></div>
+        </div>
+        
+        <!-- Step 4: Video Chat -->
+        <div class="section hidden" id="videoSection">
+            <h2>Video Chat Active</h2>
+            <div class="video-section">
+                <div class="video-box">
+                    <video id="myVideo" autoplay muted playsinline></video>
+                    <div class="video-label">You</div>
+                </div>
+                <div class="video-box">
+                    <video id="partnerVideo" autoplay playsinline></video>
+                    <div class="video-label">Partner</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="toggleVideo">📹 Video: ON</button>
+                <button id="toggleAudio">🎤 Audio: ON</button>
+                <button id="endCall" class="btn-danger">End Call</button>
+            </div>
+        </div>
+        
+        <!-- Console Log -->
+        <div class="section">
+            <h2>Console Log</h2>
+            <div id="log" class="log">Ready to start testing...\n</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import TabbiMateVideo from './tabbimate_video.js';
+        
+        // State
+        let videoChat1 = null;  // April's video instance
+        let videoChat2 = null;  // Marty's video instance (if testing from same browser)
+        let currentUser = null;  // Currently logged in user (1 or 2)
+        let selectedPartnerPid = null;
+        
+        // Log function
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#00ff00';
+            logEl.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(message);
+        }
+        
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = `status ${type}`;
+            el.classList.remove('hidden');
+        }
+        
+        // Step 1: Login handlers
+        document.getElementById('login1').addEventListener('click', async () => {
+            const email = document.getElementById('email1').value;
+            const password = document.getElementById('password1').value;
+            
+            try {
+                log('Logging in as April...', 'info');
+                videoChat1 = new TabbiMateVideo();
+                const result = await videoChat1.login(email, password);
+                
+                log(`✓ April logged in successfully! PID: ${result.pid}`, 'success');
+                showStatus('status1', `Logged in! PID: ${result.pid}`, 'success');
+                
+                currentUser = 1;
+                document.getElementById('getUsers').disabled = false;
+                document.getElementById('createChannel').disabled = false;
+                
+            } catch (error) {
+                log(`✗ Login failed: ${error.message}`, 'error');
+                showStatus('status1', `Login failed: ${error.message}`, 'error');
+            }
+        });
+        
+        document.getElementById('login2').addEventListener('click', async () => {
+            const email = document.getElementById('email2').value;
+            const password = document.getElementById('password2').value;
+            
+            try {
+                log('Logging in as Marty...', 'info');
+                videoChat2 = new TabbiMateVideo();
+                const result = await videoChat2.login(email, password);
+                
+                log(`✓ Marty logged in successfully! PID: ${result.pid}`, 'success');
+                showStatus('status2', `Logged in! PID: ${result.pid}`, 'success');
+                
+                if (!currentUser) {
+                    currentUser = 2;
+                    document.getElementById('getUsers').disabled = false;
+                    document.getElementById('createChannel').disabled = false;
+                }
+                
+            } catch (error) {
+                log(`✗ Login failed: ${error.message}`, 'error');
+                showStatus('status2', `Login failed: ${error.message}`, 'error');
+            }
+        });
+        
+        // Step 2: Get users
+        document.getElementById('getUsers').addEventListener('click', async () => {
+            try {
+                const videoChat = currentUser === 1 ? videoChat1 : videoChat2;
+                log('Getting list of available users...', 'info');
+                
+                const users = await videoChat.getUsers('', 20);
+                
+                log(`✓ Found ${users.length} users`, 'success');
+                
+                // Display users
+                const usersList = document.getElementById('usersList');
+                usersList.innerHTML = '';
+                
+                users.forEach(user => {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'user-item';
+                    userItem.innerHTML = `
+                        <strong>${user.username || user.email || 'Unknown'}</strong><br>
+                        <small>PID: ${user.pid} | Status: ${user.status || 'available'}</small>
+                    `;
+                    userItem.addEventListener('click', () => {
+                        // Deselect all
+                        document.querySelectorAll('.user-item').forEach(item => {
+                            item.classList.remove('selected');
+                        });
+                        // Select this one
+                        userItem.classList.add('selected');
+                        selectedPartnerPid = user.pid;
+                        log(`Selected partner: ${user.username || user.email} (PID: ${user.pid})`, 'info');
+                    });
+                    usersList.appendChild(userItem);
+                });
+                
+                showStatus('usersStatus', `Found ${users.length} users. Click one to select.`, 'success');
+                
+            } catch (error) {
+                log(`✗ Failed to get users: ${error.message}`, 'error');
+                showStatus('usersStatus', `Error: ${error.message}`, 'error');
+            }
+        });
+        
+        // Step 3: Create channel and start video
+        document.getElementById('createChannel').addEventListener('click', async () => {
+            if (!selectedPartnerPid) {
+                log('✗ Please select a partner from the users list first!', 'error');
+                showStatus('channelStatus', 'Please select a partner first!', 'error');
+                return;
+            }
+            
+            try {
+                const videoChat = currentUser === 1 ? videoChat1 : videoChat2;
+                const myVideo = document.getElementById('myVideo');
+                const partnerVideo = document.getElementById('partnerVideo');
+                
+                log(`Creating channel with partner PID: ${selectedPartnerPid}...`, 'info');
+                showStatus('channelStatus', 'Creating channel...', 'info');
+                
+                await videoChat.startCall(selectedPartnerPid, myVideo, partnerVideo);
+                
+                log('✓ Channel created and video call started!', 'success');
+                showStatus('channelStatus', 'Video call active!', 'success');
+                
+                // Show video section
+                document.getElementById('videoSection').classList.remove('hidden');
+                
+            } catch (error) {
+                log(`✗ Failed to create channel: ${error.message}`, 'error');
+                showStatus('channelStatus', `Error: ${error.message}`, 'error');
+            }
+        });
+        
+        // Step 4: Video controls
+        document.getElementById('toggleVideo').addEventListener('click', async () => {
+            const videoChat = currentUser === 1 ? videoChat1 : videoChat2;
+            const isOn = await videoChat.toggleVideo();
+            document.getElementById('toggleVideo').textContent = isOn ? '📹 Video: ON' : '📹 Video: OFF';
+            log(`Video ${isOn ? 'enabled' : 'disabled'}`, 'info');
+        });
+        
+        document.getElementById('toggleAudio').addEventListener('click', async () => {
+            const videoChat = currentUser === 1 ? videoChat1 : videoChat2;
+            const isOn = await videoChat.toggleAudio();
+            document.getElementById('toggleAudio').textContent = isOn ? '🎤 Audio: ON' : '🎤 Audio: OFF';
+            log(`Audio ${isOn ? 'enabled' : 'disabled'}`, 'info');
+        });
+        
+        document.getElementById('endCall').addEventListener('click', async () => {
+            const videoChat = currentUser === 1 ? videoChat1 : videoChat2;
+            const myVideo = document.getElementById('myVideo');
+            const partnerVideo = document.getElementById('partnerVideo');
+            
+            await videoChat.endCall(myVideo, partnerVideo);
+            
+            document.getElementById('videoSection').classList.add('hidden');
+            log('✓ Call ended', 'success');
+        });
+        
+        log('Test page loaded. Login to start testing!', 'info');
+    </script>
+</body>
+</html>
+

@@ -14,10 +14,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="modal.css">
-    
-    <!-- VibeChat Video Dependencies -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src='https://proto2.makedo.com:8883/ux/scripts/protocol.js'></script>
 </head>
 <body>
     <!-- Background Map Container -->
@@ -673,16 +669,18 @@
     <!-- VibeChat Video Integration -->
     <script type="module">
         import VibeChat from './vibechat1_ux.js';
+        import Fetch from 'https://proto2.makedo.com:8883/ux/scripts/fetch.js';
         
-        // Make VibeChat available globally for script.js
+        // Make VibeChat and Fetch available globally for script.js
         window.VibeChat = VibeChat;
+        window.Fetch = Fetch;
         window.vibeChat = null; // Will be initialized after Makedo login
         
-        console.log('VibeChat module loaded');
+        console.log('VibeChat and Fetch modules loaded');
     </script>
 
     <!-- App Script -->
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
 
