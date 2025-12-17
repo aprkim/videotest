@@ -1661,6 +1661,36 @@
                 }
                 
                 console.log('Session ID:', sessionId);
+                
+                // TEST MODE: Skip Firestore for test sessions
+                if (sessionId.startsWith('test_')) {
+                    console.log('🧪 TEST MODE: Using hardcoded test partner (oct14)');
+                    updateLoading('Loading test session...', sessionId);
+                    
+                    // Get Makedo credentials from localStorage
+                    const makedoStateStr = localStorage.getItem('videotest_makedo_state');
+                    if (!makedoStateStr) {
+                        throw new Error('Video account not connected. Please connect on dashboard first.');
+                    }
+                    
+                    const makedoState = JSON.parse(makedoStateStr);
+                    if (!makedoState.isLoggedIn || !makedoState.password) {
+                        throw new Error('Video account credentials missing');
+                    }
+                    
+                    // Use stored Makedo email and test partner
+                    const myMakedoEmail = makedoState.userEmail;
+                    const partnerDisplayName = TEST_PARTNER.username;
+                    
+                    console.log('My Makedo email:', myMakedoEmail);
+                    console.log('Test partner:', TEST_PARTNER.username);
+                    
+                    // Connect to session with test partner
+                    await connectToSession(sessionId, myMakedoEmail, makedoState.password, null, partnerDisplayName);
+                    return;
+                }
+                
+                // NORMAL MODE: Get session from Firestore
                 updateLoading('Loading session...', sessionId);
                 
                 // Get session data from Firestore
