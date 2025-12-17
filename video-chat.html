@@ -589,6 +589,552 @@
             border-color: #e0e0e0;
             border-top-color: #BF3143;
         }
+        
+        /* Help Menu Dropdown */
+        .help-menu {
+            position: absolute;
+            top: 50px;
+            left: 100px;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            min-width: 300px;
+            overflow: hidden;
+        }
+        
+        .help-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #333333;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .help-menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .help-menu-item:hover {
+            background-color: #f8f8f8;
+        }
+        
+        .help-menu-item svg {
+            width: 20px;
+            height: 20px;
+            color: #666666;
+        }
+        
+        .help-menu-item.danger {
+            color: #BF3143;
+        }
+        
+        .help-menu-item.danger svg {
+            color: #BF3143;
+        }
+        
+        /* Modals Base Styles */
+        .session-summary-modal,
+        .guidelines-modal,
+        .confirm-modal,
+        .info-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        /* Session Summary Modal */
+        .session-summary-content {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        
+        .summary-title {
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333333;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .summary-card.full-width {
+            grid-column: span 2;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #999999;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .summary-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333333;
+        }
+        
+        .sentences-section {
+            margin-top: 40px;
+        }
+        
+        .sentences-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #333333;
+        }
+        
+        .sentences-subtitle {
+            font-size: 14px;
+            color: #999999;
+            margin-bottom: 20px;
+        }
+        
+        .sentence-card {
+            background-color: #ffffff;
+            border-left: 4px solid #BF3143;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .sentence-wrong {
+            color: #BF3143;
+            text-decoration: line-through;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .sentence-correct {
+            color: #333333;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sentence-correct::before {
+            content: '✓';
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        
+        .sentence-explanation {
+            color: #999999;
+            font-size: 14px;
+            font-style: italic;
+        }
+        
+        .summary-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .download-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background-color: #ffffff;
+            color: #BF3143;
+            border: 2px solid #BF3143;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .download-btn:hover {
+            background-color: #fff5f5;
+        }
+        
+        .download-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .done-btn {
+            padding: 14px 40px;
+            background-color: #BF3143;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        
+        .done-btn:hover {
+            background-color: #a02838;
+        }
+        
+        /* Guidelines Modal */
+        .guidelines-content {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 0;
+            max-width: 500px;
+            width: 90%;
+            overflow: hidden;
+        }
+        
+        .guidelines-header {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .guidelines-header svg {
+            width: 24px;
+            height: 24px;
+            color: #666666;
+        }
+        
+        .guidelines-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333333;
+            margin: 0;
+        }
+        
+        .guidelines-body {
+            padding: 30px;
+        }
+        
+        .guideline-section {
+            margin-bottom: 25px;
+        }
+        
+        .guideline-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .guideline-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333333;
+            margin-bottom: 10px;
+        }
+        
+        .guideline-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .guideline-list li {
+            padding-left: 20px;
+            margin-bottom: 8px;
+            color: #666666;
+            font-size: 14px;
+            position: relative;
+        }
+        
+        .guideline-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #BF3143;
+            font-weight: bold;
+        }
+        
+        .guidelines-footer {
+            padding: 20px 30px;
+            text-align: center;
+        }
+        
+        .ok-btn {
+            background-color: #BF3143;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            padding: 12px 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .ok-btn:hover {
+            background-color: #a02838;
+        }
+        
+        /* Block/Report Confirmation Modal */
+        .confirm-content {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .confirm-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            color: #BF3143;
+        }
+        
+        .confirm-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333333;
+            margin-bottom: 15px;
+        }
+        
+        .confirm-message {
+            font-size: 15px;
+            color: #666666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .cancel-btn {
+            background-color: #f0f0f0;
+            color: #333333;
+            border: none;
+            border-radius: 24px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .confirm-btn {
+            background-color: #BF3143;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .confirm-btn:hover {
+            background-color: #a02838;
+        }
+        
+        .report-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+        
+        .report-input:focus {
+            outline: none;
+            border-color: #BF3143;
+        }
+        
+        /* Info Modal (reusable) */
+        .info-content {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .info-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+        }
+        
+        .info-icon.success {
+            color: #2ecc71;
+        }
+        
+        .info-icon.info {
+            color: #3498db;
+        }
+        
+        .info-icon.warning {
+            color: #f39c12;
+        }
+        
+        .info-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333333;
+            margin-bottom: 12px;
+        }
+        
+        .info-message {
+            font-size: 15px;
+            color: #666666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+        
+        /* Dark Theme - Modals */
+        body.dark-theme .help-menu {
+            background-color: #2a2a2a;
+            border-color: #3a3a3a;
+        }
+        
+        body.dark-theme .help-menu-item {
+            color: #ffffff;
+            border-bottom-color: #3a3a3a;
+        }
+        
+        body.dark-theme .help-menu-item:hover {
+            background-color: #3a3a3a;
+        }
+        
+        body.dark-theme .help-menu-item svg {
+            color: #999999;
+        }
+        
+        body.dark-theme .help-menu-item.danger {
+            color: #ff6b7a;
+        }
+        
+        body.dark-theme .help-menu-item.danger svg {
+            color: #ff6b7a;
+        }
+        
+        body.dark-theme .session-summary-content,
+        body.dark-theme .guidelines-content,
+        body.dark-theme .confirm-content,
+        body.dark-theme .info-content {
+            background-color: #2a2a2a;
+        }
+        
+        body.dark-theme .summary-title,
+        body.dark-theme .guidelines-header h3,
+        body.dark-theme .confirm-title,
+        body.dark-theme .info-title,
+        body.dark-theme .sentences-title,
+        body.dark-theme .guideline-title {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .summary-card {
+            background-color: #1a1a1a;
+            border-color: #3a3a3a;
+        }
+        
+        body.dark-theme .summary-value {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .sentence-card {
+            background-color: #1a1a1a;
+        }
+        
+        body.dark-theme .sentence-correct {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .guidelines-header {
+            background-color: #1a1a1a;
+            border-bottom-color: #3a3a3a;
+        }
+        
+        body.dark-theme .guideline-list li {
+            color: #cccccc;
+        }
+        
+        body.dark-theme .confirm-message,
+        body.dark-theme .info-message {
+            color: #cccccc;
+        }
+        
+        body.dark-theme .cancel-btn {
+            background-color: #3a3a3a;
+            color: #ffffff;
+        }
+        
+        body.dark-theme .cancel-btn:hover {
+            background-color: #4a4a4a;
+        }
+        
+        body.dark-theme .report-input {
+            background-color: #1a1a1a;
+            border-color: #3a3a3a;
+            color: #ffffff;
+        }
+        
+        body.dark-theme .download-btn {
+            background-color: #2a2a2a;
+            color: #ff6b7a;
+            border-color: #ff6b7a;
+        }
+        
+        body.dark-theme .download-btn:hover {
+            background-color: #3a3a3a;
+        }
     </style>
 </head>
 <body>
@@ -604,6 +1150,21 @@
         <!-- Header -->
         <div class="video-header">
             <div class="header-left">
+                <button class="timer-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span id="timer-text">Cool-down 0:06</span>
+                </button>
+                <button class="help-btn" id="help-btn" title="Help">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span>Help</span>
+                </button>
                 <button class="leave-btn" id="leave-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -611,29 +1172,6 @@
                         <line x1="21" y1="12" x2="9" y2="12"/>
                     </svg>
                     <span>Leave</span>
-                </button>
-                <button class="help-btn" id="help-btn" title="Help & Options">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                        <line x1="12" y1="17" x2="12.01" y2="17"/>
-                    </svg>
-                </button>
-                <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Theme">
-                    <svg id="theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                    </svg>
-                    <svg id="theme-icon-light" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
-                        <circle cx="12" cy="12" r="5"/>
-                        <line x1="12" y1="1" x2="12" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="23"/>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                        <line x1="1" y1="12" x2="3" y2="12"/>
-                        <line x1="21" y1="12" x2="23" y2="12"/>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                    </svg>
                 </button>
             </div>
             <div class="header-center">
@@ -743,8 +1281,348 @@
             </button>
         </div>
     </div>
+    
+    <!-- Help Menu Dropdown -->
+    <div class="help-menu hidden" id="help-menu">
+        <button class="help-menu-item" id="review-guidelines">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4"/>
+                <path d="M12 8h.01"/>
+            </svg>
+            <span>Review Session Guidelines</span>
+        </button>
+        <button class="help-menu-item" id="block-partner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+            <span>Block <span id="block-name">Partner</span></span>
+        </button>
+        <button class="help-menu-item danger" id="report-partner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span>Report <span id="report-name">Partner</span></span>
+        </button>
+    </div>
+    
+    <!-- Session Guidelines Modal -->
+    <div class="guidelines-modal hidden" id="guidelines-modal">
+        <div class="guidelines-content">
+            <div class="guidelines-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12h6M9 16h6M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <h3>Session Guidelines</h3>
+            </div>
+            <div class="guidelines-body">
+                <div class="guideline-section">
+                    <div class="guideline-title">1. Be Respectful</div>
+                    <ul class="guideline-list">
+                        <li>Treat your partner with kindness and respect</li>
+                        <li>Be patient with language mistakes</li>
+                    </ul>
+                </div>
+                <div class="guideline-section">
+                    <div class="guideline-title">2. Stay Focused</div>
+                    <ul class="guideline-list">
+                        <li>Practice the target language</li>
+                        <li>Avoid inappropriate topics</li>
+                    </ul>
+                </div>
+                <div class="guideline-section">
+                    <div class="guideline-title">3. Help Each Other</div>
+                    <ul class="guideline-list">
+                        <li>Correct mistakes gently</li>
+                        <li>Share learning tips</li>
+                    </ul>
+                </div>
+                <div class="guideline-section">
+                    <div class="guideline-title">4. Have Fun!</div>
+                    <ul class="guideline-list">
+                        <li>Enjoy the conversation</li>
+                        <li>Make new friends</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="guidelines-footer">
+                <button class="ok-btn" id="guidelines-ok">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Block Confirmation Modal -->
+    <div class="confirm-modal hidden" id="block-modal">
+        <div class="confirm-content">
+            <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+            <h3 class="confirm-title">Block Partner?</h3>
+            <p class="confirm-message">You will not be matched with this user again. This action can be undone in your settings.</p>
+            <div class="confirm-actions">
+                <button class="cancel-btn" id="block-cancel">Cancel</button>
+                <button class="confirm-btn" id="block-confirm">Block</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Report Modal -->
+    <div class="confirm-modal hidden" id="report-modal">
+        <div class="confirm-content">
+            <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <h3 class="confirm-title">Report Partner</h3>
+            <p class="confirm-message">Please tell us why you're reporting this user:</p>
+            <textarea class="report-input" id="report-reason" placeholder="Describe the issue (inappropriate behavior, harassment, spam, etc.)"></textarea>
+            <div class="confirm-actions">
+                <button class="cancel-btn" id="report-cancel">Cancel</button>
+                <button class="confirm-btn" id="report-submit">Submit Report</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Info/Success Modal (reusable) -->
+    <div class="info-modal hidden" id="info-modal">
+        <div class="info-content">
+            <svg class="info-icon" id="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <h3 class="info-title" id="info-title">Success!</h3>
+            <p class="info-message" id="info-message">This is a message</p>
+            <button class="ok-btn" id="info-ok">OK</button>
+        </div>
+    </div>
+    
+    <!-- Session Summary Modal -->
+    <div class="session-summary-modal hidden" id="session-summary">
+        <div class="session-summary-content">
+            <h2 class="summary-title">Session Summary</h2>
+            
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-label">Language</div>
+                    <div class="summary-value" id="summary-language">English</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Level</div>
+                    <div class="summary-value" id="summary-level">Basic</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Partner</div>
+                    <div class="summary-value" id="summary-partner">Partner</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Duration</div>
+                    <div class="summary-value" id="summary-duration">15 minutes</div>
+                </div>
+                <div class="summary-card full-width">
+                    <div class="summary-label">Date</div>
+                    <div class="summary-value" id="summary-date">Dec 17, 2025</div>
+                </div>
+            </div>
+            
+            <div class="sentences-section">
+                <h3 class="sentences-title">Sentences to Memorize</h3>
+                <p class="sentences-subtitle">Three key sentences from your conversation with corrections</p>
+                
+                <div class="sentence-card">
+                    <div class="sentence-wrong">I go to the store yesterday.</div>
+                    <div class="sentence-correct">I went to the store yesterday.</div>
+                    <div class="sentence-explanation">Use past tense 'went' for actions that happened in the past.</div>
+                </div>
+                
+                <div class="sentence-card">
+                    <div class="sentence-wrong">She don't like coffee.</div>
+                    <div class="sentence-correct">She doesn't like coffee.</div>
+                    <div class="sentence-explanation">Use 'doesn't' with third person singular (he, she, it).</div>
+                </div>
+                
+                <div class="sentence-card">
+                    <div class="sentence-wrong">I have went there before.</div>
+                    <div class="sentence-correct">I have gone there before.</div>
+                    <div class="sentence-explanation">Use 'gone' (not 'went') with 'have' for present perfect tense.</div>
+                </div>
+            </div>
+            
+            <div class="summary-actions">
+                <button class="download-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Download Study Note</span>
+                </button>
+                <button class="done-btn" id="done-btn">Done</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Theme Toggle -->
+    <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Dark Mode">
+        <svg id="theme-icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg id="theme-icon-dark" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+    </button>
 
     <script>
+        // ========================================
+        // MODAL HELPER FUNCTIONS & UI SETUP
+        // ========================================
+        
+        // Helper function to show info modal
+        function showInfoModal(title, message, iconType = 'success') {
+            const modal = document.getElementById('info-modal');
+            const icon = document.getElementById('info-icon');
+            const titleEl = document.getElementById('info-title');
+            const messageEl = document.getElementById('info-message');
+            
+            icon.className = `info-icon ${iconType}`;
+            
+            if (iconType === 'success') {
+                icon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+            } else if (iconType === 'info') {
+                icon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>';
+            } else if (iconType === 'warning') {
+                icon.innerHTML = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
+            }
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.classList.remove('hidden');
+        }
+        
+        // Modal event listeners
+        document.getElementById('info-ok').addEventListener('click', () => {
+            document.getElementById('info-modal').classList.add('hidden');
+        });
+        
+        document.getElementById('info-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'info-modal') document.getElementById('info-modal').classList.add('hidden');
+        });
+        
+        // Theme Toggle
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const body = document.body;
+            const isDark = body.classList.contains('dark-theme');
+            const darkIcon = document.getElementById('theme-icon-dark');
+            const lightIcon = document.getElementById('theme-icon-light');
+            
+            if (isDark) {
+                body.classList.remove('dark-theme');
+                darkIcon.classList.add('hidden');
+                lightIcon.classList.remove('hidden');
+                localStorage.setItem('videotest_theme', 'light');
+            } else {
+                body.classList.add('dark-theme');
+                darkIcon.classList.remove('hidden');
+                lightIcon.classList.add('hidden');
+                localStorage.setItem('videotest_theme', 'dark');
+            }
+        });
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('videotest_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            document.getElementById('theme-icon-dark').classList.remove('hidden');
+            document.getElementById('theme-icon-light').classList.add('hidden');
+        }
+        
+        // Help Menu
+        const helpBtn = document.getElementById('help-btn');
+        const helpMenu = document.getElementById('help-menu');
+        
+        helpBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            helpMenu.classList.toggle('hidden');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!helpMenu.contains(e.target) && !helpBtn.contains(e.target)) {
+                helpMenu.classList.add('hidden');
+            }
+        });
+        
+        // Guidelines Modal
+        const guidelinesModal = document.getElementById('guidelines-modal');
+        document.getElementById('review-guidelines').addEventListener('click', () => {
+            helpMenu.classList.add('hidden');
+            guidelinesModal.classList.remove('hidden');
+        });
+        document.getElementById('guidelines-ok').addEventListener('click', () => guidelinesModal.classList.add('hidden'));
+        guidelinesModal.addEventListener('click', (e) => { if (e.target.id === 'guidelines-modal') guidelinesModal.classList.add('hidden'); });
+        
+        // Block Modal
+        const blockModal = document.getElementById('block-modal');
+        document.getElementById('block-partner').addEventListener('click', () => {
+            helpMenu.classList.add('hidden');
+            blockModal.classList.remove('hidden');
+        });
+        document.getElementById('block-cancel').addEventListener('click', () => blockModal.classList.add('hidden'));
+        document.getElementById('block-confirm').addEventListener('click', () => {
+            blockModal.classList.add('hidden');
+            showInfoModal('User Blocked', 'Partner has been blocked.\n\nYou will not be matched with this user again.', 'success');
+        });
+        blockModal.addEventListener('click', (e) => { if (e.target.id === 'block-modal') blockModal.classList.add('hidden'); });
+        
+        // Report Modal
+        const reportModal = document.getElementById('report-modal');
+        document.getElementById('report-partner').addEventListener('click', () => {
+            helpMenu.classList.add('hidden');
+            reportModal.classList.remove('hidden');
+        });
+        document.getElementById('report-cancel').addEventListener('click', () => {
+            reportModal.classList.add('hidden');
+            document.getElementById('report-reason').value = '';
+        });
+        document.getElementById('report-submit').addEventListener('click', () => {
+            const reason = document.getElementById('report-reason').value.trim();
+            if (reason) {
+                reportModal.classList.add('hidden');
+                document.getElementById('report-reason').value = '';
+                showInfoModal('Report Submitted', 'Thank you for helping keep TabbiMate safe.\n\nOur team will review this report within 24 hours.', 'success');
+            } else {
+                showInfoModal('Missing Information', 'Please describe the reason for your report.', 'warning');
+            }
+        });
+        reportModal.addEventListener('click', (e) => { if (e.target.id === 'report-modal') reportModal.classList.add('hidden'); });
+        
+        // Session Summary Modal
+        const sessionSummaryModal = document.getElementById('session-summary');
+        document.getElementById('done-btn').addEventListener('click', () => {
+            sessionSummaryModal.classList.add('hidden');
+            showInfoModal('Session Complete!', 'Returning to dashboard...', 'success');
+            setTimeout(() => window.location.href = 'dashboard.html', 2000);
+        });
+        document.querySelector('.download-btn').addEventListener('click', () => {
+            showInfoModal('Download Started', 'Your session summary and corrections have been saved as a PDF.', 'success');
+        });
+        sessionSummaryModal.addEventListener('click', (e) => { if (e.target.id === 'session-summary') sessionSummaryModal.classList.add('hidden'); });
+        
+        // ========================================
+        // VIDEO SESSION CODE
+        // ========================================
+        
         // Video elements
         const myVideo = document.getElementById('myVideo');
         const remoteVideo = document.getElementById('remoteVideo');
