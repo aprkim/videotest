@@ -1618,9 +1618,16 @@
         // TabbiMate Video instance
         let videoChat;
         let bridge = null;
-        let localStream = null;
+        let camera_stream = null;
         let channelId = null;
-        let memberId = null;
+        let memberData = null;  // Store to filter self stream echo
+        
+        // Test partner - hardcoded for now
+        const TEST_PARTNER = {
+            pid: "U8FXidAmuLzEy",
+            username: "oct14",
+            email: "oct14@test.com"
+        };
         
         // UI Update Functions
         function updateLoading(text, subtext = '') {
@@ -1718,54 +1725,114 @@
             try {
                 console.log('=== Connecting to Session ===');
                 console.log('Session ID:', sessionId);
-                console.log('Partner:', partnerName);
                 console.log('My email:', myEmail);
-                console.log('Partner email:', partnerEmail);
+                console.log('Test partner:', TEST_PARTNER.username);
                 
-                // Step 1: Get local media stream
-                updateLoading('Accessing camera and microphone...', '');
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: true
-                });
+                // Step 1: Login to Makedo
+                updateLoading('Connecting to video server...', '');
+                console.log('Authenticating with Makedo...');
                 
-                console.log('✅ Local media stream obtained');
-                
-                // Attach to local video immediately
-                myVideo.srcObject = localStream;
-                await myVideo.play();
-                myPlaceholder.style.display = 'none';
-                myVideo.style.display = 'block';
-                
-                console.log('✅ Local video displaying');
-                
-                // Try WebRTC connection, but continue even if it fails
-                try {
-                    await connectWebRTC(sessionId, myEmail, myPassword, partnerEmail, partnerName);
-                } catch (webrtcError) {
-                    console.error('WebRTC connection failed:', webrtcError);
-                    console.log('Continuing with local video only...');
-                    
-                    // Show helpful error to user
-                    let errorMessage = webrtcError.message;
-                    if (errorMessage.includes('Partner not found')) {
-                        errorMessage = `Your partner hasn't connected their video account yet.\n\nBoth users must:\n1. Connect video account on dashboard\n2. Join this session\n\nYou can see yourself, but can't connect to partner until they set up their video account.`;
-                    }
-                    
-                    const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-                    showInfoModal('Video Connection Issue', errorMessage, 'warning');
+                if (!window.MakedoFetch) {
+                    throw new Error('Makedo Fetch not available');
                 }
                 
-                // Always hide loading and show UI
+                const loginResult = await window.MakedoFetch.login({
+                    email: myEmail,
+                    password: myPassword
+                });
+                
+                console.log('Login result:', loginResult);
+                
+                if (loginResult.status !== 'loggedIn') {
+                    throw new Error('Failed to authenticate with video server');
+                }
+                
+                console.log('✅ Authenticated with Makedo:', loginResult.email);
+                
+                // Step 2: Initialize Bridge
+                updateLoading('Setting up video connection...', '');
+                
+                if (!window.MakedoBridge) {
+                    throw new Error('Makedo Bridge not available');
+                }
+                
+                bridge = new window.MakedoBridge();
+                bridge.initDispatcher();
+                
+                console.log('✅ Bridge initialized');
+                
+                // Step 3: Create channel with test partner
+                updateLoading('Creating video room...', '');
+                console.log('Creating channel with:', TEST_PARTNER.username);
+                
+                const channelResult = await bridge.createQuickChatChannel({
+                    invited: TEST_PARTNER.pid,
+                    message: `TabbiMate session ${sessionId}`
+                });
+                
+                channelId = channelResult.pid;
+                console.log('✅ Channel created:', channelId);
+                
+                // Step 4: Get member info
+                memberData = await bridge.getOrCreateMeMember({
+                    channel_id: channelId
+                });
+                
+                const memberId = memberData.pub_id || memberData.pid;
+                const accessCode = memberData.access_code || channelResult.access_code || "413239";
+                
+                console.log('✅ Member ID:', memberId);
+                console.log('✅ Member data stored for self-stream filtering');
+                
+                // Step 5: Setup Galene connection
+                updateLoading('Connecting to video room...', '');
+                bridge.remote_serverSetup(channelId, memberId, accessCode);
+                
+                console.log('✅ Galene connection setup');
+                
+                // Step 6: Setup all callbacks BEFORE joining
+                setupBridgeCallbacks(TEST_PARTNER.username);
+                
+                // Step 7: Create local camera stream (BEFORE joining)
+                updateLoading('Setting up camera...', '');
+                console.log('Creating local camera stream with audio and video...');
+                
+                // CORRECT: Use bridge.comms.local_createStream(type, audio, video)
+                camera_stream = await bridge.comms.local_createStream('camera', true, true);
+                
+                console.log('✅ Camera stream created:', camera_stream);
+                
+                // Attach local stream to video element
+                if (camera_stream) {
+                    myVideo.srcObject = camera_stream;
+                    await myVideo.play();
+                    myPlaceholder.style.display = 'none';
+                    myVideo.style.display = 'block';
+                    console.log('✅ Local video displaying');
+                } else {
+                    console.error('Failed to create camera stream');
+                }
+                
+                // Step 8: Join channel and start broadcasting
+                updateLoading('Joining session...', '');
+                console.log('Joining channel and starting broadcast...');
+                await bridge.comms.remote_serverJoin();
+                
+                console.log('✅ Joined channel! Broadcasting and waiting for partner...');
+                
+                // Hide loading and show UI
                 hideLoading();
                 
-                // Show message that partner is not yet connected
-                document.getElementById('remote-name').textContent = `${partnerName} · Waiting`;
+                // Update UI
+                document.getElementById('partner-name').textContent = TEST_PARTNER.username;
+                document.getElementById('remote-name').textContent = `${TEST_PARTNER.username} · Waiting`;
                 
                 console.log('✅ Session ready!');
                 
             } catch (error) {
                 console.error('Connection error:', error);
+                hideLoading();
+                
                 if (error.name === 'NotAllowedError') {
                     showError('Camera/microphone access denied. Please allow access and try again.');
                 } else {
@@ -1774,120 +1841,45 @@
             }
         }
         
-        async function connectWebRTC(sessionId, myEmail, myPassword, partnerEmail, partnerName) {
-            // Step 2: Login to Makedo (using stored credentials from dashboard)
-            // Note: Even though user logged in on dashboard, we need fresh auth for this page's WebSocket
-            updateLoading('Connecting to video server...', '');
-            console.log('Authenticating with Makedo...');
+        function setupBridgeCallbacks(partnerName) {
+            console.log('Setting up Bridge callbacks...');
             
-            if (!window.MakedoFetch) {
-                throw new Error('Makedo Fetch not available');
-            }
-            
-            const loginResult = await window.MakedoFetch.login({
-                email: myEmail,
-                password: myPassword
-            });
-            
-            console.log('Login result:', loginResult);
-            
-            if (loginResult.status !== 'loggedIn') {
-                throw new Error('Failed to authenticate with video server');
-            }
-            
-            console.log('✅ Authenticated with Makedo:', loginResult.email);
-            
-            // Step 3: Initialize Bridge
-            updateLoading('Setting up video connection...', '');
-            
-            if (!window.MakedoBridge) {
-                throw new Error('Makedo Bridge not available');
-            }
-            
-            bridge = new window.MakedoBridge();
-            bridge.initDispatcher();
-            
-            console.log('✅ Bridge initialized');
-            
-            // Step 4: Find partner by email
-            updateLoading('Finding your partner...', '');
-            console.log('Searching for partner email:', partnerEmail);
-            
-            const users = await bridge.getUsersByQuery({
-                query: partnerEmail,
-                count: 20,
-                depth: 1
-            });
-            
-            console.log('Users found:', users);
-            console.log('Number of users:', users.length);
-            
-            const partner = users.find(user => user.email === partnerEmail);
-            if (!partner) {
-                console.error('Partner not found!');
-                console.error('Searched for:', partnerEmail);
-                console.error('Available users:', users.map(u => u.email));
-                throw new Error(`Partner not found on video server. They may need to connect their video account first. Searched for: ${partnerEmail}`);
-            }
-            
-            console.log('✅ Partner found:', partner.username, 'PID:', partner.pid);
-            
-            // Step 5: Create/Join channel
-            updateLoading('Creating video room...', '');
-            const channelResult = await bridge.createQuickChatChannel({
-                invited: partner.pid,
-                message: `TabbiMate session ${sessionId}`
-            });
-            
-            channelId = channelResult.pid;
-            console.log('✅ Channel created:', channelId);
-            
-            // Step 6: Get member info
-            const memberData = await bridge.getOrCreateMeMember({
-                channel_id: channelId
-            });
-            
-            memberId = memberData.pub_id || memberData.pid;
-            const accessCode = memberData.access_code || channelResult.access_code || "413239";
-            
-            console.log('✅ Member ID:', memberId);
-            
-            // Step 7: Setup Galene connection
-            updateLoading('Connecting to video room...', '');
-            bridge.remote_serverSetup(channelId, memberId, accessCode);
-            
-            console.log('✅ Galene connection setup');
-            
-            // Step 8: Setup stream callbacks BEFORE joining
-            setupStreamCallbacks(partnerName);
-            
-            // Step 9: Join channel
-            updateLoading('Joining session...', '');
-            await bridge.comms.joinChannel();
-            
-            console.log('✅ Joined channel, waiting for partner...');
-            
-            // Step 10: Publish local stream
-            await publishLocalStream();
-            
-            console.log('✅ WebRTC connected! Waiting for partner to join...');
-        }
-        
-        function setupStreamCallbacks(partnerName) {
-            // Callback when successfully joined
+            // 1. Callback when successfully joined channel
             bridge.comms.setOnJoinedChannel(function() {
-                console.log('✅ Successfully joined Galene channel!');
+                console.log('🎉 setOnJoinedChannel: Successfully joined channel!');
+                console.log('Now broadcasting camera stream to partner');
             });
             
-            // Callback when receiving remote stream
-            bridge.comms.setOnStream(function(stream) {
-                console.log('✅ Received remote stream:', stream);
+            // 2. Callback when MY stream starts going up
+            bridge.comms.setOnNewUpStream(function(streamId, memberId, type, stream) {
+                console.log('📤 setOnNewUpStream: My stream started broadcasting');
+                console.log('  Stream ID:', streamId);
+                console.log('  Member ID:', memberId);
+                console.log('  Type:', type);
+                console.log('  Stream:', stream);
+            });
+            
+            // 3. Callback when receiving PARTNER's stream (MOST IMPORTANT!)
+            bridge.comms.setOnNewDownStream(async function(streamId, memberId, type, stream) {
+                console.log('📥 setOnNewDownStream: Received stream');
+                console.log('  Stream ID:', streamId);
+                console.log('  Member ID:', memberId);
+                console.log('  Type:', type);
+                console.log('  Stream:', stream);
+                console.log('  My member IDs:', memberData?.pub_id, memberData?.pid);
                 
-                if (stream && stream.kind === 'video') {
-                    // Attach remote video stream
-                    const mediaStream = new MediaStream([stream]);
-                    remoteVideo.srcObject = mediaStream;
-                    remoteVideo.play();
+                // IMPORTANT: Ignore our own stream echo
+                if (memberId === memberData?.pub_id || memberId === memberData?.pid) {
+                    console.log('⚠️ Ignoring self stream echo');
+                    return;
+                }
+                
+                console.log('✅ This is partner stream, not self!');
+                
+                if (stream && type === 'camera') {
+                    // Attach partner's stream to remote video element
+                    remoteVideo.srcObject = stream;
+                    await remoteVideo.play();
                     
                     // Hide placeholder, show video
                     remotePlaceholder.style.display = 'none';
@@ -1896,44 +1888,41 @@
                     // Update name (remove "Waiting")
                     document.getElementById('remote-name').textContent = partnerName;
                     
-                    console.log('✅ Remote video displaying!');
+                    console.log('✅ Partner video now displaying!');
                 }
             });
             
-            // Callback when remote stream is closed
-            bridge.comms.setOnClose(function(streamId) {
-                console.log('Remote stream closed:', streamId);
+            // 4. Callback when partner's stream ends
+            bridge.comms.setOnEndDownStream(function(streamId, memberId, type) {
+                console.log('📭 setOnEndDownStream: Partner stream ended');
+                console.log('  Stream ID:', streamId);
+                console.log('  Member ID:', memberId);
+                console.log('  Type:', type);
                 
                 // Show placeholder again
                 remoteVideo.style.display = 'none';
                 remotePlaceholder.style.display = 'flex';
                 document.getElementById('remote-name').textContent = `${partnerName} · Waiting`;
+                
+                console.log('Partner disconnected, showing waiting state');
             });
-        }
-        
-        async function publishLocalStream() {
-            if (!bridge || !bridge.comms || !localStream) {
-                console.error('Cannot publish: missing bridge, comms, or stream');
-                return;
-            }
             
-            try {
-                // Publish video track
-                const videoTrack = localStream.getVideoTracks()[0];
-                if (videoTrack) {
-                    await bridge.comms.sendStream(videoTrack);
-                    console.log('✅ Published video stream');
+            // 5. Callback when disconnected from channel
+            bridge.comms.setOnExitedChannel(function() {
+                console.log('🚪 setOnExitedChannel: Exited channel');
+                console.log('Cleaning up connection...');
+                
+                // Clean up streams
+                if (camera_stream) {
+                    camera_stream = null;
                 }
                 
-                // Publish audio track
-                const audioTrack = localStream.getAudioTracks()[0];
-                if (audioTrack) {
-                    await bridge.comms.sendStream(audioTrack);
-                    console.log('✅ Published audio stream');
-                }
-            } catch (error) {
-                console.error('Error publishing stream:', error);
-            }
+                // Reset UI
+                remoteVideo.style.display = 'none';
+                remotePlaceholder.style.display = 'flex';
+            });
+            
+            console.log('✅ All callbacks configured');
         }
         
         // Control Buttons
@@ -1990,9 +1979,9 @@
                 'Are you sure you want to leave this session?',
                 'Leave',
                 () => {
-                    // Stop all tracks
-                    if (localStream) {
-                        localStream.getTracks().forEach(track => track.stop());
+                    // Stop camera stream
+                    if (camera_stream) {
+                        camera_stream = null;
                     }
                     
                     // Disconnect from Bridge
@@ -2029,47 +2018,48 @@
         // Share Button (Screen Sharing)
         document.getElementById('toggle-share').addEventListener('click', async () => {
             try {
-                const shareStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: true
-                });
-                
-                // Replace video track with screen share
-                const videoTrack = shareStream.getVideoTracks()[0];
-                const sender = myVideo.srcObject.getVideoTracks()[0];
-                
-                // Show screen in myVideo
-                const newStream = new MediaStream([...shareStream.getVideoTracks(), ...localStream.getAudioTracks()]);
-                myVideo.srcObject = newStream;
-                
-                // Publish screen share to partner if connected
-                if (bridge && bridge.comms) {
-                    await bridge.comms.sendStream(videoTrack);
+                if (!bridge || !bridge.comms) {
+                    throw new Error('Not connected to video server');
                 }
                 
-                const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>';
-                showInfoModal('Screen Sharing Started', 'Your screen is now being shared with your partner.', 'success');
+                console.log('Starting screencast...');
                 
-                // When screen share stops, switch back to camera
-                videoTrack.onended = async () => {
-                    const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                    localStream = cameraStream;
-                    myVideo.srcObject = localStream;
+                // CORRECT: Use Bridge API for screencast
+                const screencast_stream = await bridge.comms.local_createStream('screencast', true, true);
+                
+                if (screencast_stream) {
+                    // Show screencast in myVideo
+                    myVideo.srcObject = screencast_stream;
+                    await myVideo.play();
                     
-                    // Publish camera back to partner
-                    if (bridge && bridge.comms) {
-                        const camTrack = cameraStream.getVideoTracks()[0];
-                        await bridge.comms.sendStream(camTrack);
-                    }
+                    console.log('✅ Screencast started');
                     
-                    showInfoModal('Screen Sharing Stopped', 'Your camera view has been restored.', 'info');
-                };
+                    const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>';
+                    showInfoModal('Screen Sharing Started', 'Your screen is now being shared with your partner.', 'success');
+                    
+                    // Listen for when screen share stops
+                    screencast_stream.getVideoTracks().forEach(track => {
+                        track.onended = async () => {
+                            console.log('Screencast ended, switching back to camera...');
+                            
+                            // Switch back to camera stream
+                            camera_stream = await bridge.comms.local_createStream('camera', true, true);
+                            if (camera_stream) {
+                                myVideo.srcObject = camera_stream;
+                                await myVideo.play();
+                                console.log('✅ Switched back to camera');
+                                
+                                showInfoModal('Screen Sharing Stopped', 'Your camera view has been restored.', 'info');
+                            }
+                        };
+                    });
+                } else {
+                    throw new Error('Failed to create screencast stream');
+                }
             } catch (error) {
                 console.error('Screen share error:', error);
-                if (error.name === 'NotAllowedError') {
-                    alert('Screen sharing permission denied.');
-                } else {
-                    alert('Failed to share screen: ' + error.message);
-                }
+                const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+                showInfoModal('Screen Sharing Failed', 'Could not start screen sharing: ' + error.message, 'warning');
             }
         });
         
