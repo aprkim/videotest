@@ -1855,11 +1855,19 @@
                 }
                 
                 // Step 8: Join channel and start broadcasting (in background)
-                console.log('Joining channel and starting broadcast...');
+                console.log('========================================');
+                console.log('🚀 CALLING bridge.comms.remote_serverJoin()');
+                console.log('This makes you visible to partner and starts broadcasting');
+                console.log('========================================');
+                
                 await bridge.comms.remote_serverJoin();
                 
-                console.log('✅ Joined channel! Broadcasting and waiting for partner...');
-                console.log('✅ Session ready!');
+                console.log('========================================');
+                console.log('✅ remote_serverJoin() COMPLETED!');
+                console.log('✅ You are now broadcasting to the channel');
+                console.log('✅ Partner should be able to see you');
+                console.log('✅ Waiting for partner to join and broadcast...');
+                console.log('========================================');
                 
             } catch (error) {
                 console.error('Connection error:', error);
@@ -1878,27 +1886,36 @@
             
             // 1. Callback when successfully joined channel
             bridge.comms.setOnJoinedChannel(function() {
-                console.log('🎉 setOnJoinedChannel: Successfully joined channel!');
-                console.log('Now broadcasting camera stream to partner');
+                console.log('========================================');
+                console.log('🎉 CALLBACK: setOnJoinedChannel FIRED!');
+                console.log('You have successfully joined the Galene channel');
+                console.log('Your camera stream is now broadcasting');
+                console.log('========================================');
             });
             
             // 2. Callback when MY stream starts going up
             bridge.comms.setOnNewUpStream(function(streamId, memberId, type, stream) {
-                console.log('📤 setOnNewUpStream: My stream started broadcasting');
+                console.log('========================================');
+                console.log('📤 CALLBACK: setOnNewUpStream FIRED!');
+                console.log('YOUR STREAM IS NOW BROADCASTING TO PARTNER!');
                 console.log('  Stream ID:', streamId);
                 console.log('  Member ID:', memberId);
                 console.log('  Type:', type);
                 console.log('  Stream:', stream);
+                console.log('========================================');
             });
             
             // 3. Callback when receiving PARTNER's stream (MOST IMPORTANT!)
             bridge.comms.setOnNewDownStream(async function(streamId, memberId, type, stream) {
-                console.log('📥 setOnNewDownStream: Received stream');
+                console.log('========================================');
+                console.log('📥 CALLBACK: setOnNewDownStream FIRED!');
+                console.log('RECEIVED A STREAM FROM SOMEONE!');
                 console.log('  Stream ID:', streamId);
                 console.log('  Member ID:', memberId);
                 console.log('  Type:', type);
                 console.log('  Stream:', stream);
                 console.log('  My member IDs:', memberData?.pub_id, memberData?.pid);
+                console.log('========================================');
                 
                 // IMPORTANT: Ignore our own stream echo
                 if (memberId === memberData?.pub_id || memberId === memberData?.pid) {
