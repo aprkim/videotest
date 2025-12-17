@@ -35,8 +35,8 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: #1a1a1a;
-            color: #ffffff;
+            background-color: #f5f5f5;
+            color: #333333;
             height: 100vh;
             overflow: hidden;
         }
@@ -46,7 +46,7 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
-            background-color: #1a1a1a;
+            background-color: #f5f5f5;
         }
         
         /* Header */
@@ -54,15 +54,61 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 30px;
-            background-color: #2a2a2a;
-            border-bottom: 1px solid #3a3a3a;
+            padding: 20px 40px;
+            background-color: #ffffff;
+            border-bottom: none;
         }
         
         .header-left {
             display: flex;
             align-items: center;
             gap: 15px;
+            position: relative;
+        }
+        
+        .timer-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: #ffffff;
+            color: #333333;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            cursor: default;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .timer-btn svg {
+            width: 18px;
+            height: 18px;
+            color: #666666;
+        }
+        
+        .help-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: #ffffff;
+            color: #333333;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .help-btn:hover {
+            background-color: #f8f8f8;
+        }
+        
+        .help-btn svg {
+            width: 18px;
+            height: 18px;
+            color: #666666;
         }
         
         .leave-btn {
@@ -70,10 +116,10 @@
             align-items: center;
             gap: 8px;
             padding: 8px 16px;
-            background-color: #BF3143;
-            color: white;
-            border: none;
-            border-radius: 6px;
+            background-color: #ffffff;
+            color: #BF3143;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
@@ -81,46 +127,12 @@
         }
         
         .leave-btn:hover {
-            background-color: #a02838;
+            background-color: #fff5f5;
         }
         
         .leave-btn svg {
             width: 18px;
             height: 18px;
-        }
-        
-        .help-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px;
-            background-color: #3a3a3a;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .help-btn:hover {
-            background-color: #4a4a4a;
-        }
-        
-        .theme-toggle-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px;
-            background-color: #3a3a3a;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .theme-toggle-btn:hover {
-            background-color: #4a4a4a;
         }
         
         .header-center {
@@ -131,6 +143,7 @@
         .video-title {
             font-size: 24px;
             font-weight: 600;
+            color: #333333;
         }
         
         .tabbi-red {
@@ -145,13 +158,13 @@
         
         .partner-name {
             font-size: 16px;
-            font-weight: 500;
-            color: #e0e0e0;
+            font-weight: 600;
+            color: #333333;
         }
         
         .session-count {
             font-size: 14px;
-            color: #999;
+            color: #666666;
         }
         
         .favorite-btn {
@@ -201,26 +214,28 @@
             flex: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            padding: 10px;
-            background-color: #1a1a1a;
+            gap: 20px;
+            padding: 40px;
+            background-color: #f5f5f5;
         }
         
         .video-panel {
             position: relative;
-            background-color: #2a2a2a;
-            border-radius: 12px;
+            background-color: #ffffff;
+            border-radius: 16px;
             overflow: hidden;
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             justify-content: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .video-element {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            background-color: #1a1a1a;
+            background-color: #f9f9f9;
         }
         
         .video-placeholder {
@@ -232,34 +247,39 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            background-color: #f9f9f9;
         }
         
         .video-name-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             text-align: center;
         }
         
         .video-name {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 500;
-            color: #e0e0e0;
-            margin-top: 10px;
+            color: #333333;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #e0e0e0;
         }
         
         .mute-indicator {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: rgba(191, 49, 67, 0.2);
-            margin-bottom: 10px;
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
         }
         
         .mute-indicator svg {
-            width: 24px;
-            height: 24px;
+            width: 16px;
+            height: 16px;
             color: #BF3143;
         }
         
@@ -273,79 +293,44 @@
             justify-content: center;
             align-items: center;
             gap: 15px;
-            padding: 20px;
-            background-color: #2a2a2a;
-            border-top: 1px solid #3a3a3a;
+            padding: 30px;
+            background-color: #ffffff;
+            border-top: none;
         }
         
         .control-btn {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 6px;
-            padding: 12px 20px;
-            background-color: #3a3a3a;
-            border: none;
-            border-radius: 8px;
-            color: #e0e0e0;
+            gap: 8px;
+            padding: 12px 24px;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 24px;
+            color: #333333;
             cursor: pointer;
             transition: all 0.2s;
-        }
-        
-        .control-btn:hover {
-            background-color: #4a4a4a;
-        }
-        
-        .control-btn[data-active="false"] {
-            background-color: #BF3143;
-        }
-        
-        .control-btn[data-active="false"]:hover {
-            background-color: #a02838;
-        }
-        
-        .icon-wrapper {
-            position: relative;
-            width: 24px;
-            height: 24px;
-        }
-        
-        .control-icon {
-            width: 24px;
-            height: 24px;
-        }
-        
-        .icon-slash {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 28px;
-            height: 2px;
-            background-color: currentColor;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            display: none;
-        }
-        
-        .control-btn[data-active="false"] .icon-slash {
-            display: block;
-        }
-        
-        .control-label {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 500;
         }
         
+        .control-btn:hover {
+            background-color: #f8f8f8;
+        }
+        
+        .control-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* AI button is red in original design */
         .ai-btn {
-            background-color: #2a2a2a;
-        }
-        
-        .ai-btn[data-active="true"] {
-            background-color: #4a9eff;
+            background-color: #BF3143;
             color: white;
+            border-color: #BF3143;
         }
         
-        .ai-btn[data-active="true"]:hover {
-            background-color: #3a8eef;
+        .ai-btn:hover {
+            background-color: #a02838;
         }
         
         /* Loading Overlay */
@@ -402,34 +387,137 @@
             }
         }
         
-        /* Light Theme */
-        body.light-theme {
-            background-color: #f5f5f5;
+        /* Theme Toggle Button */
+        .theme-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333333;
+            border: 1px solid #e0e0e0;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            z-index: 10000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
-        body.light-theme .video-session-container {
+        .theme-toggle-btn:hover {
             background-color: #ffffff;
         }
         
-        body.light-theme .video-header {
-            background-color: #ffffff;
-            border-bottom: 1px solid #e0e0e0;
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
         }
         
-        body.light-theme .video-title {
-            color: #333333;
+        /* Dark Theme */
+        body.dark-theme {
+            background-color: #1a1a1a;
+            color: #ffffff;
         }
         
-        body.light-theme .partner-name {
-            color: #333333;
+        body.dark-theme .video-session-container {
+            background-color: #1a1a1a;
         }
         
-        body.light-theme .session-count {
-            color: #666666;
+        body.dark-theme .video-header {
+            background-color: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
         }
         
-        body.light-theme .favorite-btn {
-            color: #666666;
+        body.dark-theme .video-title {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .timer-btn,
+        body.dark-theme .help-btn,
+        body.dark-theme .leave-btn {
+            background-color: #3a3a3a;
+            color: #ffffff;
+            border-color: #4a4a4a;
+        }
+        
+        body.dark-theme .leave-btn {
+            color: #ff6b7a;
+        }
+        
+        body.dark-theme .help-btn:hover {
+            background-color: #4a4a4a;
+        }
+        
+        body.dark-theme .leave-btn:hover {
+            background-color: #4a2a2a;
+        }
+        
+        body.dark-theme .partner-name {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .session-count {
+            color: #999999;
+        }
+        
+        body.dark-theme .video-grid {
+            background-color: #1a1a1a;
+        }
+        
+        body.dark-theme .video-panel {
+            background-color: #2a2a2a;
+            border-color: #3a3a3a;
+        }
+        
+        body.dark-theme .video-placeholder {
+            background-color: #2a2a2a;
+        }
+        
+        body.dark-theme .video-name {
+            color: #ffffff;
+            background-color: rgba(42, 42, 42, 0.9);
+            border-color: #4a4a4a;
+        }
+        
+        body.dark-theme .video-controls {
+            background-color: #2a2a2a;
+            border-top: 1px solid #3a3a3a;
+        }
+        
+        body.dark-theme .control-btn {
+            background-color: #3a3a3a;
+            color: #ffffff;
+            border-color: #4a4a4a;
+        }
+        
+        body.dark-theme .control-btn:hover {
+            background-color: #4a4a4a;
+        }
+        
+        body.dark-theme .ai-btn {
+            background-color: #BF3143;
+            color: white;
+            border-color: #BF3143;
+        }
+        
+        body.dark-theme .ai-btn:hover {
+            background-color: #a02838;
+        }
+        
+        body.dark-theme .theme-toggle-btn {
+            background-color: rgba(42, 42, 42, 0.9);
+            color: #ffffff;
+            border-color: #4a4a4a;
+        }
+        
+        body.dark-theme .theme-toggle-btn:hover {
+            background-color: #3a3a3a;
+        }
+        
+        body.dark-theme .favorite-btn {
+            color: #999999;
         }
         
         body.light-theme .video-panel {
