@@ -2,10 +2,9 @@
  * TabbiMate Video Chat Handler
  * Simplified video chat implementation using Makedo's Bridge API
  * Based on vibechat1_ux.js but tailored for TabbiMate's auto-matching flow
+ * 
+ * Note: Bridge and Fetch are loaded from protocol.js (loaded in HTML)
  */
-
-import Bridge from 'https://proto2.makedo.com:8883/ux/scripts/bridge.js';
-import Fetch from 'https://proto2.makedo.com:8883/ux/scripts/fetch.js';
 
 class TabbiMateVideo {
     constructor() {
@@ -476,5 +475,6 @@ class TabbiMateVideo {
     }
 }
 
-export default TabbiMateVideo;
+// Expose globally for use in HTML scripts
+window.TabbiMateVideo = TabbiMateVideo;
 
