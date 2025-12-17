@@ -1156,7 +1156,7 @@
                                 Connect Video Account
                             </button>
                             
-                            <button class="btn btn-secondary hidden" id="disconnect-video-account-btn" style="width: 100%; background: transparent; color: #DC2626; border: 1px solid #DC2626;">
+                            <button class="btn btn-secondary hidden" id="disconnect-video-account-btn" onclick="window.handleDisconnectVideoAccount()" style="width: 100%; background: transparent; color: #DC2626; border: 1px solid #DC2626;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="18" y1="6" x2="6" y2="18"/>
                                     <line x1="6" y1="6" x2="18" y2="18"/>
@@ -2107,8 +2107,21 @@
             }
         }
         
+        // Handle disconnect video account
+        function handleDisconnectVideoAccount() {
+            console.log('=== handleDisconnectVideoAccount() called ===');
+            // Show confirmation modal
+            const modal = document.getElementById('disconnect-video-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            } else {
+                console.error('Disconnect modal not found!');
+            }
+        }
+        
         // Make functions globally available for onclick handlers
         window.handleSignOut = handleSignOut;
+        window.handleDisconnectVideoAccount = handleDisconnectVideoAccount;
         window.applyCrop = applyCrop;
         window.closeCropModal = closeCropModal;
         window.removeLanguage = removeLanguage;
