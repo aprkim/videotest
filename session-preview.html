@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Session Preview - TabbiMate</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Video Session Container */
+        .video-session-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #1a1a1a;
+        }
+        
+        /* Header */
+        .video-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .leave-btn, .help-btn, .theme-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: #BF3143;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .help-btn, .theme-toggle-btn {
+            background-color: #3a3a3a;
+            padding: 8px;
+        }
+        
+        .leave-btn:hover {
+            background-color: #a02838;
+        }
+        
+        .help-btn:hover, .theme-toggle-btn:hover {
+            background-color: #4a4a4a;
+        }
+        
+        .leave-btn svg, .help-btn svg, .theme-toggle-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .header-center {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .video-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .tabbi-red {
+            color: #BF3143;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .partner-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        
+        .session-count {
+            font-size: 14px;
+            color: #999;
+        }
+        
+        .favorite-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: #999;
+            transition: color 0.2s;
+        }
+        
+        .favorite-btn:hover {
+            color: #FFD700;
+        }
+        
+        .favorite-btn.favorited {
+            color: #FFD700;
+        }
+        
+        .favorite-btn svg {
+            fill: currentColor;
+            stroke: currentColor;
+        }
+        
+        /* Video Grid */
+        .video-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 10px;
+            background-color: #1a1a1a;
+        }
+        
+        .video-panel {
+            position: relative;
+            background-color: #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+        }
+        
+        .video-name {
+            font-size: 20px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        
+        /* Video Controls */
+        .video-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background-color: #2a2a2a;
+            border-top: 1px solid #3a3a3a;
+        }
+        
+        .control-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 20px;
+            background-color: #3a3a3a;
+            border: none;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            background-color: #4a4a4a;
+        }
+        
+        .control-btn[data-active="false"] {
+            background-color: #BF3143;
+        }
+        
+        .icon-wrapper {
+            position: relative;
+            width: 24px;
+            height: 24px;
+        }
+        
+        .control-icon {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .icon-slash {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 28px;
+            height: 2px;
+            background-color: currentColor;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            display: none;
+        }
+        
+        .control-btn[data-active="false"] .icon-slash {
+            display: block;
+        }
+        
+        .control-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .ai-btn {
+            background-color: #2a2a2a;
+        }
+        
+        .ai-btn[data-active="true"] {
+            background-color: #4a9eff;
+            color: white;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Light Theme */
+        body.light-theme {
+            background-color: #f5f5f5;
+        }
+        
+        body.light-theme .video-session-container {
+            background-color: #ffffff;
+        }
+        
+        body.light-theme .video-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        body.light-theme .video-title {
+            color: #333333;
+        }
+        
+        body.light-theme .partner-name {
+            color: #333333;
+        }
+        
+        body.light-theme .session-count {
+            color: #666666;
+        }
+        
+        body.light-theme .favorite-btn {
+            color: #666666;
+        }
+        
+        body.light-theme .video-panel {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+        }
+        
+        body.light-theme .video-placeholder {
+            background: linear-gradient(135deg, #f9f9f9 0%, #efefef 100%);
+        }
+        
+        body.light-theme .video-name {
+            color: #333333;
+        }
+        
+        body.light-theme .video-controls {
+            background-color: #ffffff;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        body.light-theme .control-btn {
+            background-color: #f0f0f0;
+            color: #333333;
+        }
+        
+        body.light-theme .control-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        body.light-theme .control-btn[data-active="false"] {
+            background-color: #BF3143;
+            color: white;
+        }
+        
+        body.light-theme .ai-btn[data-active="true"] {
+            background-color: #4a9eff;
+            color: white;
+        }
+        
+        body.light-theme .help-btn,
+        body.light-theme .theme-toggle-btn {
+            background-color: #f0f0f0;
+            color: #333333;
+        }
+        
+        body.light-theme .help-btn:hover,
+        body.light-theme .theme-toggle-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* Preview Banner */
+        .preview-banner {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(191, 49, 67, 0.95);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-right .session-count {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Preview Banner -->
+    <div class="preview-banner">
+        🎨 Design Preview Mode - This is how the video session looks after matching
+    </div>
+
+    <!-- Video Session Container -->
+    <div class="video-session-container">
+        <!-- Header -->
+        <div class="video-header">
+            <div class="header-left">
+                <button class="leave-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Leave</span>
+                </button>
+                <button class="help-btn" title="Help & Options">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </button>
+                <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Theme">
+                    <svg id="theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <svg id="theme-icon-light" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="header-center">
+                <h1 class="video-title"><span class="tabbi-red">Tabbi</span>Mate</h1>
+            </div>
+            <div class="header-right">
+                <span class="partner-name">Sofia</span>
+                <span class="session-count">1st session</span>
+                <button class="favorite-btn" id="favorite-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Video Grid -->
+        <div class="video-grid">
+            <div class="video-panel">
+                <div class="video-placeholder">
+                    <div class="video-name">You</div>
+                </div>
+            </div>
+            <div class="video-panel">
+                <div class="video-placeholder">
+                    <div class="video-name">Sofia</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Controls -->
+        <div class="video-controls">
+            <button class="control-btn" id="toggle-camera" data-active="true">
+                <div class="icon-wrapper">
+                    <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 7l-7 5 7 5V7z"/>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                    </svg>
+                    <div class="icon-slash"></div>
+                </div>
+                <span class="control-label">Video</span>
+            </button>
+            <button class="control-btn" id="toggle-mic" data-active="true">
+                <div class="icon-wrapper">
+                    <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                    <div class="icon-slash"></div>
+                </div>
+                <span class="control-label">Audio</span>
+            </button>
+            <button class="control-btn ai-btn" id="toggle-ai" data-active="false">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    <circle cx="9" cy="10" r="1" fill="currentColor"/>
+                    <circle cx="15" cy="10" r="1" fill="currentColor"/>
+                    <path d="M9 14h6" stroke-linecap="round"/>
+                </svg>
+                <span class="control-label">AI</span>
+            </button>
+            <button class="control-btn" id="toggle-chat" data-active="false">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+                <span class="control-label">Chat</span>
+            </button>
+            <button class="control-btn" id="toggle-share">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                    <path d="M7 13l5-5 5 5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="control-label">Share</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const body = document.body;
+            const isDark = !body.classList.contains('light-theme');
+            const darkIcon = document.getElementById('theme-icon-dark');
+            const lightIcon = document.getElementById('theme-icon-light');
+            
+            if (isDark) {
+                body.classList.add('light-theme');
+                darkIcon.classList.add('hidden');
+                lightIcon.classList.remove('hidden');
+                localStorage.setItem('session_preview_theme', 'light');
+            } else {
+                body.classList.remove('light-theme');
+                darkIcon.classList.remove('hidden');
+                lightIcon.classList.add('hidden');
+                localStorage.setItem('session_preview_theme', 'dark');
+            }
+        });
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('session_preview_theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            document.getElementById('theme-icon-dark').classList.add('hidden');
+            document.getElementById('theme-icon-light').classList.remove('hidden');
+        }
+        
+        // Button toggles (demo)
+        document.getElementById('toggle-camera').addEventListener('click', function() {
+            const isActive = this.getAttribute('data-active') === 'true';
+            this.setAttribute('data-active', (!isActive).toString());
+        });
+        
+        document.getElementById('toggle-mic').addEventListener('click', function() {
+            const isActive = this.getAttribute('data-active') === 'true';
+            this.setAttribute('data-active', (!isActive).toString());
+        });
+        
+        document.getElementById('toggle-ai').addEventListener('click', function() {
+            const isActive = this.getAttribute('data-active') === 'true';
+            this.setAttribute('data-active', (!isActive).toString());
+        });
+        
+        document.getElementById('toggle-chat').addEventListener('click', function() {
+            const isActive = this.getAttribute('data-active') === 'true';
+            this.setAttribute('data-active', (!isActive).toString());
+        });
+        
+        document.getElementById('favorite-btn').addEventListener('click', function() {
+            this.classList.toggle('favorited');
+        });
+    </script>
+</body>
+</html>
+
