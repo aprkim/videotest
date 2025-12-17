@@ -2036,19 +2036,7 @@
             }
         });
         
-        // Help Button - Toggle dropdown menu
-        const helpMenu = document.getElementById('help-menu');
-        document.getElementById('help-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            helpMenu.classList.toggle('hidden');
-        });
-        
-        // Close help menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!helpMenu.contains(e.target) && !e.target.closest('#help-btn')) {
-                helpMenu.classList.add('hidden');
-            }
-        });
+        // Help button toggle is already set up above in the modal section
         
         // Theme Toggle Button
         document.getElementById('theme-toggle').addEventListener('click', () => {
