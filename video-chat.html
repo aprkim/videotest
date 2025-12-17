@@ -179,11 +179,11 @@
         }
         
         .favorite-btn:hover {
-            color: #FFD700;
+            color: #BF3143;
         }
         
         .favorite-btn.favorited {
-            color: #FFD700;
+            color: #BF3143;
         }
         
         .favorite-btn svg {
@@ -256,31 +256,32 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            text-align: center;
-        }
-        
-        .video-name {
-            font-size: 16px;
-            font-weight: 500;
-            color: #333333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             background-color: rgba(255, 255, 255, 0.9);
             padding: 8px 16px;
             border-radius: 20px;
             border: 1px solid #e0e0e0;
         }
         
+        .video-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333333;
+        }
+        
         .mute-indicator {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 20px;
-            height: 20px;
-            margin-right: 5px;
+            width: 18px;
+            height: 18px;
         }
         
         .mute-indicator svg {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             color: #BF3143;
         }
         
@@ -476,10 +477,13 @@
             background-color: #2a2a2a;
         }
         
-        body.dark-theme .video-name {
-            color: #ffffff;
+        body.dark-theme .video-name-container {
             background-color: rgba(42, 42, 42, 0.9);
             border-color: #4a4a4a;
+        }
+        
+        body.dark-theme .video-name {
+            color: #ffffff;
         }
         
         body.dark-theme .video-controls {
@@ -519,6 +523,11 @@
         
         body.dark-theme .favorite-btn {
             color: #999999;
+        }
+        
+        body.dark-theme .favorite-btn:hover,
+        body.dark-theme .favorite-btn.favorited {
+            color: #ff6b7a;
         }
         
         body.light-theme .video-panel {
