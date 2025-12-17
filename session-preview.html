@@ -699,6 +699,62 @@
             border-color: #BF3143;
         }
         
+        /* Success/Info Modal (reusable) */
+        .info-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .info-content {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .info-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+        }
+        
+        .info-icon.success {
+            color: #2ecc71;
+        }
+        
+        .info-icon.info {
+            color: #3498db;
+        }
+        
+        .info-icon.warning {
+            color: #f39c12;
+        }
+        
+        .info-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333333;
+            margin-bottom: 12px;
+        }
+        
+        .info-message {
+            font-size: 15px;
+            color: #666666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+        
         /* Dark Theme Toggle */
         .theme-toggle-btn {
             position: fixed;
@@ -958,6 +1014,19 @@
             border-color: #BF3143;
         }
         
+        /* Dark Theme - Info Modal */
+        body.dark-theme .info-content {
+            background-color: #2a2a2a;
+        }
+        
+        body.dark-theme .info-title {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .info-message {
+            color: #cccccc;
+        }
+        
         /* Preview Banner */
         .preview-banner {
             position: fixed;
@@ -1107,6 +1176,19 @@
                 <button class="cancel-btn" id="report-cancel">Cancel</button>
                 <button class="confirm-btn" id="report-submit">Submit Report</button>
             </div>
+        </div>
+    </div>
+    
+    <!-- Info/Success Modal (reusable) -->
+    <div class="info-modal hidden" id="info-modal">
+        <div class="info-content">
+            <svg class="info-icon" id="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <h3 class="info-title" id="info-title">Success!</h3>
+            <p class="info-message" id="info-message">This is a message</p>
+            <button class="ok-btn" id="info-ok">OK</button>
         </div>
     </div>
     
@@ -1294,6 +1376,41 @@
     </div>
 
     <script>
+        // Helper function to show info modal
+        function showInfoModal(title, message, iconType = 'success') {
+            const modal = document.getElementById('info-modal');
+            const icon = document.getElementById('info-icon');
+            const titleEl = document.getElementById('info-title');
+            const messageEl = document.getElementById('info-message');
+            
+            // Set icon based on type
+            icon.className = `info-icon ${iconType}`;
+            
+            // Different icons for different types
+            if (iconType === 'success') {
+                icon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+            } else if (iconType === 'info') {
+                icon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>';
+            } else if (iconType === 'warning') {
+                icon.innerHTML = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
+            }
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.classList.remove('hidden');
+        }
+        
+        // Close info modal
+        document.getElementById('info-ok').addEventListener('click', () => {
+            document.getElementById('info-modal').classList.add('hidden');
+        });
+        
+        document.getElementById('info-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('info-modal')) {
+                document.getElementById('info-modal').classList.add('hidden');
+            }
+        });
+        
         // Theme Toggle
         document.getElementById('theme-toggle').addEventListener('click', () => {
             const body = document.body;
@@ -1391,7 +1508,7 @@
         
         document.getElementById('block-confirm').addEventListener('click', () => {
             blockModal.classList.add('hidden');
-            alert('✓ Yuki has been blocked.\n\nYou will not be matched with this user again.');
+            showInfoModal('User Blocked', 'Yuki has been blocked.\n\nYou will not be matched with this user again.', 'success');
         });
         
         blockModal.addEventListener('click', (e) => {
@@ -1417,9 +1534,9 @@
             if (reason) {
                 reportModal.classList.add('hidden');
                 document.getElementById('report-reason').value = '';
-                alert('✓ Report submitted\n\nThank you for helping keep TabbiMate safe.\nOur team will review this report within 24 hours.');
+                showInfoModal('Report Submitted', 'Thank you for helping keep TabbiMate safe.\n\nOur team will review this report within 24 hours.', 'success');
             } else {
-                alert('Please describe the reason for your report.');
+                showInfoModal('Missing Information', 'Please describe the reason for your report.', 'warning');
             }
         });
         
@@ -1429,20 +1546,18 @@
             }
         });
         
-        // Leave button
+        // Leave button - will be handled by confirm modal (to be added)
         document.querySelector('.leave-btn').addEventListener('click', () => {
-            if (confirm('Are you sure you want to leave this session?')) {
-                alert('Leaving session... (Demo)\n\nYou would be redirected to the dashboard.');
-            }
+            showInfoModal('Leave Session', 'Leaving session...\n\nYou would be redirected to the dashboard.\n\n(Demo mode)', 'info');
         });
         
         // Favorite button
         document.getElementById('favorite-btn').addEventListener('click', function() {
             this.classList.toggle('favorited');
             if (this.classList.contains('favorited')) {
-                alert('⭐ Yuki added to your favorites!');
+                showInfoModal('Added to Favorites', 'Yuki has been added to your favorites!\n\nYou can find them in your favorites list on the dashboard.', 'success');
             } else {
-                alert('Yuki removed from favorites');
+                showInfoModal('Removed from Favorites', 'Yuki has been removed from your favorites.', 'info');
             }
         });
         
@@ -1451,9 +1566,9 @@
         document.getElementById('toggle-camera').addEventListener('click', function() {
             videoEnabled = !videoEnabled;
             if (videoEnabled) {
-                alert('📹 Camera turned ON');
+                showInfoModal('Camera On', 'Your camera is now turned on.', 'success');
             } else {
-                alert('📹 Camera turned OFF');
+                showInfoModal('Camera Off', 'Your camera has been turned off.\n\nYour partner can no longer see you.', 'info');
             }
         });
         
@@ -1462,49 +1577,40 @@
         document.getElementById('toggle-mic').addEventListener('click', function() {
             audioEnabled = !audioEnabled;
             if (audioEnabled) {
-                alert('🎤 Microphone turned ON');
+                showInfoModal('Microphone On', 'Your microphone is now turned on.', 'success');
             } else {
-                alert('🔇 Microphone turned OFF');
+                showInfoModal('Microphone Off', 'Your microphone has been muted.\n\nYour partner can no longer hear you.', 'info');
             }
         });
         
         // AI Assistant
         document.getElementById('toggle-ai').addEventListener('click', () => {
-            const aiMessage = `
-🤖 AI Language Assistant
-
-Choose an action:
-• Translate - Get instant translations
-• Correct - Fix your grammar
-• Suggest - Get conversation topics
-• Practice - Language exercises
-
-Type your message or select an action!
-            `;
-            alert(aiMessage.trim());
+            showInfoModal(
+                'AI Language Assistant',
+                'Choose an action:\n\n• Translate - Get instant translations\n• Correct - Fix your grammar\n• Suggest - Get conversation topics\n• Practice - Language exercises\n\nType your message or select an action!',
+                'info'
+            );
         });
         
         // Chat
         document.getElementById('toggle-chat').addEventListener('click', () => {
-            alert('💬 Text chat opened!\n\nYou can now send text messages to Yuki while you talk.');
+            showInfoModal('Text Chat', 'Text chat opened!\n\nYou can now send text messages to Yuki while you talk.', 'success');
         });
         
         // Screen Share
         document.getElementById('toggle-share').addEventListener('click', () => {
-            if (confirm('📺 Start sharing your screen with Yuki?')) {
-                alert('Screen sharing started! (Demo)\n\nYour screen would now be visible to your partner.');
-            }
+            showInfoModal('Screen Sharing', 'Screen sharing started!\n\nYour screen is now visible to your partner.\n\n(Demo mode)', 'success');
         });
         
         // Session Summary - Done button
         document.getElementById('done-btn').addEventListener('click', () => {
             sessionSummaryModal.classList.add('hidden');
-            alert('✓ Session complete!\n\nReturning to dashboard...');
+            showInfoModal('Session Complete!', 'Returning to dashboard...', 'success');
         });
         
         // Session Summary - Download button
         document.querySelector('.download-btn').addEventListener('click', () => {
-            alert('📥 Downloading study notes...\n\nYour session summary and corrections have been saved as a PDF.\n\n(Demo mode - actual download would start here)');
+            showInfoModal('Download Started', 'Your session summary and corrections have been saved as a PDF.\n\n(Demo mode - actual download would start here)', 'success');
         });
         
         // Close session summary when clicking outside
