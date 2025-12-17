@@ -1746,9 +1746,14 @@
                     console.error('WebRTC connection failed:', webrtcError);
                     console.log('Continuing with local video only...');
                     
-                    // Show error to user
+                    // Show helpful error to user
+                    let errorMessage = webrtcError.message;
+                    if (errorMessage.includes('Partner not found')) {
+                        errorMessage = `Your partner hasn't connected their video account yet.\n\nBoth users must:\n1. Connect video account on dashboard\n2. Join this session\n\nYou can see yourself, but can't connect to partner until they set up their video account.`;
+                    }
+                    
                     const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-                    showInfoModal('Connection Issue', `Unable to connect to partner's video: ${webrtcError.message}\n\nYou can still see yourself. Your partner needs to join the session too.`, 'warning');
+                    showInfoModal('Video Connection Issue', errorMessage, 'warning');
                 }
                 
                 // Always hide loading and show UI
@@ -1806,6 +1811,8 @@
             
             // Step 4: Find partner by email
             updateLoading('Finding your partner...', '');
+            console.log('Searching for partner email:', partnerEmail);
+            
             const users = await bridge.getUsersByQuery({
                 query: partnerEmail,
                 count: 20,
@@ -1813,10 +1820,14 @@
             });
             
             console.log('Users found:', users);
+            console.log('Number of users:', users.length);
             
             const partner = users.find(user => user.email === partnerEmail);
             if (!partner) {
-                throw new Error('Partner not found on video server');
+                console.error('Partner not found!');
+                console.error('Searched for:', partnerEmail);
+                console.error('Available users:', users.map(u => u.email));
+                throw new Error(`Partner not found on video server. They may need to connect their video account first. Searched for: ${partnerEmail}`);
             }
             
             console.log('✅ Partner found:', partner.username, 'PID:', partner.pid);
