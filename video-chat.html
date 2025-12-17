@@ -20,7 +20,7 @@
     <script src="firebase-config.js"></script>
     
     <!-- TabbiMate Video Integration -->
-    <script src="tabbimate_video.js?v=3"></script>
+    <script src="tabbimate_video.js?v=4"></script>
     
     <link rel="stylesheet" href="styles.css">
     
@@ -527,6 +527,8 @@
         async function initVideoSession() {
             try {
                 console.log('=== Initializing Video Session ===');
+                console.log('Window.Fetch available?', typeof window.Fetch !== 'undefined');
+                console.log('Window.Bridge available?', typeof window.Bridge !== 'undefined');
                 
                 // Get session ID from URL
                 const urlParams = new URLSearchParams(window.location.search);
@@ -589,9 +591,11 @@
                 
                 // Initialize TabbiMate Video
                 updateLoading('Connecting to video server...', myMakedoEmail);
+                console.log('Creating TabbiMateVideo instance...');
                 videoChat = new window.TabbiMateVideo();
+                console.log('TabbiMateVideo created, attempting login...');
                 await videoChat.login(myMakedoEmail, makedoState.password);
-                console.log('Logged into Makedo');
+                console.log('✅ Logged into Makedo successfully');
                 
                 // Join shared session room
                 updateLoading('Joining session...', 'Connecting to ' + partnerDisplayName);

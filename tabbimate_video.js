@@ -408,12 +408,21 @@ class TabbiMateVideo {
      * Wait for Fetch to be loaded by protocol.js
      */
     async waitForFetch() {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
+            const maxAttempts = 50; // 5 seconds max
+            
             const checkFetch = setInterval(() => {
+                attempts++;
+                
                 if (typeof window.Fetch !== 'undefined') {
                     clearInterval(checkFetch);
                     console.log('[TabbiMateVideo] Fetch is now available');
                     resolve();
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(checkFetch);
+                    console.error('[TabbiMateVideo] Timeout waiting for Fetch');
+                    reject(new Error('Timeout waiting for Fetch to load'));
                 }
             }, 100);
         });
@@ -423,12 +432,21 @@ class TabbiMateVideo {
      * Wait for Bridge to be loaded by protocol.js
      */
     async waitForBridge() {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
+            const maxAttempts = 50; // 5 seconds max
+            
             const checkBridge = setInterval(() => {
+                attempts++;
+                
                 if (typeof window.Bridge !== 'undefined') {
                     clearInterval(checkBridge);
                     console.log('[TabbiMateVideo] Bridge is now available');
                     resolve();
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(checkBridge);
+                    console.error('[TabbiMateVideo] Timeout waiting for Bridge');
+                    reject(new Error('Timeout waiting for Bridge to load'));
                 }
             }, 100);
         });
