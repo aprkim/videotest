@@ -21,7 +21,7 @@ function init() {
     elements = {
         // Sign In
         signinForm: document.getElementById('signin-form'),
-        signinCard: document.querySelector('.auth-card:first-of-type'),
+        signinCard: document.getElementById('signin-card'),
         email: document.getElementById('email'),
         password: document.getElementById('password'),
         signinBtnText: document.getElementById('signin-btn-text'),
@@ -52,8 +52,12 @@ function init() {
     setupMapDots();
     
     // Check URL hash to show signup form if needed
+    console.log('Current URL hash:', window.location.hash);
     if (window.location.hash === '#signup') {
+        console.log('Hash is #signup, showing signup form');
         toggleForm('signup');
+    } else {
+        console.log('No #signup hash, showing signin form by default');
     }
     
     console.log('=== Auth page initialization complete ===');
@@ -239,10 +243,13 @@ async function handleForgotPassword(e) {
 
 // Toggle between sign in and sign up forms
 function toggleForm(form) {
+    console.log('toggleForm called with:', form);
     if (form === 'signup') {
+        console.log('Showing signup form, hiding signin form');
         elements.signinCard.classList.add('hidden');
         elements.signupCard.classList.remove('hidden');
     } else {
+        console.log('Showing signin form, hiding signup form');
         elements.signupCard.classList.add('hidden');
         elements.signinCard.classList.remove('hidden');
     }
