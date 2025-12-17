@@ -1707,6 +1707,10 @@
                 } catch (webrtcError) {
                     console.error('WebRTC connection failed:', webrtcError);
                     console.log('Continuing with local video only...');
+                    
+                    // Show error to user
+                    const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+                    showInfoModal('Connection Issue', `Unable to connect to partner's video: ${webrtcError.message}\n\nYou can still see yourself. Your partner needs to join the session too.`, 'warning');
                 }
                 
                 // Always hide loading and show UI
