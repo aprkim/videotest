@@ -186,8 +186,8 @@ async function handleSignUp(e) {
             console.log('User ID:', userId);
             
             // Store user info in localStorage
-            localStorage.setItem('tabbimate_user_id', userId);
-            localStorage.setItem('tabbimate_user_email', result.user.email);
+            localStorage.setItem('videotest_user_id', userId);
+            localStorage.setItem('videotest_user_email', result.user.email);
             
             console.log('Redirecting to dashboard');
             window.location.href = 'dashboard.html';
@@ -200,7 +200,11 @@ async function handleSignUp(e) {
 
 // Handle Google Sign In
 async function handleGoogleSignIn() {
+    console.log('=== Google Sign In Initiated ===');
+    
     const result = await firebaseService.signInWithGoogle();
+    
+    console.log('Google sign in result:', result);
 
     if (result.success) {
         console.log('Google sign in successful, redirecting to dashboard');
@@ -208,6 +212,7 @@ async function handleGoogleSignIn() {
         // Get user ID from Firebase
         const userId = result.user.uid;
         console.log('User ID:', userId);
+        console.log('User email:', result.user.email);
         
         // Store user info in localStorage
         localStorage.setItem('videotest_user_id', userId);
@@ -217,7 +222,20 @@ async function handleGoogleSignIn() {
         console.log('Redirecting to dashboard');
         window.location.href = 'dashboard.html';
     } else {
-        showError(result.error || 'Google sign in failed. Please try again.');
+        console.error('Google sign in failed:', result.error);
+        
+        // Show user-friendly error message
+        let errorMessage = 'Google sign in failed. Please try again.';
+        
+        if (result.error && result.error.includes('auth/popup-blocked')) {
+            errorMessage = 'Pop-up was blocked. Please allow pop-ups for this site.';
+        } else if (result.error && result.error.includes('auth/popup-closed-by-user')) {
+            errorMessage = 'Sign in was cancelled.';
+        } else if (result.error && result.error.includes('auth/unauthorized-domain')) {
+            errorMessage = 'This domain is not authorized. Please contact support.';
+        }
+        
+        showError(errorMessage);
     }
 }
 
