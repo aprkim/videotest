@@ -3238,19 +3238,20 @@ function setupSessionSummary() {
     const doneBtn = document.getElementById('summary-done');
     if (doneBtn) {
         doneBtn.addEventListener('click', () => {
-            // Get user ID from localStorage
+            console.log('=== Done button clicked ===');
+            
+            // Check if user is signed in
             const userId = localStorage.getItem('videotest_user_id');
+            console.log('User ID:', userId);
             
             if (userId) {
-                // Redirect to profile page
-                const basePath = window.location.pathname.includes('tabbimate') 
-                    ? '/tabbimate/profile' 
-                    : '/profile';
-                window.location.href = `${window.location.origin}${basePath}/${userId}`;
+                // Signed-in user - redirect to dashboard
+                console.log('Signed-in user, redirecting to dashboard');
+                window.location.href = 'dashboard.html';
             } else {
-                // If no user ID, return to main page
-                const basePath = window.location.pathname.replace(/\/session\/\d{10}$/, '');
-                window.location.href = `${window.location.origin}${basePath}`;
+                // Guest user - redirect to index page
+                console.log('Guest user, redirecting to index page');
+                window.location.href = 'index.html';
             }
         });
     }

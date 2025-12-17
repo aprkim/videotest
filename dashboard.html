@@ -767,6 +767,17 @@
             box-shadow: 0 6px 16px rgba(191, 49, 67, 0.4) !important;
         }
         
+        /* Crop Modal Button Styles */
+        .crop-cancel-button:hover {
+            background: #E5E7EB !important;
+        }
+        
+        .crop-apply-button:hover {
+            background: #a52938 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(191, 49, 67, 0.4) !important;
+        }
+        
         /* Empty State */
         .empty-state {
             text-align: center;
@@ -1620,22 +1631,39 @@
         }
         
         function applyCrop() {
+            console.log('=== Apply Crop clicked ===');
+            
             const cropImage = document.getElementById('crop-image');
+            if (!cropImage) {
+                console.error('Crop image element not found');
+                alert('Error: Could not find crop image');
+                return;
+            }
+            
+            console.log('Crop image found:', cropImage.src);
+            console.log('Crop state:', cropState);
+            
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
             // Get the natural image dimensions
             const img = new Image();
             img.onload = function() {
+                console.log('Image loaded, natural size:', img.naturalWidth, 'x', img.naturalHeight);
+                
                 const imageRect = cropImage.getBoundingClientRect();
                 const scaleX = img.naturalWidth / imageRect.width;
                 const scaleY = img.naturalHeight / imageRect.height;
+                
+                console.log('Scale factors:', scaleX, scaleY);
                 
                 // Calculate crop area in original image coordinates
                 const cropX = cropState.cropBox.x * scaleX;
                 const cropY = cropState.cropBox.y * scaleY;
                 const cropWidth = cropState.cropBox.width * scaleX;
                 const cropHeight = cropState.cropBox.height * scaleY;
+                
+                console.log('Crop area:', cropX, cropY, cropWidth, cropHeight);
                 
                 // Set canvas size to crop size
                 canvas.width = cropWidth;
@@ -1646,19 +1674,43 @@
                 
                 // Convert to data URL and update profile preview
                 const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                profilePreview.src = croppedDataUrl;
-                profilePreview.style.display = 'block';
-                defaultAvatar.style.display = 'none';
+                console.log('Cropped image data URL length:', croppedDataUrl.length);
+                
+                const profilePreviewEl = document.getElementById('profile-preview');
+                const defaultAvatarEl = document.getElementById('default-avatar');
+                
+                if (!profilePreviewEl) {
+                    console.error('Profile preview element not found');
+                    alert('Error: Could not find profile preview');
+                    return;
+                }
+                
+                profilePreviewEl.src = croppedDataUrl;
+                profilePreviewEl.style.display = 'block';
+                if (defaultAvatarEl) {
+                    defaultAvatarEl.style.display = 'none';
+                }
+                
+                console.log('Profile preview updated');
                 
                 // Close modal
                 closeCropModal();
+                console.log('Modal closed');
                 
                 // Mark as changed and save
                 hasUnsavedChanges = true;
                 updateSaveButton();
                 saveProfileData();
+                console.log('Profile data saved');
             };
+            
+            img.onerror = function() {
+                console.error('Failed to load image for cropping');
+                alert('Error: Failed to load image for cropping');
+            };
+            
             img.src = cropImage.src;
+            console.log('Started loading image for crop');
         }
         
         // Languages Management
@@ -1951,8 +2003,62 @@
             }
         }
         
-        // Make sign out globally available
+        // Setup crop modal event listeners
+        function setupCropModal() {
+            const modal = document.getElementById('crop-modal');
+            const closeXBtn = document.getElementById('crop-close-x-btn');
+            const cancelBtn = document.getElementById('crop-cancel-btn');
+            const applyBtn = document.getElementById('crop-apply-btn');
+            
+            console.log('Setting up crop modal listeners');
+            console.log('Close X button:', closeXBtn);
+            console.log('Cancel button:', cancelBtn);
+            console.log('Apply button:', applyBtn);
+            
+            // Close X button
+            if (closeXBtn) {
+                closeXBtn.addEventListener('click', () => {
+                    console.log('Close X clicked');
+                    closeCropModal();
+                });
+            }
+            
+            // Cancel button
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                    console.log('Cancel clicked');
+                    closeCropModal();
+                });
+            }
+            
+            // Apply button
+            if (applyBtn) {
+                applyBtn.addEventListener('click', () => {
+                    console.log('Apply Crop clicked');
+                    applyCrop();
+                });
+            }
+            
+            // Close modal when clicking outside
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        console.log('Clicked outside modal');
+                        closeCropModal();
+                    }
+                });
+            }
+        }
+        
+        // Make functions globally available for onclick handlers
         window.handleSignOut = handleSignOut;
+        window.applyCrop = applyCrop;
+        window.closeCropModal = closeCropModal;
+        window.removeLanguage = removeLanguage;
+        window.addLanguageRow = addLanguageRow;
+        window.updateLanguage = updateLanguage;
+        window.removeInterest = removeInterest;
+        window.toggleFavorite = toggleFavorite;
         
         // Handle start call
         // Global function for Connect Video Account button
@@ -2379,35 +2485,58 @@
                 init();
                 setupVideoConnectionButtons();
                 setupSignOutModal();
+                setupCropModal();
             });
         } else {
             init();
             setupVideoConnectionButtons();
             setupSignOutModal();
+            setupCropModal();
         }
     </script>
     
     <!-- Photo Crop Modal -->
-    <div id="crop-modal" class="crop-modal hidden">
-        <div class="crop-modal-content">
-            <div class="crop-header">
-                <h3>Crop Your Photo</h3>
-                <button class="crop-close-btn" onclick="closeCropModal()">&times;</button>
+    <div id="crop-modal" class="crop-modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+        <div class="crop-modal-content" style="background: white; border-radius: 16px; width: 90%; max-width: 700px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden;">
+            <div class="crop-header" style="padding: 24px 32px; background: #BF3143; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; color: white; font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    Crop Your Photo
+                </h3>
+                <button id="crop-close-x-btn" class="crop-close-btn" style="background: rgba(255,255,255,0.2); border: none; width: 36px; height: 36px; border-radius: 8px; color: white; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; line-height: 1;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    ×
+                </button>
             </div>
-            <div class="crop-container">
-                <div class="crop-area">
-                    <img id="crop-image" src="" alt="Image to crop">
-                    <div class="crop-box" id="crop-box">
-                        <div class="crop-handle nw"></div>
-                        <div class="crop-handle ne"></div>
-                        <div class="crop-handle sw"></div>
-                        <div class="crop-handle se"></div>
+            <div class="crop-container" style="padding: 32px;">
+                <div class="crop-area" style="position: relative; width: 100%; max-height: 400px; background: #F3F4F6; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <img id="crop-image" src="" alt="Image to crop" style="max-width: 100%; max-height: 400px; display: block; user-select: none;">
+                    <div class="crop-box" id="crop-box" style="position: absolute; border: 2px solid #BF3143; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); cursor: move;">
+                        <div class="crop-handle nw" style="position: absolute; width: 12px; height: 12px; background: white; border: 2px solid #BF3143; border-radius: 50%; top: -6px; left: -6px; cursor: nw-resize;"></div>
+                        <div class="crop-handle ne" style="position: absolute; width: 12px; height: 12px; background: white; border: 2px solid #BF3143; border-radius: 50%; top: -6px; right: -6px; cursor: ne-resize;"></div>
+                        <div class="crop-handle sw" style="position: absolute; width: 12px; height: 12px; background: white; border: 2px solid #BF3143; border-radius: 50%; bottom: -6px; left: -6px; cursor: sw-resize;"></div>
+                        <div class="crop-handle se" style="position: absolute; width: 12px; height: 12px; background: white; border: 2px solid #BF3143; border-radius: 50%; bottom: -6px; right: -6px; cursor: se-resize;"></div>
                     </div>
                 </div>
+                <p style="margin-top: 16px; text-align: center; color: #6B7280; font-size: 14px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: text-bottom; margin-right: 4px;">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    Drag the box to adjust your crop area, or resize using the corner handles
+                </p>
             </div>
-            <div class="crop-actions">
-                <button class="btn btn-secondary" onclick="closeCropModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="applyCrop()">Apply Crop</button>
+            <div class="crop-actions" style="padding: 0 32px 32px; display: flex; gap: 12px;">
+                <button id="crop-cancel-btn" class="btn btn-secondary crop-cancel-button" style="flex: 1; background: #F3F4F6; color: #374151; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: center;">
+                    Cancel
+                </button>
+                <button id="crop-apply-btn" class="btn btn-primary crop-apply-button" style="flex: 1; background: #BF3143; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(191, 49, 67, 0.3); transition: all 0.2s ease; text-align: center;">
+                    Apply Crop
+                </button>
             </div>
         </div>
     </div>
@@ -2470,7 +2599,7 @@
     <!-- Sign Out Confirmation Modal -->
     <div class="modal-overlay hidden" id="signout-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;">
         <div class="modal-dialog" style="background: white; border-radius: 16px; max-width: 420px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden;">
-            <div class="modal-header" style="padding: 32px 32px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-align: center;">
+            <div class="modal-header" style="padding: 32px 32px 24px; background: #BF3143; text-align: center;">
                 <div style="width: 64px; height: 64px; background: white; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BF3143" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -2487,10 +2616,10 @@
                 </p>
             </div>
             <div class="modal-footer" style="padding: 0 32px 32px; display: flex; gap: 12px;">
-                <button class="btn btn-secondary signout-cancel-btn" id="signout-cancel" style="flex: 1; background: #F3F4F6; color: #374151; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                <button class="btn btn-secondary signout-cancel-btn" id="signout-cancel" style="flex: 1; background: #F3F4F6; color: #374151; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: center;">
                     Cancel
                 </button>
-                <button class="btn btn-primary signout-confirm-btn" id="signout-confirm" style="flex: 1; background: #BF3143; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(191, 49, 67, 0.3); transition: all 0.2s ease;">
+                <button class="btn btn-primary signout-confirm-btn" id="signout-confirm" style="flex: 1; background: #BF3143; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(191, 49, 67, 0.3); transition: all 0.2s ease; text-align: center;">
                     Sign Out
                 </button>
             </div>
