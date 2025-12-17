@@ -54,7 +54,14 @@ function initializeFirebase() {
             storage = null;
         }
 
+        // Expose globally for other scripts
+        window.app = app;
+        window.auth = auth;
+        window.db = db;
+        window.storage = storage;
+
         console.log('Firebase initialized successfully');
+        console.log('Global objects set: app, auth, db, storage');
         return true;
     } catch (error) {
         console.error('Error initializing Firebase:', error);
