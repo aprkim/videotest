@@ -51,6 +51,11 @@ function init() {
     // Setup map dots
     setupMapDots();
     
+    // Check URL hash to show signup form if needed
+    if (window.location.hash === '#signup') {
+        toggleForm('signup');
+    }
+    
     console.log('=== Auth page initialization complete ===');
 }
 
