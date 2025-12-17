@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matching Screen Preview - TabbiMate</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Override to always show matching screen */
+        #matching-screen {
+            display: flex !important;
+        }
+        
+        /* Add dark theme toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .theme-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .theme-btn.active {
+            background: #BF3143;
+            color: white;
+        }
+        
+        .theme-btn:not(.active) {
+            background: white;
+            color: #333;
+        }
+        
+        .theme-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Dark theme styles */
+        body.dark-theme {
+            background: #1a1a1a;
+        }
+        
+        body.dark-theme #matching-screen {
+            background: #1a1a1a;
+        }
+        
+        body.dark-theme .matching-container {
+            background: #2a2a2a;
+        }
+        
+        body.dark-theme .matching-title {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .matching-subtitle {
+            color: #cccccc;
+        }
+        
+        body.dark-theme .matching-timer {
+            color: #ffffff;
+            border-color: #BF3143;
+        }
+        
+        body.dark-theme .detail-label {
+            color: #999999;
+        }
+        
+        body.dark-theme .detail-value {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .cancel-matching-btn {
+            background: #3a3a3a;
+            color: #ffffff;
+        }
+        
+        body.dark-theme .cancel-matching-btn:hover {
+            background: #4a4a4a;
+        }
+        
+        /* Info banner */
+        .preview-info {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(191, 49, 67, 0.95);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10000;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <button class="theme-btn active" id="light-btn" onclick="setTheme('light')">☀️ Light</button>
+        <button class="theme-btn" id="dark-btn" onclick="setTheme('dark')">🌙 Dark</button>
+    </div>
+
+    <!-- Preview Info Banner -->
+    <div class="preview-info">
+        🎨 Design Preview Mode - Toggle between Light/Dark themes above
+    </div>
+
+    <!-- Matching Screen -->
+    <div id="matching-screen">
+        <div class="matching-container">
+            <div class="matching-content">
+                <div class="matching-spinner">
+                    <div class="spinner"></div>
+                </div>
+                <h2 class="matching-title">Finding your language partner...</h2>
+                <p class="matching-subtitle">Matching you with someone at your level</p>
+                <div class="matching-timer" id="matching-timer">00:59</div>
+                <div class="matching-info">
+                    <div class="matching-detail">
+                        <span class="detail-label">Language:</span>
+                        <span class="detail-value" id="matching-language">English</span>
+                    </div>
+                    <div class="matching-detail">
+                        <span class="detail-label">Level:</span>
+                        <span class="detail-value" id="matching-level">Basic</span>
+                    </div>
+                    <div class="matching-detail">
+                        <span class="detail-label">Interests:</span>
+                        <span class="detail-value">Food, Travel, Technology</span>
+                    </div>
+                </div>
+                <button class="cancel-matching-btn" id="cancel-matching">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animate timer countdown
+        let timeLeft = 59;
+        const timerEl = document.getElementById('matching-timer');
+        
+        setInterval(() => {
+            timeLeft--;
+            if (timeLeft < 0) timeLeft = 59;
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+        
+        // Theme toggle
+        function setTheme(theme) {
+            const body = document.body;
+            const lightBtn = document.getElementById('light-btn');
+            const darkBtn = document.getElementById('dark-btn');
+            
+            if (theme === 'dark') {
+                body.classList.add('dark-theme');
+                darkBtn.classList.add('active');
+                lightBtn.classList.remove('active');
+            } else {
+                body.classList.remove('dark-theme');
+                lightBtn.classList.add('active');
+                darkBtn.classList.remove('active');
+            }
+            
+            localStorage.setItem('preview_theme', theme);
+        }
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('preview_theme') || 'light';
+        setTheme(savedTheme);
+        
+        // Cancel button
+        document.getElementById('cancel-matching').addEventListener('click', () => {
+            alert('Cancel button clicked!\n\nIn the real app, this would:\n• Stop the matching process\n• Return to language selection\n• Remove user from matching queue');
+        });
+        
+        // Random language/level changes for demo
+        const languages = ['English', 'Spanish', 'Korean', 'French', 'Japanese'];
+        const levels = ['Basic', 'Intermediate', 'Advanced', 'Professional', 'Native'];
+        
+        setInterval(() => {
+            const randomLang = languages[Math.floor(Math.random() * languages.length)];
+            const randomLevel = levels[Math.floor(Math.random() * levels.length)];
+            
+            // Uncomment to see random changes
+            // document.getElementById('matching-language').textContent = randomLang;
+            // document.getElementById('matching-level').textContent = randomLevel;
+        }, 5000);
+    </script>
+</body>
+</html>
+
