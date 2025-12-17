@@ -1000,12 +1000,12 @@
                     
                     <div class="form-group">
                         <label for="location" class="form-label">Location</label>
-                        <input type="text" id="location" class="form-input" value="San Francisco, CA" aria-label="Your location">
+                        <input type="text" id="location" class="form-input" placeholder="e.g., San Francisco, CA" aria-label="Your location">
                     </div>
                     
                     <div class="form-group">
                         <label for="bio" class="form-label">Bio</label>
-                        <textarea id="bio" class="form-textarea" aria-label="Your bio">Mom of two, love learning languages and connecting with people around the world. Interested in AI, cooking, and parenting.</textarea>
+                        <textarea id="bio" class="form-textarea" placeholder="Tell us a bit about yourself and your language learning goals..." aria-label="Your bio"></textarea>
                     </div>
                     
                     <div class="form-group">
@@ -1156,45 +1156,10 @@
                 <!-- Favorites Card -->
                 <div class="card">
                     <h2 class="card-title">Favorite Partners</h2>
-                    <div class="favorites-list">
-                        <div class="favorite-item" data-partner-id="marty">
-                            <div class="favorite-avatar">M</div>
-                            <div class="favorite-info">
-                                <div class="favorite-name">Marty</div>
-                                <div class="favorite-languages">English (Native) • Spanish (Intermediate)</div>
-                            </div>
-                            <button class="favorite-star-btn active" onclick="toggleFavorite('marty', this)" aria-label="Remove from favorites">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                </svg>
-                            </button>
-                        </div>
-                        
-                        <div class="favorite-item" data-partner-id="sofia">
-                            <div class="favorite-avatar">S</div>
-                            <div class="favorite-info">
-                                <div class="favorite-name">Sofia</div>
-                                <div class="favorite-languages">Spanish (Native) • English (Intermediate)</div>
-                            </div>
-                            <button class="favorite-star-btn active" onclick="toggleFavorite('sofia', this)" aria-label="Remove from favorites">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                </svg>
-                            </button>
-                        </div>
-                        
-                        <div class="favorite-item" data-partner-id="kenji">
-                            <div class="favorite-avatar">K</div>
-                            <div class="favorite-info">
-                                <div class="favorite-name">Kenji</div>
-                                <div class="favorite-languages">Japanese (Native) • English (Advanced)</div>
-                            </div>
-                            <button class="favorite-star-btn active" onclick="toggleFavorite('kenji', this)" aria-label="Remove from favorites">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                </svg>
-                            </button>
-                        </div>
+                    <div class="favorites-list" id="favorites-list">
+                        <p style="color: #6B7280; text-align: center; padding: 20px;">
+                            No favorite partners yet. Star your favorite partners after a practice session!
+                        </p>
                     </div>
                 </div>
                 
@@ -1384,8 +1349,8 @@
                     console.error('Error loading profile data:', error);
                 }
             } else {
-                // New user - show at least one language field
-                userLanguages = [{ language: 'English', level: 'Basic' }];
+                // New user - start with empty language list
+                userLanguages = [];
                 renderLanguages();
             }
             
