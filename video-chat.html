@@ -3,9 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Chat - Tabbi Mate</title>
+    <title>Video Session - TabbiMate</title>
     
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <!-- jQuery (required by protocol.js) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Makedo Protocol.js -->
+    <script src='https://proto2.makedo.com:8883/ux/scripts/protocol.js'></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- TabbiMate Video Integration -->
+    <script src="tabbimate_video.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
     
     <style>
         * {
@@ -15,214 +32,324 @@
         }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
             height: 100vh;
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
         }
         
+        /* Video Session Container */
+        .video-session-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #1a1a1a;
+        }
+        
         /* Header */
-        .header {
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px 30px;
+        .video-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            background-color: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
         }
         
-        .logo {
-            font-size: 20px;
-            font-weight: 700;
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .leave-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: #BF3143;
             color: white;
-        }
-        
-        .user-info {
-            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
             font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
         }
         
-        /* Video Container */
-        .video-container {
+        .leave-btn:hover {
+            background-color: #a02838;
+        }
+        
+        .leave-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .header-center {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .video-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .tabbi-red {
+            color: #BF3143;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .partner-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        
+        .session-count {
+            font-size: 14px;
+            color: #999;
+        }
+        
+        .favorite-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: #999;
+            transition: color 0.2s;
+        }
+        
+        .favorite-btn:hover {
+            color: #FFD700;
+        }
+        
+        .favorite-btn.favorited {
+            color: #FFD700;
+        }
+        
+        .favorite-btn svg {
+            fill: currentColor;
+            stroke: currentColor;
+        }
+        
+        .favorite-tooltip {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            padding: 6px 12px;
+            background-color: #333;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+        
+        .favorite-btn:hover .favorite-tooltip {
+            display: block;
+        }
+        
+        /* Video Grid */
+        .video-grid {
             flex: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
             padding: 10px;
-            background: #000;
+            background-color: #1a1a1a;
         }
         
         .video-panel {
             position: relative;
-            background: #222;
-            border-radius: 10px;
+            background-color: #2a2a2a;
+            border-radius: 12px;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         
-        video {
+        .video-element {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            background-color: #1a1a1a;
         }
         
-        .video-label {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            z-index: 10;
-        }
-        
-        .placeholder {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 64px;
+        .video-placeholder {
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-        }
-        
-        .status {
-            position: absolute;
-            bottom: 15px;
-            left: 15px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            z-index: 10;
-        }
-        
-        /* Controls */
-        .controls {
-            background: rgba(0, 0, 0, 0.9);
-            padding: 20px;
+            width: 100%;
+            height: 100%;
             display: flex;
-            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+        }
+        
+        .video-name-container {
+            text-align: center;
+        }
+        
+        .video-name {
+            font-size: 20px;
+            font-weight: 500;
+            color: #e0e0e0;
+            margin-top: 10px;
+        }
+        
+        .mute-indicator {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(191, 49, 67, 0.2);
+            margin-bottom: 10px;
+        }
+        
+        .mute-indicator svg {
+            width: 24px;
+            height: 24px;
+            color: #BF3143;
+        }
+        
+        .mute-indicator.hidden {
+            display: none;
+        }
+        
+        /* Video Controls */
+        .video-controls {
+            display: flex;
             justify-content: center;
             align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background-color: #2a2a2a;
+            border-top: 1px solid #3a3a3a;
         }
         
         .control-btn {
-            width: 60px;
-            height: 60px;
-            border: none;
-            border-radius: 50%;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            gap: 6px;
+            padding: 12px 20px;
+            background-color: #3a3a3a;
+            border: none;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
         .control-btn:hover {
-            transform: scale(1.1);
+            background-color: #4a4a4a;
         }
         
-        .btn-video {
-            background: #667eea;
+        .control-btn[data-active="false"] {
+            background-color: #BF3143;
+        }
+        
+        .control-btn[data-active="false"]:hover {
+            background-color: #a02838;
+        }
+        
+        .icon-wrapper {
+            position: relative;
+            width: 24px;
+            height: 24px;
+        }
+        
+        .control-icon {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .icon-slash {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 28px;
+            height: 2px;
+            background-color: currentColor;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            display: none;
+        }
+        
+        .control-btn[data-active="false"] .icon-slash {
+            display: block;
+        }
+        
+        .control-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .ai-btn {
+            background-color: #2a2a2a;
+        }
+        
+        .ai-btn[data-active="true"] {
+            background-color: #4a9eff;
             color: white;
         }
         
-        .btn-video.off {
-            background: #444;
-            color: #888;
+        .ai-btn[data-active="true"]:hover {
+            background-color: #3a8eef;
         }
         
-        .btn-audio {
-            background: #51cf66;
-            color: white;
-        }
-        
-        .btn-audio.off {
-            background: #444;
-            color: #888;
-        }
-        
-        .btn-end {
-            background: #dc3545;
-            color: white;
-            width: 70px;
-            height: 70px;
-            font-size: 28px;
-        }
-        
-        /* Loading */
+        /* Loading Overlay */
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: white;
-            z-index: 1000;
+            z-index: 9999;
         }
         
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
+        .loading-spinner {
             width: 50px;
             height: 50px;
+            border: 4px solid #3a3a3a;
+            border-top-color: #BF3143;
+            border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 20px;
         }
         
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
         
         .loading-text {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        
-        .loading-detail {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        .error-message {
-            background: #dc3545;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 500px;
-        }
-        
-        .btn-back {
             margin-top: 20px;
-            padding: 10px 20px;
-            background: white;
-            color: #dc3545;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
+            font-size: 18px;
+            color: #e0e0e0;
+        }
+        
+        .loading-subtext {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #999;
         }
         
         .hidden {
@@ -230,156 +357,197 @@
         }
         
         @media (max-width: 768px) {
-            .video-container {
+            .video-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .header-right .session-count {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">Tabbi Mate Video Chat</div>
-        <div class="user-info" id="userEmail">Connecting...</div>
-    </header>
-
-    <!-- Video Container -->
-    <div class="video-container">
-        <!-- My Video -->
-        <div class="video-panel">
-            <video id="myVideo" autoplay muted playsinline></video>
-            <div class="placeholder" id="myPlaceholder">📹</div>
-            <div class="video-label">You</div>
-            <div class="status" id="myStatus">Initializing...</div>
-        </div>
-        
-        <!-- Partner Video -->
-        <div class="video-panel">
-            <video id="partnerVideo" autoplay playsinline></video>
-            <div class="placeholder" id="partnerPlaceholder">👤</div>
-            <div class="video-label" id="partnerLabel">Waiting for partner...</div>
-            <div class="status" id="partnerStatus">Not connected</div>
-        </div>
-    </div>
-
-    <!-- Controls -->
-    <div class="controls">
-        <button id="toggleVideo" class="control-btn btn-video" title="Toggle Video">
-            📹
-        </button>
-        <button id="toggleAudio" class="control-btn btn-audio" title="Toggle Audio">
-            🎤
-        </button>
-        <button id="endCall" class="control-btn btn-end" title="End Call">
-            📞
-        </button>
-    </div>
-
     <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner"></div>
-        <div class="loading-text" id="loadingText">Connecting to video service...</div>
-        <div class="loading-detail" id="loadingDetail">Please wait...</div>
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loading-text">Connecting...</div>
+        <div class="loading-subtext" id="loading-subtext"></div>
     </div>
 
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="firebase-config.js"></script>
-    <script src="matching-service.js"></script>
-    
-    <script type="module">
-        import TabbiMateVideo from './tabbimate_video.js';
+    <!-- Video Session Container -->
+    <div class="video-session-container hidden" id="video-container">
+        <!-- Header -->
+        <div class="video-header">
+            <div class="header-left">
+                <button class="leave-btn" id="leave-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Leave</span>
+                </button>
+            </div>
+            <div class="header-center">
+                <h1 class="video-title"><span class="tabbi-red">Tabbi</span>Mate</h1>
+            </div>
+            <div class="header-right">
+                <span class="partner-name" id="partner-name">Partner</span>
+                <span class="session-count" id="session-count">1st session</span>
+                <button class="favorite-btn" id="favorite-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span class="favorite-tooltip">Add to Favorites</span>
+                </button>
+            </div>
+        </div>
         
-        // Get elements
+        <!-- Video Grid -->
+        <div class="video-grid">
+            <div class="video-panel">
+                <!-- Local Video Element -->
+                <video class="video-element" id="myVideo" autoplay muted playsinline></video>
+                
+                <div class="video-placeholder" id="myPlaceholder">
+                    <div class="video-name-container">
+                        <div class="mute-indicator hidden" id="local-mute-indicator">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                                <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+                                <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                        </div>
+                        <div class="video-name" id="local-name">You</div>
+                    </div>
+                </div>
+            </div>
+            <div class="video-panel">
+                <!-- Remote Video Element -->
+                <video class="video-element" id="remoteVideo" autoplay playsinline></video>
+                
+                <div class="video-placeholder" id="remotePlaceholder">
+                    <div class="video-name-container">
+                        <div class="mute-indicator hidden" id="remote-mute-indicator">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                                <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+                                <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                        </div>
+                        <div class="video-name" id="remote-name">Waiting...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Controls -->
+        <div class="video-controls">
+            <button class="control-btn" id="toggle-camera" data-active="true">
+                <div class="icon-wrapper">
+                    <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 7l-7 5 7 5V7z"/>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                    </svg>
+                    <div class="icon-slash"></div>
+                </div>
+                <span class="control-label">Video</span>
+            </button>
+            <button class="control-btn" id="toggle-mic" data-active="true">
+                <div class="icon-wrapper">
+                    <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                    <div class="icon-slash"></div>
+                </div>
+                <span class="control-label">Audio</span>
+            </button>
+            <button class="control-btn ai-btn" id="toggle-ai" data-active="false">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    <circle cx="9" cy="10" r="1" fill="currentColor"/>
+                    <circle cx="15" cy="10" r="1" fill="currentColor"/>
+                    <path d="M9 14h6" stroke-linecap="round"/>
+                </svg>
+                <span class="control-label">AI</span>
+            </button>
+            <button class="control-btn" id="toggle-chat" data-active="false">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+                <span class="control-label">Chat</span>
+            </button>
+            <button class="control-btn" id="toggle-share">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                    <path d="M7 13l5-5 5 5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="control-label">Share</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Video elements
         const myVideo = document.getElementById('myVideo');
-        const partnerVideo = document.getElementById('partnerVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
         const myPlaceholder = document.getElementById('myPlaceholder');
-        const partnerPlaceholder = document.getElementById('partnerPlaceholder');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const loadingText = document.getElementById('loadingText');
-        const loadingDetail = document.getElementById('loadingDetail');
-        const userEmailEl = document.getElementById('userEmail');
+        const remotePlaceholder = document.getElementById('remotePlaceholder');
         
-        // Initialize video chat
-        const videoChat = new TabbiMateVideo();
-        let isConnected = false;
-        let sessionId = null;
-        let sessionData = null;
-        let partnerMakedoEmail = null;
+        // TabbiMate Video instance
+        let videoChat;
         
-        // Update status functions
-        function updateMyStatus(text) {
-            document.getElementById('myStatus').textContent = text;
-        }
-        
-        function updatePartnerStatus(text) {
-            document.getElementById('partnerStatus').textContent = text;
-        }
-        
-        function updateLoading(text, detail = '') {
-            loadingText.textContent = text;
-            loadingDetail.textContent = detail;
+        // UI Update Functions
+        function updateLoading(text, subtext = '') {
+            document.getElementById('loading-text').textContent = text;
+            document.getElementById('loading-subtext').textContent = subtext;
         }
         
         function hideLoading() {
-            loadingOverlay.classList.add('hidden');
+            document.getElementById('loading-overlay').classList.add('hidden');
+            document.getElementById('video-container').classList.remove('hidden');
         }
         
         function showError(message) {
-            loadingOverlay.innerHTML = `
-                <div class="error-message">
-                    <h2>Connection Failed</h2>
-                    <p>${message}</p>
-                    <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
-                </div>
-            `;
+            alert('Error: ' + message);
+            window.location.href = 'dashboard.html';
         }
         
-        // Setup callbacks
-        videoChat.on('remoteStream', (stream) => {
-            console.log('Remote stream received!');
-            partnerPlaceholder.style.display = 'none';
-            updatePartnerStatus('Live');
-        });
-        
-        videoChat.on('remoteStreamEnded', () => {
-            console.log('Remote stream ended');
-            partnerPlaceholder.style.display = 'flex';
-            updatePartnerStatus('Disconnected');
-        });
-        
-        videoChat.on('callJoined', () => {
-            console.log('Successfully joined call!');
-            isConnected = true;
-            hideLoading();
-        });
-        
-        // Initialize video chat
-        async function initVideoChat() {
+        // Initialize Video Session
+        async function initVideoSession() {
             try {
+                console.log('=== Initializing Video Session ===');
+                
                 // Get session ID from URL
                 const urlParams = new URLSearchParams(window.location.search);
-                sessionId = urlParams.get('session');
+                const sessionId = urlParams.get('session');
                 
                 if (!sessionId) {
-                    throw new Error('No session ID provided. Please start from the matching screen.');
+                    throw new Error('No session ID provided');
                 }
                 
-                console.log('=== Video Chat Session:', sessionId, '===');
-                
-                // Load session data from Firestore
+                console.log('Session ID:', sessionId);
                 updateLoading('Loading session...', sessionId);
-                const matchingService = new window.MatchingService();
-                await matchingService.init();
                 
-                sessionData = await matchingService.getSession(sessionId);
-                if (!sessionData) {
-                    throw new Error('Session not found. It may have expired.');
+                // Get session data from Firestore
+                const sessionDoc = await window.db.collection('videoSessions').doc(sessionId).get();
+                
+                if (!sessionDoc.exists) {
+                    throw new Error('Session not found');
                 }
                 
-                console.log('Session data loaded:', sessionData);
+                const sessionData = sessionDoc.data();
+                console.log('Session data:', sessionData);
                 
                 // Get my user ID
                 const myUserId = localStorage.getItem('videotest_user_id');
@@ -388,15 +556,15 @@
                 }
                 
                 // Determine which user I am and who my partner is
-                let myMakedoEmail, partnerMakedoEmail;
+                let myMakedoEmail, partnerMakedoEmail, partnerDisplayName;
                 if (sessionData.user1.userId === myUserId) {
                     myMakedoEmail = sessionData.user1.makedoEmail;
                     partnerMakedoEmail = sessionData.user2.makedoEmail;
-                    document.getElementById('partnerLabel').textContent = sessionData.user2.email.split('@')[0];
+                    partnerDisplayName = sessionData.user2.email.split('@')[0];
                 } else if (sessionData.user2.userId === myUserId) {
                     myMakedoEmail = sessionData.user2.makedoEmail;
                     partnerMakedoEmail = sessionData.user1.makedoEmail;
-                    document.getElementById('partnerLabel').textContent = sessionData.user1.email.split('@')[0];
+                    partnerDisplayName = sessionData.user1.email.split('@')[0];
                 } else {
                     throw new Error('You are not part of this session');
                 }
@@ -404,10 +572,14 @@
                 console.log('My Makedo email:', myMakedoEmail);
                 console.log('Partner Makedo email:', partnerMakedoEmail);
                 
+                // Update UI with partner name
+                document.getElementById('partner-name').textContent = partnerDisplayName;
+                document.getElementById('remote-name').textContent = partnerDisplayName;
+                
                 // Get Makedo credentials
                 const makedoStateStr = localStorage.getItem('videotest_makedo_state');
                 if (!makedoStateStr) {
-                    throw new Error('Video account not connected');
+                    throw new Error('Video account not connected. Please connect on dashboard.');
                 }
                 
                 const makedoState = JSON.parse(makedoStateStr);
@@ -415,24 +587,15 @@
                     throw new Error('Video account credentials missing');
                 }
                 
-                userEmailEl.textContent = myMakedoEmail;
-                
-                // Step 1: Login to Makedo
-                updateLoading('Logging into Makedo...', myMakedoEmail);
+                // Initialize TabbiMate Video
+                updateLoading('Connecting to video server...', myMakedoEmail);
+                videoChat = new window.TabbiMateVideo();
                 await videoChat.login(myMakedoEmail, makedoState.password);
-                updateMyStatus('Connected to Makedo');
+                console.log('Logged into Makedo');
                 
-                // Step 2: Join shared channel using session ID
-                // Both users use the same session ID as the channel/room name
-                updateLoading('Joining video session...', sessionId);
-                console.log('Creating/joining channel for session:', sessionId);
-                
-                // Set partner name for display
-                const partnerName = partnerMakedoEmail.split('@')[0];
-                document.getElementById('partnerLabel').textContent = partnerName;
-                
-                // Connect to shared video session
-                await connectToSession(sessionId, partnerName);
+                // Join shared session room
+                updateLoading('Joining session...', 'Connecting to ' + partnerDisplayName);
+                await connectToSession(sessionId, partnerMakedoEmail, partnerDisplayName);
                 
             } catch (error) {
                 console.error('Init error:', error);
@@ -440,88 +603,116 @@
             }
         }
         
-        async function connectToSession(sessionId, partnerName) {
+        async function connectToSession(sessionId, partnerEmail, partnerName) {
             try {
-                updateLoading(`Connecting to ${partnerName}...`, 'Setting up peer-to-peer connection');
-                updatePartnerStatus('Connecting...');
-                
-                console.log('Using session-based matching - not Makedo user list');
+                console.log('=== Connecting to Session ===');
                 console.log('Session ID:', sessionId);
+                console.log('Partner:', partnerEmail);
                 
-                // TabbiMate approach: Use session ID as the shared room/channel
-                // Both users will use the SAME session ID to find each other
+                // Get local media stream
+                updateLoading('Setting up your camera...', '');
+                const localStream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true
+                });
                 
-                // For now, use a simple approach with WebRTC and the session ID
-                // We'll use Galene or another WebRTC approach that doesn't require user lists
+                // Attach to local video
+                myVideo.srcObject = localStream;
+                myVideo.play();
+                myPlaceholder.style.display = 'none';
+                myVideo.style.display = 'block';
                 
-                hideLoading();
-                updateMyStatus('Ready');
-                updatePartnerStatus('Ready');
+                console.log('Local stream ready');
                 
-                // Show success message
-                const message = `
-                    <div style="text-align: center; padding: 40px;">
-                        <h2 style="color: #BF3143;">Session Ready!</h2>
-                        <p>Session ID: ${sessionId}</p>
-                        <p>Partner: ${partnerName}</p>
-                        <p style="margin-top: 20px; color: #666;">
-                            TabbiMate uses session-based matching, not Makedo's user list.<br>
-                            We need to integrate a WebRTC solution that works with session IDs.
-                        </p>
-                    </div>
-                `;
-                document.querySelector('.video-container').innerHTML += message;
+                // Wait for partner to connect using Makedo's Bridge
+                updateLoading('Waiting for partner...', partnerName);
                 
-                console.log('Video session initialized');
+                // Use Makedo Bridge to create/join channel with session ID
+                await videoChat.joinSessionChannel(sessionId, partnerEmail);
+                
+                // Listen for remote stream
+                videoChat.onRemoteStream((remoteStream) => {
+                    console.log('Remote stream received!');
+                    remoteVideo.srcObject = remoteStream;
+                    remoteVideo.play();
+                    remotePlaceholder.style.display = 'none';
+                    remoteVideo.style.display = 'block';
+                    
+                    // Hide loading
+                    hideLoading();
+                });
+                
+                // If no remote stream after 10 seconds, still show UI
+                setTimeout(() => {
+                    hideLoading();
+                }, 10000);
                 
             } catch (error) {
-                console.error('Connect error:', error);
-                showError(`Failed to connect: ${error.message}`);
+                console.error('Connection error:', error);
+                showError('Failed to connect: ' + error.message);
             }
         }
         
-        // Control buttons
-        document.getElementById('toggleVideo').addEventListener('click', async () => {
-            const btn = document.getElementById('toggleVideo');
-            try {
-                const isOn = await videoChat.toggleVideo();
-                btn.classList.toggle('off', !isOn);
+        // Control Buttons
+        document.getElementById('toggle-camera').addEventListener('click', () => {
+            const btn = document.getElementById('toggle-camera');
+            const isActive = btn.getAttribute('data-active') === 'true';
+            btn.setAttribute('data-active', !isActive);
+            
+            // Toggle video track
+            const stream = myVideo.srcObject;
+            if (stream) {
+                stream.getVideoTracks().forEach(track => {
+                    track.enabled = !isActive;
+                });
+            }
+            
+            // Show/hide placeholder
+            if (!isActive) {
+                myPlaceholder.style.display = 'none';
+                myVideo.style.display = 'block';
+            } else {
+                myPlaceholder.style.display = 'flex';
+                myVideo.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('toggle-mic').addEventListener('click', () => {
+            const btn = document.getElementById('toggle-mic');
+            const isActive = btn.getAttribute('data-active') === 'true';
+            btn.setAttribute('data-active', !isActive);
+            
+            // Toggle audio track
+            const stream = myVideo.srcObject;
+            if (stream) {
+                stream.getAudioTracks().forEach(track => {
+                    track.enabled = !isActive;
+                });
+            }
+            
+            // Show/hide mute indicator
+            const muteIndicator = document.getElementById('local-mute-indicator');
+            if (!isActive) {
+                muteIndicator.classList.add('hidden');
+            } else {
+                muteIndicator.classList.remove('hidden');
+            }
+        });
+        
+        document.getElementById('leave-btn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to leave this session?')) {
+                // Stop all tracks
+                if (myVideo.srcObject) {
+                    myVideo.srcObject.getTracks().forEach(track => track.stop());
+                }
                 
-                if (isOn) {
-                    myPlaceholder.style.display = 'none';
-                } else {
-                    myPlaceholder.style.display = 'flex';
-                }
-            } catch (err) {
-                console.error('Toggle video error:', err);
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
             }
         });
         
-        document.getElementById('toggleAudio').addEventListener('click', async () => {
-            const btn = document.getElementById('toggleAudio');
-            try {
-                const isOn = await videoChat.toggleAudio();
-                btn.classList.toggle('off', !isOn);
-            } catch (err) {
-                console.error('Toggle audio error:', err);
-            }
-        });
-        
-        document.getElementById('endCall').addEventListener('click', async () => {
-            if (confirm('End this video call?')) {
-                try {
-                    await videoChat.endCall(myVideo, partnerVideo);
-                    window.location.href = 'dashboard.html';
-                } catch (err) {
-                    console.error('End call error:', err);
-                    window.location.href = 'dashboard.html';
-                }
-            }
-        });
-        
-        // Start on load
-        initVideoChat();
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', initVideoSession);
     </script>
 </body>
 </html>
-

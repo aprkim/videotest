@@ -390,6 +390,90 @@ class TabbiMateVideo {
     isInCall() {
         return this.state.inCall;
     }
+    
+    /**
+     * Join a session channel using session ID
+     * Both users use the same session ID to find each other
+     * @param {string} sessionId - Unique session ID from Firebase
+     * @param {string} partnerEmail - Partner's Makedo email
+     */
+    async joinSessionChannel(sessionId, partnerEmail) {
+        try {
+            console.log('[TabbiMateVideo] Joining session channel:', sessionId);
+            console.log('[TabbiMateVideo] Looking for partner:', partnerEmail);
+            
+            if (!this.state.loggedIn) {
+                throw new Error('Not logged in');
+            }
+            
+            // Initialize Bridge
+            if (!this.bridge) {
+                this.bridge = new Bridge();
+                await this.bridge.init();
+            }
+            
+            // For now, we'll use a simple polling approach to find the partner
+            // Query users to find partner by email
+            const checkForPartner = async () => {
+                const users = await this.bridge.getUsersByQuery({
+                    searchString: partnerEmail,
+                    limit: 10
+                });
+                
+                console.log('[TabbiMateVideo] Found users:', users.length);
+                
+                // Find exact match
+                const partner = users.find(u => 
+                    u.email && u.email.toLowerCase() === partnerEmail.toLowerCase()
+                );
+                
+                return partner;
+            };
+            
+            // Poll for partner (check every 2 seconds for up to 30 seconds)
+            let attempts = 0;
+            const maxAttempts = 15;
+            
+            const pollInterval = setInterval(async () => {
+                attempts++;
+                console.log(`[TabbiMateVideo] Checking for partner... (attempt ${attempts}/${maxAttempts})`);
+                
+                const partner = await checkForPartner();
+                
+                if (partner) {
+                    console.log('[TabbiMateVideo] Partner found!', partner);
+                    clearInterval(pollInterval);
+                    
+                    // Create quick chat channel with partner
+                    const channelResult = await this.bridge.createQuickChatChannel({
+                        invited: partner.pid,
+                        message: `TabbiMate session: ${sessionId}`
+                    });
+                    
+                    console.log('[TabbiMateVideo] Channel created:', channelResult);
+                    this.state.currentChannel = channelResult;
+                    
+                    // The remote stream will come via Bridge events
+                    // which are handled in the Bridge initialization
+                } else if (attempts >= maxAttempts) {
+                    console.log('[TabbiMateVideo] Partner not found after max attempts');
+                    clearInterval(pollInterval);
+                }
+            }, 2000);
+            
+        } catch (error) {
+            console.error('[TabbiMateVideo] Join session error:', error);
+            throw error;
+        }
+    }
+    
+    /**
+     * Set callback for remote stream
+     * @param {function} callback - Called when remote stream arrives
+     */
+    onRemoteStream(callback) {
+        this.callbacks.onRemoteStream = callback;
+    }
 }
 
 export default TabbiMateVideo;
