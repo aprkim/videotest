@@ -8,10 +8,7 @@
     <!-- jQuery (required by protocol.js) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
-    <!-- Makedo Scripts - Load fetch.js and bridge.js directly -->
-    <script src='https://proto2.makedo.com:8883/ux/scripts/protocol.js'></script>
-    <script src='https://proto2.makedo.com:8883/ux/scripts/fetch.js'></script>
-    <script src='https://proto2.makedo.com:8883/ux/scripts/bridge.js'></script>
+    <!-- Makedo Scripts - Now imported as ES6 modules in the main script -->
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -1432,10 +1429,50 @@
         </svg>
     </button>
 
-    <script>
+    <script type="module">
+        // Import Makedo APIs
+        import Fetch from 'https://proto2.makedo.com:8883/ux/scripts/fetch.js';
+        import Bridge from 'https://proto2.makedo.com:8883/ux/scripts/bridge.js';
+        
+        // Make them available globally for this script
+        window.MakedoFetch = Fetch;
+        window.MakedoBridge = Bridge;
+        
         // ========================================
         // MODAL HELPER FUNCTIONS & UI SETUP
         // ========================================
+        
+        // Helper function to show confirmation modal
+        function showConfirm(iconHtml, title, message, confirmText, confirmCallback, cancelText = 'Cancel') {
+            const modal = document.getElementById('info-modal');
+            const icon = document.getElementById('info-icon');
+            const titleEl = document.getElementById('info-title');
+            const messageEl = document.getElementById('info-message');
+            const okBtn = document.getElementById('info-ok');
+            
+            icon.innerHTML = iconHtml;
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            okBtn.textContent = confirmText;
+            
+            // Remove old listeners and add new ones
+            const newOkBtn = okBtn.cloneNode(true);
+            okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+            
+            newOkBtn.onclick = () => {
+                modal.classList.add('hidden');
+                if (confirmCallback) confirmCallback();
+            };
+            
+            // Add cancel button functionality (clicking outside)
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            };
+            
+            modal.classList.remove('hidden');
+        }
         
         // Helper function to show info modal
         function showInfoModal(title, message, iconType = 'success') {
@@ -1604,8 +1641,8 @@
         async function initVideoSession() {
             try {
                 console.log('=== Initializing Video Session ===');
-                console.log('Window.Fetch available?', typeof window.Fetch !== 'undefined');
-                console.log('Window.Bridge available?', typeof window.Bridge !== 'undefined');
+                console.log('MakedoFetch available?', typeof window.MakedoFetch !== 'undefined');
+                console.log('MakedoBridge available?', typeof window.MakedoBridge !== 'undefined');
                 
                 // Get session ID from URL
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1737,11 +1774,11 @@
             updateLoading('Connecting to video server...', '');
             console.log('Authenticating with Makedo...');
             
-            if (!window.Fetch) {
+            if (!window.MakedoFetch) {
                 throw new Error('Makedo Fetch not available');
             }
             
-            const loginResult = await window.Fetch.login({
+            const loginResult = await window.MakedoFetch.login({
                 email: myEmail,
                 password: myPassword
             });
@@ -1757,11 +1794,11 @@
             // Step 3: Initialize Bridge
             updateLoading('Setting up video connection...', '');
             
-            if (!window.Bridge) {
+            if (!window.MakedoBridge) {
                 throw new Error('Makedo Bridge not available');
             }
             
-            bridge = new window.Bridge();
+            bridge = new window.MakedoBridge();
             bridge.initDispatcher();
             
             console.log('✅ Bridge initialized');
