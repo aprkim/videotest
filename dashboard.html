@@ -1922,43 +1922,23 @@
         function handleStartCall() {
             console.log('=== Starting video chat from dashboard ===');
             
-            // Check if user has languages set up
-            if (!userLanguages || userLanguages.length === 0) {
-                alert('Please add at least one language to your profile before starting a video chat.');
+            // Check if Makedo video account is connected
+            const makedoStateStr = localStorage.getItem('videotest_makedo_state');
+            if (!makedoStateStr) {
+                alert('Please connect your video account first by clicking "Connect Video Account" below.');
                 return;
             }
             
-            // Save current profile data before starting call
-            saveProfileDataSync();
+            const makedoState = JSON.parse(makedoStateStr);
+            if (!makedoState.isLoggedIn) {
+                alert('Please connect your video account first.');
+                return;
+            }
             
-            // Get current user profile data
-            const name = document.getElementById('name')?.value || 'User';
-            const location = document.getElementById('location')?.value || '';
-            const bio = document.getElementById('bio')?.value || '';
-            const photoURL = document.getElementById('profile-preview')?.src || '';
+            console.log('Makedo account connected, starting video chat...');
             
-            // Store user data for the session (will be used by app.html)
-            localStorage.setItem('videotest_current_user', JSON.stringify({
-                userId: userId,
-                name: name,
-                location: location,
-                bio: bio,
-                photoURL: photoURL,
-                email: userEmail,
-                interests: interests,
-                languages: userLanguages,
-                isSignedInUser: true
-            }));
-            
-            console.log('User data saved for session, languages:', userLanguages);
-            
-            // Redirect to app.html
-            // If user has only 1 language: skip language selection, go straight to matching
-            // If user has 2+ languages: show language selection first
-            const basePath = 'app.html';
-            
-            console.log('Redirecting to app.html');
-            window.location.href = basePath;
+            // Redirect to video chat page
+            window.location.href = 'video-chat.html';
         }
         
         // Save profile data synchronously (for navigation)
@@ -2156,8 +2136,8 @@
                             // Note: We don't initialize VibeChat here on the dashboard
                             // VibeChat will be initialized later on app.html when video chat is needed
                             
-                            // Save login state to localStorage so app.html can use it
-                            saveMakedoLoginState();
+                            // Save login state to localStorage (including password for re-login)
+                            saveMakedoLoginState(password);
                             
                             // Update UI to show connected status
                             updateVideoConnectionStatus();
@@ -2231,17 +2211,34 @@
         }
         
         // Save Makedo login state to localStorage
-        function saveMakedoLoginState() {
+        function saveMakedoLoginState(password) {
             if (makedoState.isLoggedIn) {
-                localStorage.setItem('makedo_logged_in', 'true');
-                localStorage.setItem('makedo_email', makedoState.userEmail);
-                localStorage.setItem('makedo_user_id', makedoState.userId);
-                console.log('Makedo login state saved');
+                const stateToSave = {
+                    isLoggedIn: true,
+                    userEmail: makedoState.userEmail,
+                    userId: makedoState.userId,
+                    password: password  // Store for video session re-login
+                };
+                localStorage.setItem('videotest_makedo_state', JSON.stringify(stateToSave));
+                console.log('Makedo login state saved (with password for session)');
             }
         }
         
         // Load Makedo login state from localStorage
         function loadMakedoLoginState() {
+            const stateStr = localStorage.getItem('videotest_makedo_state');
+            if (stateStr) {
+                try {
+                    const state = JSON.parse(stateStr);
+                    makedoState.isLoggedIn = state.isLoggedIn || false;
+                    makedoState.userEmail = state.userEmail || null;
+                    makedoState.userId = state.userId || null;
+                    console.log('Loaded Makedo login state:', makedoState);
+                } catch (e) {
+                    console.error('Error loading Makedo state:', e);
+                }
+            }
+            /* Old code:
             const isLoggedIn = localStorage.getItem('makedo_logged_in') === 'true';
             if (isLoggedIn) {
                 makedoState.isLoggedIn = true;

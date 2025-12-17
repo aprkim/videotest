@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Chat - Tabbi Mate</title>
+    
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a1a;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .user-info {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+        
+        /* Video Container */
+        .video-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 10px;
+            background: #000;
+        }
+        
+        .video-panel {
+            position: relative;
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-label {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10;
+        }
+        
+        .placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 64px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+        .status {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 10;
+        }
+        
+        /* Controls */
+        .controls {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .btn-video {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-video.off {
+            background: #444;
+            color: #888;
+        }
+        
+        .btn-audio {
+            background: #51cf66;
+            color: white;
+        }
+        
+        .btn-audio.off {
+            background: #444;
+            color: #888;
+        }
+        
+        .btn-end {
+            background: #dc3545;
+            color: white;
+            width: 70px;
+            height: 70px;
+            font-size: 28px;
+        }
+        
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 1000;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .loading-detail {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .error-message {
+            background: #dc3545;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+        }
+        
+        .btn-back {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: white;
+            color: #dc3545;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        @media (max-width: 768px) {
+            .video-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">Tabbi Mate Video Chat</div>
+        <div class="user-info" id="userEmail">Connecting...</div>
+    </header>
+
+    <!-- Video Container -->
+    <div class="video-container">
+        <!-- My Video -->
+        <div class="video-panel">
+            <video id="myVideo" autoplay muted playsinline></video>
+            <div class="placeholder" id="myPlaceholder">📹</div>
+            <div class="video-label">You</div>
+            <div class="status" id="myStatus">Initializing...</div>
+        </div>
+        
+        <!-- Partner Video -->
+        <div class="video-panel">
+            <video id="partnerVideo" autoplay playsinline></video>
+            <div class="placeholder" id="partnerPlaceholder">👤</div>
+            <div class="video-label" id="partnerLabel">Waiting for partner...</div>
+            <div class="status" id="partnerStatus">Not connected</div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button id="toggleVideo" class="control-btn btn-video" title="Toggle Video">
+            📹
+        </button>
+        <button id="toggleAudio" class="control-btn btn-audio" title="Toggle Audio">
+            🎤
+        </button>
+        <button id="endCall" class="control-btn btn-end" title="End Call">
+            📞
+        </button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Connecting to video service...</div>
+        <div class="loading-detail" id="loadingDetail">Please wait...</div>
+    </div>
+
+    <script type="module">
+        import TabbiMateVideo from './tabbimate_video.js';
+        
+        // Get elements
+        const myVideo = document.getElementById('myVideo');
+        const partnerVideo = document.getElementById('partnerVideo');
+        const myPlaceholder = document.getElementById('myPlaceholder');
+        const partnerPlaceholder = document.getElementById('partnerPlaceholder');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        const loadingDetail = document.getElementById('loadingDetail');
+        const userEmailEl = document.getElementById('userEmail');
+        
+        // Initialize video chat
+        const videoChat = new TabbiMateVideo();
+        let isConnected = false;
+        
+        // Update status functions
+        function updateMyStatus(text) {
+            document.getElementById('myStatus').textContent = text;
+        }
+        
+        function updatePartnerStatus(text) {
+            document.getElementById('partnerStatus').textContent = text;
+        }
+        
+        function updateLoading(text, detail = '') {
+            loadingText.textContent = text;
+            loadingDetail.textContent = detail;
+        }
+        
+        function hideLoading() {
+            loadingOverlay.classList.add('hidden');
+        }
+        
+        function showError(message) {
+            loadingOverlay.innerHTML = `
+                <div class="error-message">
+                    <h2>Connection Failed</h2>
+                    <p>${message}</p>
+                    <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
+                </div>
+            `;
+        }
+        
+        // Setup callbacks
+        videoChat.on('remoteStream', (stream) => {
+            console.log('Remote stream received!');
+            partnerPlaceholder.style.display = 'none';
+            updatePartnerStatus('Live');
+        });
+        
+        videoChat.on('remoteStreamEnded', () => {
+            console.log('Remote stream ended');
+            partnerPlaceholder.style.display = 'flex';
+            updatePartnerStatus('Disconnected');
+        });
+        
+        videoChat.on('callJoined', () => {
+            console.log('Successfully joined call!');
+            isConnected = true;
+            hideLoading();
+        });
+        
+        // Initialize video chat
+        async function initVideoChat() {
+            try {
+                // Get Makedo credentials from localStorage
+                const makedoStateStr = localStorage.getItem('videotest_makedo_state');
+                if (!makedoStateStr) {
+                    throw new Error('Video account not connected. Please connect from the dashboard first.');
+                }
+                
+                const makedoState = JSON.parse(makedoStateStr);
+                if (!makedoState.isLoggedIn || !makedoState.password) {
+                    throw new Error('Video account credentials missing. Please reconnect from dashboard.');
+                }
+                
+                userEmailEl.textContent = makedoState.userEmail;
+                
+                // Step 1: Login to Makedo
+                updateLoading('Logging into Makedo...', makedoState.userEmail);
+                await videoChat.login(makedoState.userEmail, makedoState.password);
+                updateMyStatus('Connected to Makedo');
+                
+                // Step 2: Get available users
+                updateLoading('Looking for available partners...', 'Getting user list');
+                const users = await videoChat.getUsers('', 20);
+                
+                console.log('Available users:', users);
+                
+                // For testing with two Aprils in different browsers
+                // The first user to connect will see an empty list
+                // The second user will see the first April and can connect
+                
+                if (users.length === 0) {
+                    // No other users - wait in "ready" state
+                    updateLoading('Waiting for partner...', 'You are ready. Waiting for someone to join.');
+                    updateMyStatus('Ready - Waiting for partner');
+                    updatePartnerStatus('No one available yet');
+                    
+                    // Keep checking for users every 5 seconds
+                    const checkInterval = setInterval(async () => {
+                        try {
+                            const updatedUsers = await videoChat.getUsers('', 20);
+                            if (updatedUsers.length > 0) {
+                                clearInterval(checkInterval);
+                                await connectToPartner(updatedUsers[0]);
+                            }
+                        } catch (err) {
+                            console.error('Error checking for users:', err);
+                        }
+                    }, 5000);
+                    
+                } else {
+                    // Found a partner - connect!
+                    await connectToPartner(users[0]);
+                }
+                
+            } catch (error) {
+                console.error('Init error:', error);
+                showError(error.message);
+            }
+        }
+        
+        async function connectToPartner(partner) {
+            try {
+                const partnerName = partner.username || partner.email || 'Partner';
+                updateLoading(`Connecting to ${partnerName}...`, 'Setting up video call');
+                
+                document.getElementById('partnerLabel').textContent = partnerName;
+                updatePartnerStatus('Connecting...');
+                
+                // Start video call
+                await videoChat.startCall(partner.pid, myVideo, partnerVideo);
+                
+                // Hide my placeholder
+                myPlaceholder.style.display = 'none';
+                updateMyStatus('Live');
+                
+                console.log('Video call started successfully!');
+                
+            } catch (error) {
+                console.error('Connect error:', error);
+                showError(`Failed to connect: ${error.message}`);
+            }
+        }
+        
+        // Control buttons
+        document.getElementById('toggleVideo').addEventListener('click', async () => {
+            const btn = document.getElementById('toggleVideo');
+            try {
+                const isOn = await videoChat.toggleVideo();
+                btn.classList.toggle('off', !isOn);
+                
+                if (isOn) {
+                    myPlaceholder.style.display = 'none';
+                } else {
+                    myPlaceholder.style.display = 'flex';
+                }
+            } catch (err) {
+                console.error('Toggle video error:', err);
+            }
+        });
+        
+        document.getElementById('toggleAudio').addEventListener('click', async () => {
+            const btn = document.getElementById('toggleAudio');
+            try {
+                const isOn = await videoChat.toggleAudio();
+                btn.classList.toggle('off', !isOn);
+            } catch (err) {
+                console.error('Toggle audio error:', err);
+            }
+        });
+        
+        document.getElementById('endCall').addEventListener('click', async () => {
+            if (confirm('End this video call?')) {
+                try {
+                    await videoChat.endCall(myVideo, partnerVideo);
+                    window.location.href = 'dashboard.html';
+                } catch (err) {
+                    console.error('End call error:', err);
+                    window.location.href = 'dashboard.html';
+                }
+            }
+        });
+        
+        // Start on load
+        initVideoChat();
+    </script>
+</body>
+</html>
+
