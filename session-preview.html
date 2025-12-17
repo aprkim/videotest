@@ -590,30 +590,113 @@
             document.getElementById('theme-icon-light').classList.add('hidden');
         }
         
+        // Timer countdown
+        let timeLeft = 3; // 0:03
+        const timerBtn = document.querySelector('.timer-btn span');
+        const timerInterval = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timerBtn.textContent = 'Session ended';
+                setTimeout(() => {
+                    if (confirm('Session ended! Would you like to see the session summary?')) {
+                        alert('Session Summary (Demo)\n\n✓ Duration: 15 minutes\n✓ Partner: Yuki\n✓ Language: Japanese\n✓ Next session available now!');
+                    }
+                }, 500);
+            } else {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerBtn.textContent = `Ends in ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                timeLeft--;
+            }
+        }, 1000);
+        
+        // Help button
+        document.querySelector('.help-btn').addEventListener('click', () => {
+            const helpMessage = `
+📖 Session Help
+
+Video Controls:
+• Video - Toggle your camera on/off
+• Audio - Toggle your microphone on/off
+• AI - Get real-time language assistance
+• Chat - Send text messages
+• Share - Share your screen
+
+Tips:
+• Click the favorite star to save this partner
+• Use the AI assistant for translations
+• Be respectful and have fun learning!
+
+Need help? Contact support@tabbimate.com
+            `;
+            alert(helpMessage.trim());
+        });
+        
+        // Leave button
+        document.querySelector('.leave-btn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to leave this session?')) {
+                alert('Leaving session... (Demo)\n\nYou would be redirected to the dashboard.');
+            }
+        });
+        
         // Favorite button
         document.getElementById('favorite-btn').addEventListener('click', function() {
             this.classList.toggle('favorited');
+            if (this.classList.contains('favorited')) {
+                alert('⭐ Yuki added to your favorites!');
+            } else {
+                alert('Yuki removed from favorites');
+            }
         });
         
-        // Demo alerts for buttons
-        document.getElementById('toggle-camera').addEventListener('click', () => {
-            alert('Video toggle (demo)');
+        // Video toggle
+        let videoEnabled = true;
+        document.getElementById('toggle-camera').addEventListener('click', function() {
+            videoEnabled = !videoEnabled;
+            if (videoEnabled) {
+                alert('📹 Camera turned ON');
+            } else {
+                alert('📹 Camera turned OFF');
+            }
         });
         
-        document.getElementById('toggle-mic').addEventListener('click', () => {
-            alert('Audio toggle (demo)');
+        // Audio toggle
+        let audioEnabled = true;
+        document.getElementById('toggle-mic').addEventListener('click', function() {
+            audioEnabled = !audioEnabled;
+            if (audioEnabled) {
+                alert('🎤 Microphone turned ON');
+            } else {
+                alert('🔇 Microphone turned OFF');
+            }
         });
         
+        // AI Assistant
         document.getElementById('toggle-ai').addEventListener('click', () => {
-            alert('AI Assistant (coming soon)');
+            const aiMessage = `
+🤖 AI Language Assistant
+
+Choose an action:
+• Translate - Get instant translations
+• Correct - Fix your grammar
+• Suggest - Get conversation topics
+• Practice - Language exercises
+
+Type your message or select an action!
+            `;
+            alert(aiMessage.trim());
         });
         
+        // Chat
         document.getElementById('toggle-chat').addEventListener('click', () => {
-            alert('Chat (coming soon)');
+            alert('💬 Text chat opened!\n\nYou can now send text messages to Yuki while you talk.');
         });
         
+        // Screen Share
         document.getElementById('toggle-share').addEventListener('click', () => {
-            alert('Screen Share (coming soon)');
+            if (confirm('📺 Start sharing your screen with Yuki?')) {
+                alert('Screen sharing started! (Demo)\n\nYour screen would now be visible to your partner.');
+            }
         });
     </script>
 </body>
