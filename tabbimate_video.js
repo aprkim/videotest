@@ -39,7 +39,14 @@ class TabbiMateVideo {
     async login(email, password) {
         try {
             console.log('[TabbiMateVideo] Logging in...');
-            const result = await Fetch.login({ email, password });
+            
+            // Wait for Fetch to be available (loaded by protocol.js)
+            if (typeof window.Fetch === 'undefined') {
+                console.log('[TabbiMateVideo] Waiting for Fetch to load...');
+                await this.waitForFetch();
+            }
+            
+            const result = await window.Fetch.login({ email, password });
             
             if (result.status === 'loggedIn') {
                 this.state.loggedIn = true;
@@ -76,7 +83,14 @@ class TabbiMateVideo {
     async initBridge() {
         try {
             console.log('[TabbiMateVideo] Initializing Bridge...');
-            this.bridge = new Bridge();
+            
+            // Wait for Bridge to be available
+            if (typeof window.Bridge === 'undefined') {
+                console.log('[TabbiMateVideo] Waiting for Bridge to load...');
+                await this.waitForBridge();
+            }
+            
+            this.bridge = new window.Bridge();
             this.bridge.initDispatcher();
             console.log('[TabbiMateVideo] Bridge initialized with WebSocket');
         } catch (error) {
@@ -391,6 +405,36 @@ class TabbiMateVideo {
     }
     
     /**
+     * Wait for Fetch to be loaded by protocol.js
+     */
+    async waitForFetch() {
+        return new Promise((resolve) => {
+            const checkFetch = setInterval(() => {
+                if (typeof window.Fetch !== 'undefined') {
+                    clearInterval(checkFetch);
+                    console.log('[TabbiMateVideo] Fetch is now available');
+                    resolve();
+                }
+            }, 100);
+        });
+    }
+    
+    /**
+     * Wait for Bridge to be loaded by protocol.js
+     */
+    async waitForBridge() {
+        return new Promise((resolve) => {
+            const checkBridge = setInterval(() => {
+                if (typeof window.Bridge !== 'undefined') {
+                    clearInterval(checkBridge);
+                    console.log('[TabbiMateVideo] Bridge is now available');
+                    resolve();
+                }
+            }, 100);
+        });
+    }
+    
+    /**
      * Join a session channel using session ID
      * Both users use the same session ID to find each other
      * @param {string} sessionId - Unique session ID from Firebase
@@ -407,7 +451,13 @@ class TabbiMateVideo {
             
             // Initialize Bridge
             if (!this.bridge) {
-                this.bridge = new Bridge();
+                // Wait for Bridge to be available
+                if (typeof window.Bridge === 'undefined') {
+                    console.log('[TabbiMateVideo] Waiting for Bridge to load...');
+                    await this.waitForBridge();
+                }
+                
+                this.bridge = new window.Bridge();
                 await this.bridge.init();
             }
             
