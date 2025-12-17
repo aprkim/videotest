@@ -2024,15 +2024,20 @@
         document.getElementById('favorite-btn').addEventListener('click', () => {
             const btn = document.getElementById('favorite-btn');
             const isFavorited = btn.classList.contains('favorited');
+            const partnerName = document.getElementById('partner-name').textContent;
             
             if (isFavorited) {
                 btn.classList.remove('favorited');
                 btn.querySelector('.favorite-tooltip').textContent = 'Add to Favorites';
-                alert('Removed from favorites');
+                
+                const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+                showInfoModal('Removed from Favorites', `${partnerName} has been removed from your favorites list.`, 'info');
             } else {
                 btn.classList.add('favorited');
                 btn.querySelector('.favorite-tooltip').textContent = 'Remove from Favorites';
-                alert('Added to favorites! You can find this partner in your dashboard.');
+                
+                const icon = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+                showInfoModal('Added to Favorites!', `You can find ${partnerName} in your favorites list on the dashboard.`, 'success');
             }
         });
         
