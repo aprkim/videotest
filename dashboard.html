@@ -2163,23 +2163,35 @@
         function handleStartCall() {
             console.log('=== Starting video chat from dashboard ===');
             
-            // Check if Makedo video account is connected
-            const makedoStateStr = localStorage.getItem('videotest_makedo_state');
-            if (!makedoStateStr) {
-                alert('Please connect your video account first by clicking "Connect Video Account" below.');
+            // Check if user has a profile with languages
+            const profileKey = `videotest_profile_${userId}`;
+            const savedProfile = localStorage.getItem(profileKey);
+            
+            if (!savedProfile) {
+                alert('Please complete your profile first by adding languages and interests.');
                 return;
             }
             
-            const makedoState = JSON.parse(makedoStateStr);
-            if (!makedoState.isLoggedIn) {
-                alert('Please connect your video account first.');
+            let profile;
+            try {
+                profile = JSON.parse(savedProfile);
+            } catch (e) {
+                console.error('Error parsing profile:', e);
+                alert('Please complete your profile first.');
                 return;
             }
             
-            console.log('Makedo account connected, starting video chat...');
+            // Check if user has languages set
+            if (!profile.languages || profile.languages.length === 0) {
+                alert('Please add at least one language to your profile before starting a video chat.');
+                return;
+            }
             
-            // Redirect to video chat page
-            window.location.href = 'video-chat.html';
+            console.log('User has profile with languages, redirecting to app...');
+            console.log('User profile:', profile);
+            
+            // Redirect to app.html where they can select language and start matching
+            window.location.href = 'app.html';
         }
         
         // Make globally available
@@ -2611,10 +2623,10 @@
                 </p>
             </div>
             <div class="crop-actions" style="padding: 0 32px 32px; display: flex; gap: 12px;">
-                <button id="crop-cancel-btn" class="btn btn-secondary crop-cancel-button" style="flex: 1; background: #F3F4F6; color: #374151; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: center;">
+                <button id="crop-cancel-btn" class="btn btn-secondary crop-cancel-button" style="flex: 1; background: #F3F4F6; color: #374151; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;">
                     Cancel
                 </button>
-                <button id="crop-apply-btn" class="btn btn-primary crop-apply-button" style="flex: 1; background: #BF3143; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(191, 49, 67, 0.3); transition: all 0.2s ease; text-align: center;">
+                <button id="crop-apply-btn" class="btn btn-primary crop-apply-button" style="flex: 1; background: #BF3143; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(191, 49, 67, 0.3); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;">
                     Apply Crop
                 </button>
             </div>
@@ -2696,10 +2708,10 @@
                 </p>
             </div>
             <div class="modal-footer" style="padding: 0 32px 32px; display: flex; gap: 12px;">
-                <button class="btn btn-secondary signout-cancel-btn" id="signout-cancel" style="flex: 1; background: #F3F4F6; color: #374151; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: center;">
+                <button class="btn btn-secondary signout-cancel-btn" id="signout-cancel" style="flex: 1; background: #F3F4F6; color: #374151; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;">
                     Cancel
                 </button>
-                <button class="btn btn-primary signout-confirm-btn" id="signout-confirm" style="flex: 1; background: #BF3143; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(191, 49, 67, 0.3); transition: all 0.2s ease; text-align: center;">
+                <button class="btn btn-primary signout-confirm-btn" id="signout-confirm" style="flex: 1; background: #BF3143; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(191, 49, 67, 0.3); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;">
                     Sign Out
                 </button>
             </div>
@@ -2726,10 +2738,10 @@
                 </p>
             </div>
             <div class="modal-footer" style="padding: 0 32px 32px; display: flex; gap: 12px;">
-                <button class="btn btn-secondary disconnect-cancel-btn" id="disconnect-cancel" style="flex: 1; background: #F3F4F6; color: #374151; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: center;">
+                <button class="btn btn-secondary disconnect-cancel-btn" id="disconnect-cancel" style="flex: 1; background: #F3F4F6; color: #374151; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;">
                     Cancel
                 </button>
-                <button class="btn btn-primary disconnect-confirm-btn" id="disconnect-confirm" style="flex: 1; background: #BF3143; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(191, 49, 67, 0.3); transition: all 0.2s ease; text-align: center;">
+                <button class="btn btn-primary disconnect-confirm-btn" id="disconnect-confirm" style="flex: 1; background: #BF3143; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(191, 49, 67, 0.3); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;">
                     Disconnect
                 </button>
             </div>
