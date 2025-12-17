@@ -1925,14 +1925,22 @@
         // Global function for Connect Video Account button
         async function handleConnectVideoAccount() {
             console.log('=== CONNECT VIDEO ACCOUNT CLICKED (via onclick) ===');
-            const result = await showMakedoLoginModal();
-            if (result.success) {
-                updateVideoConnectionStatus();
+            try {
+                const result = await showMakedoLoginModal();
+                if (result.success) {
+                    updateVideoConnectionStatus();
+                }
+            } catch (error) {
+                console.error('Error in handleConnectVideoAccount:', error);
+                alert('Error connecting video account: ' + error.message);
             }
         }
         
         // Make it globally available
         window.handleConnectVideoAccount = handleConnectVideoAccount;
+        
+        // Debug: Log when this runs
+        console.log('handleConnectVideoAccount assigned to window:', typeof window.handleConnectVideoAccount);
         
         function handleStartCall() {
             console.log('=== Starting video chat from dashboard ===');
@@ -2136,6 +2144,11 @@
                     console.log('Email:', email);
                     
                     try {
+                        // Check if Fetch is available
+                        if (typeof Fetch === 'undefined') {
+                            throw new Error('Fetch module not loaded. Please refresh the page and try again.');
+                        }
+                        
                         // Use Fetch.login() from fetch.js (imported at top of module)
                         const result = await Fetch.login({ email, password });
                         
