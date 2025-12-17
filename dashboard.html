@@ -784,9 +784,9 @@
         }
         
         .disconnect-confirm-btn:hover {
-            background: #B91C1C !important;
+            background: #a52938 !important;
             transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4) !important;
+            box-shadow: 0 6px 16px rgba(191, 49, 67, 0.4) !important;
         }
         
         /* Empty State */
@@ -2076,7 +2076,11 @@
             
             // Confirm button - disconnect
             if (confirmBtn) {
+                console.log('Disconnect confirm button found, attaching listener');
                 confirmBtn.addEventListener('click', () => {
+                    console.log('=== DISCONNECT CONFIRM BUTTON CLICKED ===');
+                    console.log('Current makedoState:', makedoState);
+                    
                     // Clear Makedo login state
                     makedoState.isLoggedIn = false;
                     makedoState.userEmail = null;
@@ -2087,14 +2091,19 @@
                     localStorage.removeItem('makedo_user_id');
                     localStorage.removeItem('makedo_password');
                     
-                    console.log('Makedo account disconnected');
+                    console.log('LocalStorage cleared');
+                    console.log('Updated makedoState:', makedoState);
                     
                     // Close modal
                     if (modal) modal.classList.add('hidden');
+                    console.log('Modal closed');
                     
                     // Update status
                     updateVideoConnectionStatus();
+                    console.log('Video connection status updated');
                 });
+            } else {
+                console.error('Disconnect confirm button NOT found!');
             }
             
             // Close modal when clicking outside
@@ -2700,9 +2709,9 @@
     <!-- Disconnect Video Account Modal -->
     <div class="modal-overlay hidden" id="disconnect-video-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;">
         <div class="modal-dialog" style="background: white; border-radius: 16px; max-width: 420px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden;">
-            <div class="modal-header" style="padding: 32px 32px 24px; background: #DC2626; text-align: center;">
+            <div class="modal-header" style="padding: 32px 32px 24px; background: #BF3143; text-align: center;">
                 <div style="width: 64px; height: 64px; background: white; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BF3143" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M23 7l-7 5 7 5V7z"/>
                         <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
                         <line x1="1" y1="1" x2="23" y2="23"/>
@@ -2720,7 +2729,7 @@
                 <button class="btn btn-secondary disconnect-cancel-btn" id="disconnect-cancel" style="flex: 1; background: #F3F4F6; color: #374151; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: center;">
                     Cancel
                 </button>
-                <button class="btn btn-primary disconnect-confirm-btn" id="disconnect-confirm" style="flex: 1; background: #DC2626; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); transition: all 0.2s ease; text-align: center;">
+                <button class="btn btn-primary disconnect-confirm-btn" id="disconnect-confirm" style="flex: 1; background: #BF3143; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(191, 49, 67, 0.3); transition: all 0.2s ease; text-align: center;">
                     Disconnect
                 </button>
             </div>
