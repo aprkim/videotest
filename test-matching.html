@@ -170,6 +170,7 @@
                 <button onclick="startMatching()">🔍 Start Matching</button>
                 <button class="secondary" onclick="leaveQueue()">❌ Leave Queue</button>
                 <button class="secondary" onclick="checkQueue()">👥 Check Queue</button>
+                <button class="secondary" onclick="cleanAllQueue()">🧹 Clean All Queue</button>
                 <button class="secondary" onclick="clearConsole()">🗑️ Clear Console</button>
             </div>
         </div>
@@ -333,6 +334,29 @@
                 }
             } catch (error) {
                 log('❌ Error checking queue: ' + error.message, 'error');
+            }
+        }
+        
+        async function cleanAllQueue() {
+            if (!confirm('This will remove ALL users from the matching queue. Continue?')) {
+                return;
+            }
+            
+            log('🧹 Cleaning all queue entries...', 'info');
+            
+            try {
+                const snapshot = await window.db.collection('matchingQueue').get();
+                const batch = window.db.batch();
+                
+                snapshot.forEach((doc) => {
+                    batch.delete(doc.ref);
+                });
+                
+                await batch.commit();
+                log(`✅ Cleaned ${snapshot.size} entries from queue`, 'success');
+                updateMatchStatus('waiting', 'Not matching');
+            } catch (error) {
+                log('❌ Error cleaning queue: ' + error.message, 'error');
             }
         }
         

@@ -126,7 +126,16 @@ class MatchingService {
                 const partnerId = doc.id;
                 
                 // Skip self
-                if (partnerId === currentUserId) return;
+                if (partnerId === currentUserId) {
+                    console.log('Skipping self:', partnerId);
+                    return;
+                }
+                
+                // Skip if already matched (stale entry)
+                if (userData.status !== 'waiting') {
+                    console.log('Skipping non-waiting user:', partnerId, 'Status:', userData.status);
+                    return;
+                }
                 
                 console.log('Checking user:', partnerId, userData);
                 
