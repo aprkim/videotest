@@ -1699,19 +1699,20 @@
                 
                 console.log('✅ Local video displaying');
                 
-                // Step 2: Login to Makedo
+                // Step 2: Login to Makedo (using stored credentials from dashboard)
+                // Note: Even though user logged in on dashboard, we need fresh auth for this page's WebSocket
                 updateLoading('Connecting to video server...', '');
-                console.log('Logging in to Makedo...');
+                console.log('Authenticating with Makedo...');
                 const loginResult = await window.Fetch.login({
                     email: myEmail,
                     password: myPassword
                 });
                 
                 if (loginResult.status !== 'loggedIn') {
-                    throw new Error('Failed to login to video server');
+                    throw new Error('Failed to authenticate with video server');
                 }
                 
-                console.log('✅ Logged in to Makedo:', loginResult.email);
+                console.log('✅ Authenticated with Makedo:', loginResult.email);
                 
                 // Step 3: Initialize Bridge
                 updateLoading('Setting up video connection...', '');
