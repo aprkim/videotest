@@ -1681,6 +1681,8 @@
                 console.log('=== Connecting to Session ===');
                 console.log('Session ID:', sessionId);
                 console.log('Partner:', partnerName);
+                console.log('My email:', myEmail);
+                console.log('Partner email:', partnerEmail);
                 
                 // Step 1: Get local media stream
                 updateLoading('Accessing camera and microphone...', '');
@@ -1699,88 +1701,21 @@
                 
                 console.log('✅ Local video displaying');
                 
-                // Step 2: Login to Makedo (using stored credentials from dashboard)
-                // Note: Even though user logged in on dashboard, we need fresh auth for this page's WebSocket
-                updateLoading('Connecting to video server...', '');
-                console.log('Authenticating with Makedo...');
-                const loginResult = await window.Fetch.login({
-                    email: myEmail,
-                    password: myPassword
-                });
-                
-                if (loginResult.status !== 'loggedIn') {
-                    throw new Error('Failed to authenticate with video server');
+                // Try WebRTC connection, but continue even if it fails
+                try {
+                    await connectWebRTC(sessionId, myEmail, myPassword, partnerEmail, partnerName);
+                } catch (webrtcError) {
+                    console.error('WebRTC connection failed:', webrtcError);
+                    console.log('Continuing with local video only...');
                 }
                 
-                console.log('✅ Authenticated with Makedo:', loginResult.email);
-                
-                // Step 3: Initialize Bridge
-                updateLoading('Setting up video connection...', '');
-                bridge = new window.Bridge();
-                bridge.initDispatcher();
-                
-                console.log('✅ Bridge initialized');
-                
-                // Step 4: Find partner by email
-                updateLoading('Finding your partner...', '');
-                const users = await bridge.getUsersByQuery({
-                    query: partnerEmail,
-                    count: 20,
-                    depth: 1
-                });
-                
-                const partner = users.find(user => user.email === partnerEmail);
-                if (!partner) {
-                    throw new Error('Partner not found on video server');
-                }
-                
-                console.log('✅ Partner found:', partner.username, 'PID:', partner.pid);
-                
-                // Step 5: Create/Join channel
-                updateLoading('Creating video room...', '');
-                const channelResult = await bridge.createQuickChatChannel({
-                    invited: partner.pid,
-                    message: `TabbiMate session ${sessionId}`
-                });
-                
-                channelId = channelResult.pid;
-                console.log('✅ Channel created:', channelId);
-                
-                // Step 6: Get member info
-                const memberData = await bridge.getOrCreateMeMember({
-                    channel_id: channelId
-                });
-                
-                memberId = memberData.pub_id || memberData.pid;
-                const accessCode = memberData.access_code || channelResult.access_code || "413239";
-                
-                console.log('✅ Member ID:', memberId);
-                
-                // Step 7: Setup Galene connection
-                updateLoading('Connecting to video room...', '');
-                bridge.remote_serverSetup(channelId, memberId, accessCode);
-                
-                console.log('✅ Galene connection setup');
-                
-                // Step 8: Setup stream callbacks BEFORE joining
-                setupStreamCallbacks(partnerName);
-                
-                // Step 9: Join channel
-                updateLoading('Joining session...', '');
-                await bridge.comms.joinChannel();
-                
-                console.log('✅ Joined channel, waiting for partner...');
-                
-                // Hide loading and show the UI
+                // Always hide loading and show UI
                 hideLoading();
                 
                 // Show message that partner is not yet connected
                 document.getElementById('remote-name').textContent = `${partnerName} · Waiting`;
                 
-                // Step 10: Publish local stream
-                await publishLocalStream();
-                
-                console.log('✅ Session ready! Waiting for partner to join...');
+                console.log('✅ Session ready!');
                 
             } catch (error) {
                 console.error('Connection error:', error);
@@ -1790,6 +1725,99 @@
                     showError('Failed to connect: ' + error.message);
                 }
             }
+        }
+        
+        async function connectWebRTC(sessionId, myEmail, myPassword, partnerEmail, partnerName) {
+            // Step 2: Login to Makedo (using stored credentials from dashboard)
+            // Note: Even though user logged in on dashboard, we need fresh auth for this page's WebSocket
+            updateLoading('Connecting to video server...', '');
+            console.log('Authenticating with Makedo...');
+            
+            if (!window.Fetch) {
+                throw new Error('Makedo Fetch not available');
+            }
+            
+            const loginResult = await window.Fetch.login({
+                email: myEmail,
+                password: myPassword
+            });
+            
+            console.log('Login result:', loginResult);
+            
+            if (loginResult.status !== 'loggedIn') {
+                throw new Error('Failed to authenticate with video server');
+            }
+            
+            console.log('✅ Authenticated with Makedo:', loginResult.email);
+            
+            // Step 3: Initialize Bridge
+            updateLoading('Setting up video connection...', '');
+            
+            if (!window.Bridge) {
+                throw new Error('Makedo Bridge not available');
+            }
+            
+            bridge = new window.Bridge();
+            bridge.initDispatcher();
+            
+            console.log('✅ Bridge initialized');
+            
+            // Step 4: Find partner by email
+            updateLoading('Finding your partner...', '');
+            const users = await bridge.getUsersByQuery({
+                query: partnerEmail,
+                count: 20,
+                depth: 1
+            });
+            
+            console.log('Users found:', users);
+            
+            const partner = users.find(user => user.email === partnerEmail);
+            if (!partner) {
+                throw new Error('Partner not found on video server');
+            }
+            
+            console.log('✅ Partner found:', partner.username, 'PID:', partner.pid);
+            
+            // Step 5: Create/Join channel
+            updateLoading('Creating video room...', '');
+            const channelResult = await bridge.createQuickChatChannel({
+                invited: partner.pid,
+                message: `TabbiMate session ${sessionId}`
+            });
+            
+            channelId = channelResult.pid;
+            console.log('✅ Channel created:', channelId);
+            
+            // Step 6: Get member info
+            const memberData = await bridge.getOrCreateMeMember({
+                channel_id: channelId
+            });
+            
+            memberId = memberData.pub_id || memberData.pid;
+            const accessCode = memberData.access_code || channelResult.access_code || "413239";
+            
+            console.log('✅ Member ID:', memberId);
+            
+            // Step 7: Setup Galene connection
+            updateLoading('Connecting to video room...', '');
+            bridge.remote_serverSetup(channelId, memberId, accessCode);
+            
+            console.log('✅ Galene connection setup');
+            
+            // Step 8: Setup stream callbacks BEFORE joining
+            setupStreamCallbacks(partnerName);
+            
+            // Step 9: Join channel
+            updateLoading('Joining session...', '');
+            await bridge.comms.joinChannel();
+            
+            console.log('✅ Joined channel, waiting for partner...');
+            
+            // Step 10: Publish local stream
+            await publishLocalStream();
+            
+            console.log('✅ WebRTC connected! Waiting for partner to join...');
         }
         
         function setupStreamCallbacks(partnerName) {
