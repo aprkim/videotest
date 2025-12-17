@@ -229,6 +229,8 @@
             justify-content: center;
             border: 1px solid #e0e0e0;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            aspect-ratio: 4 / 3;
+            min-height: 0;
         }
         
         .video-element {
@@ -1577,6 +1579,10 @@
         
         // TabbiMate Video instance
         let videoChat;
+        let bridge = null;
+        let localStream = null;
+        let channelId = null;
+        let memberId = null;
         
         // UI Update Functions
         function updateLoading(text, subtext = '') {
@@ -1660,10 +1666,9 @@
                     throw new Error('Video account credentials missing');
                 }
                 
-                // For now, skip Makedo login and just show local video
-                // TODO: Implement proper WebRTC peer-to-peer connection
-                updateLoading('Setting up your camera...', '');
-                await connectToSession(sessionId, partnerMakedoEmail, partnerDisplayName);
+                // Connect to Makedo and setup WebRTC
+                updateLoading('Connecting to video server...', '');
+                await connectToSession(sessionId, myMakedoEmail, makedoState.password, partnerMakedoEmail, partnerDisplayName);
                 
             } catch (error) {
                 console.error('Init error:', error);
@@ -1671,21 +1676,22 @@
             }
         }
         
-        async function connectToSession(sessionId, partnerEmail, partnerName) {
+        async function connectToSession(sessionId, myEmail, myPassword, partnerEmail, partnerName) {
             try {
                 console.log('=== Connecting to Session ===');
                 console.log('Session ID:', sessionId);
                 console.log('Partner:', partnerName);
                 
-                // Get local media stream
-                const localStream = await navigator.mediaDevices.getUserMedia({
+                // Step 1: Get local media stream
+                updateLoading('Accessing camera and microphone...', '');
+                localStream = await navigator.mediaDevices.getUserMedia({
                     video: true,
                     audio: true
                 });
                 
                 console.log('✅ Local media stream obtained');
                 
-                // Attach to local video
+                // Attach to local video immediately
                 myVideo.srcObject = localStream;
                 await myVideo.play();
                 myPlaceholder.style.display = 'none';
@@ -1693,27 +1699,158 @@
                 
                 console.log('✅ Local video displaying');
                 
+                // Step 2: Login to Makedo
+                updateLoading('Connecting to video server...', '');
+                console.log('Logging in to Makedo...');
+                const loginResult = await window.Fetch.login({
+                    email: myEmail,
+                    password: myPassword
+                });
+                
+                if (loginResult.status !== 'loggedIn') {
+                    throw new Error('Failed to login to video server');
+                }
+                
+                console.log('✅ Logged in to Makedo:', loginResult.email);
+                
+                // Step 3: Initialize Bridge
+                updateLoading('Setting up video connection...', '');
+                bridge = new window.Bridge();
+                bridge.initDispatcher();
+                
+                console.log('✅ Bridge initialized');
+                
+                // Step 4: Find partner by email
+                updateLoading('Finding your partner...', '');
+                const users = await bridge.getUsersByQuery({
+                    query: partnerEmail,
+                    count: 20,
+                    depth: 1
+                });
+                
+                const partner = users.find(user => user.email === partnerEmail);
+                if (!partner) {
+                    throw new Error('Partner not found on video server');
+                }
+                
+                console.log('✅ Partner found:', partner.username, 'PID:', partner.pid);
+                
+                // Step 5: Create/Join channel
+                updateLoading('Creating video room...', '');
+                const channelResult = await bridge.createQuickChatChannel({
+                    invited: partner.pid,
+                    message: `TabbiMate session ${sessionId}`
+                });
+                
+                channelId = channelResult.pid;
+                console.log('✅ Channel created:', channelId);
+                
+                // Step 6: Get member info
+                const memberData = await bridge.getOrCreateMeMember({
+                    channel_id: channelId
+                });
+                
+                memberId = memberData.pub_id || memberData.pid;
+                const accessCode = memberData.access_code || channelResult.access_code || "413239";
+                
+                console.log('✅ Member ID:', memberId);
+                
+                // Step 7: Setup Galene connection
+                updateLoading('Connecting to video room...', '');
+                bridge.remote_serverSetup(channelId, memberId, accessCode);
+                
+                console.log('✅ Galene connection setup');
+                
+                // Step 8: Setup stream callbacks BEFORE joining
+                setupStreamCallbacks(partnerName);
+                
+                // Step 9: Join channel
+                updateLoading('Joining session...', '');
+                await bridge.comms.joinChannel();
+                
+                console.log('✅ Joined channel, waiting for partner...');
+                
                 // Hide loading and show the UI
                 hideLoading();
                 
                 // Show message that partner is not yet connected
                 document.getElementById('remote-name').textContent = `${partnerName} · Waiting`;
                 
-                console.log('✅ Session ready! Video chat UI displayed.');
-                console.log('Note: Peer-to-peer connection with partner will be implemented next.');
+                // Step 10: Publish local stream
+                await publishLocalStream();
                 
-                // TODO: When partner's video stream connects, update to show just the name:
-                // document.getElementById('remote-name').textContent = partnerName;
-                // remotePlaceholder.style.display = 'none';
-                // remoteVideo.style.display = 'block';
+                console.log('✅ Session ready! Waiting for partner to join...');
                 
             } catch (error) {
                 console.error('Connection error:', error);
                 if (error.name === 'NotAllowedError') {
                     showError('Camera/microphone access denied. Please allow access and try again.');
                 } else {
-                    showError('Failed to access camera: ' + error.message);
+                    showError('Failed to connect: ' + error.message);
                 }
+            }
+        }
+        
+        function setupStreamCallbacks(partnerName) {
+            // Callback when successfully joined
+            bridge.comms.setOnJoinedChannel(function() {
+                console.log('✅ Successfully joined Galene channel!');
+            });
+            
+            // Callback when receiving remote stream
+            bridge.comms.setOnStream(function(stream) {
+                console.log('✅ Received remote stream:', stream);
+                
+                if (stream && stream.kind === 'video') {
+                    // Attach remote video stream
+                    const mediaStream = new MediaStream([stream]);
+                    remoteVideo.srcObject = mediaStream;
+                    remoteVideo.play();
+                    
+                    // Hide placeholder, show video
+                    remotePlaceholder.style.display = 'none';
+                    remoteVideo.style.display = 'block';
+                    
+                    // Update name (remove "Waiting")
+                    document.getElementById('remote-name').textContent = partnerName;
+                    
+                    console.log('✅ Remote video displaying!');
+                }
+            });
+            
+            // Callback when remote stream is closed
+            bridge.comms.setOnClose(function(streamId) {
+                console.log('Remote stream closed:', streamId);
+                
+                // Show placeholder again
+                remoteVideo.style.display = 'none';
+                remotePlaceholder.style.display = 'flex';
+                document.getElementById('remote-name').textContent = `${partnerName} · Waiting`;
+            });
+        }
+        
+        async function publishLocalStream() {
+            if (!bridge || !bridge.comms || !localStream) {
+                console.error('Cannot publish: missing bridge, comms, or stream');
+                return;
+            }
+            
+            try {
+                // Publish video track
+                const videoTrack = localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    await bridge.comms.sendStream(videoTrack);
+                    console.log('✅ Published video stream');
+                }
+                
+                // Publish audio track
+                const audioTrack = localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    await bridge.comms.sendStream(audioTrack);
+                    console.log('✅ Published audio stream');
+                }
+            } catch (error) {
+                console.error('Error publishing stream:', error);
             }
         }
         
@@ -1843,29 +1980,17 @@
             }
         });
         
-        // Help Button
-        document.getElementById('help-btn').addEventListener('click', () => {
-            const options = [
-                '📋 Session Guidelines',
-                '🚫 Block User',
-                '⚠️ Report User'
-            ];
-            
-            const choice = prompt(`Help & Options:\n\n1. ${options[0]}\n2. ${options[1]}\n3. ${options[2]}\n\nEnter number (1-3):`);
-            
-            if (choice === '1') {
-                alert('Session Guidelines:\n\n✅ Be respectful and patient\n✅ Speak clearly and at a comfortable pace\n✅ Encourage your partner\n✅ Focus on learning and having fun\n\n❌ No offensive language\n❌ No sharing personal contact information\n❌ No commercial solicitation');
-            } else if (choice === '2') {
-                const partnerName = document.getElementById('partner-name').textContent;
-                if (confirm(`Block ${partnerName}? You won't be matched with them again.`)) {
-                    alert(`${partnerName} has been blocked.`);
-                }
-            } else if (choice === '3') {
-                const partnerName = document.getElementById('partner-name').textContent;
-                const reason = prompt(`Report ${partnerName}\n\nPlease describe the issue:`);
-                if (reason) {
-                    alert(`Thank you for your report. Our team will review this incident.`);
-                }
+        // Help Button - Toggle dropdown menu
+        const helpMenu = document.getElementById('help-menu');
+        document.getElementById('help-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            helpMenu.classList.toggle('hidden');
+        });
+        
+        // Close help menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!helpMenu.contains(e.target) && !e.target.closest('#help-btn')) {
+                helpMenu.classList.add('hidden');
             }
         });
         
