@@ -6,8 +6,9 @@
     <title>Video Session - TabbiMate</title>
     
     <!-- jQuery (required by protocol.js) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>    
+    <script src='https://proto2.makedo.com:8883/ux/scripts/protocol.js'></script>
+
     <!-- Makedo Scripts - Now imported as ES6 modules in the main script -->
     
     <!-- Firebase SDK -->
@@ -1819,7 +1820,7 @@
                 updateLoading('Connecting to video room...', '');
                 bridge.remote_serverSetup(channelId, memberId, accessCode);
                 
-                console.log('✅ Galene connection setup');
+                console.log('✅ Galene connection setup'); console.log('Access code:', accessCode);
                 
                 // Step 6: Setup all callbacks BEFORE joining
                 setupBridgeCallbacks(TEST_PARTNER.username);
