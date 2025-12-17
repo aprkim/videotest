@@ -266,6 +266,228 @@
             display: none !important;
         }
         
+        /* Help Menu Dropdown */
+        .help-menu {
+            position: absolute;
+            top: 80px;
+            left: 440px;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            min-width: 280px;
+            overflow: hidden;
+        }
+        
+        .help-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #333333;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .help-menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .help-menu-item:hover {
+            background-color: #f8f8f8;
+        }
+        
+        .help-menu-item svg {
+            width: 20px;
+            height: 20px;
+            color: #666666;
+        }
+        
+        .help-menu-item.danger {
+            color: #BF3143;
+        }
+        
+        .help-menu-item.danger svg {
+            color: #BF3143;
+        }
+        
+        /* Session Summary Modal */
+        .session-summary-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .session-summary-content {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        
+        .summary-title {
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333333;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .summary-card.full-width {
+            grid-column: span 2;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #999999;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .summary-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333333;
+        }
+        
+        .sentences-section {
+            margin-top: 40px;
+        }
+        
+        .sentences-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #333333;
+        }
+        
+        .sentences-subtitle {
+            font-size: 14px;
+            color: #999999;
+            margin-bottom: 20px;
+        }
+        
+        .sentence-card {
+            background-color: #ffffff;
+            border-left: 4px solid #BF3143;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .sentence-wrong {
+            color: #BF3143;
+            text-decoration: line-through;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .sentence-correct {
+            color: #333333;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sentence-correct::before {
+            content: '✓';
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        
+        .sentence-explanation {
+            color: #999999;
+            font-size: 14px;
+            font-style: italic;
+        }
+        
+        .summary-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .download-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background-color: #ffffff;
+            color: #BF3143;
+            border: 2px solid #BF3143;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .download-btn:hover {
+            background-color: #fff5f5;
+        }
+        
+        .download-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .done-btn {
+            display: flex;
+            align-items: center;
+            padding: 14px 40px;
+            background-color: #BF3143;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        
+        .done-btn:hover {
+            background-color: #a02838;
+        }
+        
         /* Dark Theme Toggle */
         .theme-toggle-btn {
             position: fixed;
@@ -395,6 +617,78 @@
             background-color: #3a3a3a;
         }
         
+        /* Dark Theme - Help Menu */
+        body.dark-theme .help-menu {
+            background-color: #2a2a2a;
+            border-color: #3a3a3a;
+        }
+        
+        body.dark-theme .help-menu-item {
+            color: #ffffff;
+            border-bottom-color: #3a3a3a;
+        }
+        
+        body.dark-theme .help-menu-item:hover {
+            background-color: #3a3a3a;
+        }
+        
+        body.dark-theme .help-menu-item svg {
+            color: #999999;
+        }
+        
+        body.dark-theme .help-menu-item.danger {
+            color: #ff6b7a;
+        }
+        
+        body.dark-theme .help-menu-item.danger svg {
+            color: #ff6b7a;
+        }
+        
+        /* Dark Theme - Session Summary */
+        body.dark-theme .session-summary-modal {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        
+        body.dark-theme .session-summary-content {
+            background-color: #2a2a2a;
+        }
+        
+        body.dark-theme .summary-title {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .summary-card {
+            background-color: #1a1a1a;
+            border-color: #3a3a3a;
+        }
+        
+        body.dark-theme .summary-value {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .sentences-title {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .sentence-card {
+            background-color: #1a1a1a;
+            border-left-color: #BF3143;
+        }
+        
+        body.dark-theme .sentence-correct {
+            color: #ffffff;
+        }
+        
+        body.dark-theme .download-btn {
+            background-color: #2a2a2a;
+            color: #ff6b7a;
+            border-color: #ff6b7a;
+        }
+        
+        body.dark-theme .download-btn:hover {
+            background-color: #3a3a3a;
+        }
+        
         /* Preview Banner */
         .preview-banner {
             position: fixed;
@@ -439,6 +733,98 @@
     <!-- Preview Banner -->
     <div class="preview-banner">
         🎨 Design Preview Mode - This is how the video session looks after matching
+    </div>
+    
+    <!-- Help Menu Dropdown -->
+    <div class="help-menu hidden" id="help-menu">
+        <button class="help-menu-item" id="review-guidelines">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4"/>
+                <path d="M12 8h.01"/>
+            </svg>
+            <span>Review Session Guidelines</span>
+        </button>
+        <button class="help-menu-item" id="block-partner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+            <span>Block <span id="block-name">Yuki</span></span>
+        </button>
+        <button class="help-menu-item danger" id="report-partner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span>Report <span id="report-name">Yuki</span></span>
+        </button>
+    </div>
+    
+    <!-- Session Summary Modal -->
+    <div class="session-summary-modal hidden" id="session-summary">
+        <div class="session-summary-content">
+            <h2 class="summary-title">Session Summary</h2>
+            
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-label">Language</div>
+                    <div class="summary-value">English</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Level</div>
+                    <div class="summary-value">Basic</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Partner</div>
+                    <div class="summary-value">Yuki</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Duration</div>
+                    <div class="summary-value">1 minute</div>
+                </div>
+                <div class="summary-card full-width">
+                    <div class="summary-label">Date</div>
+                    <div class="summary-value">Dec 17, 2025</div>
+                </div>
+            </div>
+            
+            <div class="sentences-section">
+                <h3 class="sentences-title">Sentences to Memorize</h3>
+                <p class="sentences-subtitle">Three key sentences from your conversation with corrections</p>
+                
+                <div class="sentence-card">
+                    <div class="sentence-wrong">I go to the store yesterday.</div>
+                    <div class="sentence-correct">I went to the store yesterday.</div>
+                    <div class="sentence-explanation">Use past tense 'went' for actions that happened in the past.</div>
+                </div>
+                
+                <div class="sentence-card">
+                    <div class="sentence-wrong">She don't like coffee.</div>
+                    <div class="sentence-correct">She doesn't like coffee.</div>
+                    <div class="sentence-explanation">Use 'doesn't' with third person singular (he, she, it).</div>
+                </div>
+                
+                <div class="sentence-card">
+                    <div class="sentence-wrong">I have went there before.</div>
+                    <div class="sentence-correct">I have gone there before.</div>
+                    <div class="sentence-explanation">Use 'gone' (not 'went') with 'have' for present perfect tense.</div>
+                </div>
+            </div>
+            
+            <div class="summary-actions">
+                <button class="download-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Download Study Note</span>
+                </button>
+                <button class="done-btn" id="done-btn">Done</button>
+            </div>
+        </div>
     </div>
     
     <!-- Theme Toggle -->
@@ -593,14 +979,15 @@
         // Timer countdown
         let timeLeft = 3; // 0:03
         const timerBtn = document.querySelector('.timer-btn span');
+        const sessionSummaryModal = document.getElementById('session-summary');
+        
         const timerInterval = setInterval(() => {
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
                 timerBtn.textContent = 'Session ended';
                 setTimeout(() => {
-                    if (confirm('Session ended! Would you like to see the session summary?')) {
-                        alert('Session Summary (Demo)\n\n✓ Duration: 15 minutes\n✓ Partner: Yuki\n✓ Language: Japanese\n✓ Next session available now!');
-                    }
+                    // Show session summary modal
+                    sessionSummaryModal.classList.remove('hidden');
                 }, 500);
             } else {
                 const minutes = Math.floor(timeLeft / 60);
@@ -610,26 +997,61 @@
             }
         }, 1000);
         
-        // Help button
-        document.querySelector('.help-btn').addEventListener('click', () => {
-            const helpMessage = `
-📖 Session Help
+        // Help button - toggle dropdown menu
+        const helpBtn = document.querySelector('.help-btn');
+        const helpMenu = document.getElementById('help-menu');
+        
+        helpBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            helpMenu.classList.toggle('hidden');
+        });
+        
+        // Close help menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!helpMenu.contains(e.target) && !helpBtn.contains(e.target)) {
+                helpMenu.classList.add('hidden');
+            }
+        });
+        
+        // Review Guidelines
+        document.getElementById('review-guidelines').addEventListener('click', () => {
+            helpMenu.classList.add('hidden');
+            alert(`📋 Session Guidelines
 
-Video Controls:
-• Video - Toggle your camera on/off
-• Audio - Toggle your microphone on/off
-• AI - Get real-time language assistance
-• Chat - Send text messages
-• Share - Share your screen
+1. Be Respectful
+   • Treat your partner with kindness and respect
+   • Be patient with language mistakes
 
-Tips:
-• Click the favorite star to save this partner
-• Use the AI assistant for translations
-• Be respectful and have fun learning!
+2. Stay Focused
+   • Practice the target language
+   • Avoid inappropriate topics
 
-Need help? Contact support@tabbimate.com
-            `;
-            alert(helpMessage.trim());
+3. Help Each Other
+   • Correct mistakes gently
+   • Share learning tips
+
+4. Have Fun!
+   • Enjoy the conversation
+   • Make new friends
+
+Questions? Contact support@tabbimate.com`);
+        });
+        
+        // Block Partner
+        document.getElementById('block-partner').addEventListener('click', () => {
+            helpMenu.classList.add('hidden');
+            if (confirm('Are you sure you want to block Yuki?\n\nYou will not be matched with this user again.')) {
+                alert('🚫 Yuki has been blocked.\n\nYou will not see this user in future matches.');
+            }
+        });
+        
+        // Report Partner
+        document.getElementById('report-partner').addEventListener('click', () => {
+            helpMenu.classList.add('hidden');
+            const reason = prompt('⚠️ Report Yuki\n\nPlease tell us why you are reporting this user:\n\n1. Inappropriate behavior\n2. Harassment\n3. Spam\n4. Other\n\nEnter reason:');
+            if (reason) {
+                alert('✓ Report submitted\n\nThank you for helping keep TabbiMate safe.\nOur team will review this report within 24 hours.');
+            }
         });
         
         // Leave button
@@ -696,6 +1118,24 @@ Type your message or select an action!
         document.getElementById('toggle-share').addEventListener('click', () => {
             if (confirm('📺 Start sharing your screen with Yuki?')) {
                 alert('Screen sharing started! (Demo)\n\nYour screen would now be visible to your partner.');
+            }
+        });
+        
+        // Session Summary - Done button
+        document.getElementById('done-btn').addEventListener('click', () => {
+            sessionSummaryModal.classList.add('hidden');
+            alert('✓ Session complete!\n\nReturning to dashboard...');
+        });
+        
+        // Session Summary - Download button
+        document.querySelector('.download-btn').addEventListener('click', () => {
+            alert('📥 Downloading study notes...\n\nYour session summary and corrections have been saved as a PDF.\n\n(Demo mode - actual download would start here)');
+        });
+        
+        // Close session summary when clicking outside
+        sessionSummaryModal.addEventListener('click', (e) => {
+            if (e.target === sessionSummaryModal) {
+                sessionSummaryModal.classList.add('hidden');
             }
         });
     </script>
