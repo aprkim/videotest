@@ -38,15 +38,19 @@ class TabbiMateVideo {
      */
     async login(email, password) {
         try {
-            console.log('[TabbiMateVideo] Logging in...');
+            console.log('[TabbiMateVideo] Logging in with email:', email);
             
-            // Wait for Fetch to be available (loaded by protocol.js)
-            if (typeof window.Fetch === 'undefined') {
-                console.log('[TabbiMateVideo] Waiting for Fetch to load...');
-                await this.waitForFetch();
-            }
+            // Use native fetch API to login to Makedo
+            const response = await fetch('https://proto2.makedo.com:8883/ux/auth.jsp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+            });
             
-            const result = await window.Fetch.login({ email, password });
+            const result = await response.json();
+            console.log('[TabbiMateVideo] Login response:', result);
             
             if (result.status === 'loggedIn') {
                 this.state.loggedIn = true;
