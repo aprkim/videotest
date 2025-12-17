@@ -49,8 +49,20 @@ class TabbiMateVideo {
                 body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
             });
             
-            const result = await response.json();
-            console.log('[TabbiMateVideo] Login response:', result);
+            console.log('[TabbiMateVideo] Response status:', response.status);
+            console.log('[TabbiMateVideo] Response headers:', response.headers);
+            
+            const responseText = await response.text();
+            console.log('[TabbiMateVideo] Response text:', responseText.substring(0, 200));
+            
+            let result;
+            try {
+                result = JSON.parse(responseText);
+                console.log('[TabbiMateVideo] Login response:', result);
+            } catch (e) {
+                console.error('[TabbiMateVideo] Failed to parse JSON, response was:', responseText);
+                throw new Error('Invalid response from auth server. Expected JSON.');
+            }
             
             if (result.status === 'loggedIn') {
                 this.state.loggedIn = true;
