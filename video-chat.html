@@ -1887,13 +1887,19 @@
             
             // 1. Callback when successfully joined channel
             bridge.comms.setOnJoinedChannel(function() {
-                console.log('========================================');
-                console.log('🎉 CALLBACK: setOnJoinedChannel FIRED!');
-                console.log('You have successfully joined the Galene channel');
-                console.log('Your camera stream is now broadcasting');
-                console.log('========================================');
-            });
+    console.log('========================================');
+    console.log('🎉 CALLBACK: setOnJoinedChannel FIRED!');
+    console.log('You have successfully joined the Galene channel');
+    
+    // ✅ ADD THESE CRITICAL LINES:
+    bridge.comms.inChannelSetStreamVideoTrack("camera", true);
+    bridge.comms.inChannelSetStreamAudioTrack("camera", true);
+    
+    console.log('Your camera stream is now broadcasting');
+    console.log('========================================');
+});
             
+
             // 2. Callback when MY stream starts going up
             bridge.comms.setOnNewUpStream(function(streamId, memberId, type, stream) {
                 console.log('========================================');
