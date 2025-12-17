@@ -199,7 +199,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #f9f9f9;
+            background: #f5f5f5;
+            border-radius: 12px;
+            color: #999;
+            min-height: 200px;
         }
         
         .video-name {
@@ -210,10 +213,10 @@
             font-size: 16px;
             font-weight: 500;
             color: #333333;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 8px 14px;
             border-radius: 20px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid rgba(224, 224, 224, 0.6);
         }
         
         /* Video Controls */
@@ -840,13 +843,14 @@
         }
         
         body.dark-theme .video-placeholder {
-            background-color: #2a2a2a;
+            background: #2a2a2a;
+            color: #666;
         }
         
         body.dark-theme .video-name {
             color: #ffffff;
-            background-color: rgba(42, 42, 42, 0.9);
-            border-color: #4a4a4a;
+            background-color: rgba(42, 42, 42, 0.95);
+            border-color: rgba(74, 74, 74, 0.6);
         }
         
         body.dark-theme .video-controls {
