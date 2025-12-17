@@ -22,7 +22,7 @@
     <script src="firebase-config.js"></script>
     
     <!-- TabbiMate Video Integration -->
-    <script src="tabbimate_video.js?v=7"></script>
+    <script src="tabbimate_video.js?v=8"></script>
     
     <link rel="stylesheet" href="styles.css">
     
@@ -591,16 +591,9 @@
                     throw new Error('Video account credentials missing');
                 }
                 
-                // Initialize TabbiMate Video
-                updateLoading('Connecting to video server...', myMakedoEmail);
-                console.log('Creating TabbiMateVideo instance...');
-                videoChat = new window.TabbiMateVideo();
-                console.log('TabbiMateVideo created, attempting login...');
-                await videoChat.login(myMakedoEmail, makedoState.password);
-                console.log('✅ Logged into Makedo successfully');
-                
-                // Join shared session room
-                updateLoading('Joining session...', 'Connecting to ' + partnerDisplayName);
+                // For now, skip Makedo login and just show local video
+                // TODO: Implement proper WebRTC peer-to-peer connection
+                updateLoading('Setting up your camera...', '');
                 await connectToSession(sessionId, partnerMakedoEmail, partnerDisplayName);
                 
             } catch (error) {
@@ -613,49 +606,40 @@
             try {
                 console.log('=== Connecting to Session ===');
                 console.log('Session ID:', sessionId);
-                console.log('Partner:', partnerEmail);
+                console.log('Partner:', partnerName);
                 
                 // Get local media stream
-                updateLoading('Setting up your camera...', '');
                 const localStream = await navigator.mediaDevices.getUserMedia({
                     video: true,
                     audio: true
                 });
                 
+                console.log('✅ Local media stream obtained');
+                
                 // Attach to local video
                 myVideo.srcObject = localStream;
-                myVideo.play();
+                await myVideo.play();
                 myPlaceholder.style.display = 'none';
                 myVideo.style.display = 'block';
                 
-                console.log('Local stream ready');
+                console.log('✅ Local video displaying');
                 
-                // Wait for partner to connect using Makedo's Bridge
-                updateLoading('Waiting for partner...', partnerName);
+                // Hide loading and show the UI
+                hideLoading();
                 
-                // Use Makedo Bridge to create/join channel with session ID
-                await videoChat.joinSessionChannel(sessionId, partnerEmail);
+                // Show message that partner connection will come later
+                document.getElementById('remote-name').textContent = `${partnerName} (Coming soon)`;
                 
-                // Listen for remote stream
-                videoChat.onRemoteStream((remoteStream) => {
-                    console.log('Remote stream received!');
-                    remoteVideo.srcObject = remoteStream;
-                    remoteVideo.play();
-                    remotePlaceholder.style.display = 'none';
-                    remoteVideo.style.display = 'block';
-                    
-                    // Hide loading
-                    hideLoading();
-                });
-                
-                // If no remote stream after 10 seconds, still show UI
-                setTimeout(() => {
-                    hideLoading();
-                }, 10000);
+                console.log('✅ Session ready! Video chat UI displayed.');
+                console.log('Note: Peer-to-peer connection with partner will be implemented next.');
                 
             } catch (error) {
                 console.error('Connection error:', error);
-                showError('Failed to connect: ' + error.message);
+                if (error.name === 'NotAllowedError') {
+                    showError('Camera/microphone access denied. Please allow access and try again.');
+                } else {
+                    showError('Failed to access camera: ' + error.message);
+                }
             }
         }
         
