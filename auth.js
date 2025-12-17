@@ -126,9 +126,8 @@ async function handleSignIn(e) {
         localStorage.setItem('videotest_user_email', result.user.email);
         
         // Redirect to dashboard
-        const dashboardUrl = window.location.origin + '/dashboard.html';
-        console.log('Redirecting to:', dashboardUrl);
-        window.location.href = dashboardUrl;
+        console.log('Redirecting to dashboard');
+        window.location.href = 'dashboard.html';
     } else {
         console.log('Sign in failed:', result.error);
         setLoading('signin', false);
@@ -181,9 +180,8 @@ async function handleSignUp(e) {
             localStorage.setItem('tabbimate_user_id', userId);
             localStorage.setItem('tabbimate_user_email', result.user.email);
             
-            const dashboardUrl = window.location.origin + '/dashboard.html';
-            console.log('Redirecting to:', dashboardUrl);
-            window.location.href = dashboardUrl;
+            console.log('Redirecting to dashboard');
+            window.location.href = 'dashboard.html';
         }, 1500);
     } else {
         setLoading('signup', false);
@@ -207,9 +205,8 @@ async function handleGoogleSignIn() {
         localStorage.setItem('videotest_user_email', result.user.email);
         
         // Redirect to dashboard
-        const dashboardUrl = window.location.origin + '/dashboard.html';
-        console.log('Redirecting to:', dashboardUrl);
-        window.location.href = dashboardUrl;
+        console.log('Redirecting to dashboard');
+        window.location.href = 'dashboard.html';
     } else {
         showError(result.error || 'Google sign in failed. Please try again.');
     }
