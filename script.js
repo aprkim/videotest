@@ -302,8 +302,8 @@ function handleSignedInUserLanguages(user) {
         
         // Create a matched user and start video chat after matching
         setTimeout(() => {
-            const availableUsers = users.filter(u => u.name !== user.name);
-            const matchedUser = availableUsers[Math.floor(Math.random() * availableUsers.length)];
+            // FOR TESTING: Use default match
+            const matchedUser = getDefaultMatchUser();
             const levelDurations = {
                 'Basic': 10,
                 'Intermediate': 10,
@@ -357,8 +357,8 @@ function setupSignedInUserLanguageSelection(user) {
             
             // Create a matched user and start video chat after matching
             setTimeout(() => {
-                const availableUsers = users.filter(u => u.name !== user.name);
-                const matchedUser = availableUsers[Math.floor(Math.random() * availableUsers.length)];
+                // FOR TESTING: Use default match
+                const matchedUser = getDefaultMatchUser();
                 const levelDurations = {
                     'Basic': 10,
                     'Intermediate': 10,
@@ -424,10 +424,9 @@ function startVideoSession(sessionId) {
         currentMatchedUser = JSON.parse(storedMatchedUser);
         console.log('Matched user loaded from storage:', currentMatchedUser.name);
     } else {
-        // Pick a random user as matched partner (excluding April)
-        const availableUsers = users.filter(u => u.name !== 'April');
-        currentMatchedUser = availableUsers[Math.floor(Math.random() * availableUsers.length)];
-        console.log('Random matched user selected:', currentMatchedUser.name);
+        // FOR TESTING: Use default match
+        currentMatchedUser = getDefaultMatchUser();
+        console.log('Default matched user selected:', currentMatchedUser.name);
     }
     
     // Update the partner name in the UI (both places)
@@ -730,8 +729,8 @@ function setupLevelButtons() {
                 
                 // Find a match and start video chat after matching period
                 setTimeout(() => {
-                    const availableUsers = users.filter(u => u.name !== 'Guest');
-                    const matchedUser = availableUsers[Math.floor(Math.random() * availableUsers.length)];
+                    // FOR TESTING: Use default match
+                    const matchedUser = getDefaultMatchUser();
                     startActualVideoChat(matchedUser, duration);
                 }, 10000); // 10 seconds matching time (testing)
             }
@@ -818,50 +817,29 @@ async function selectLevel(level, durationMinutes) {
     }
 }
 
+// Get default match user for testing
+function getDefaultMatchUser() {
+    return {
+        name: 'Oct14',
+        email: 'oct14@test.com',
+        languages: {
+            english: 'Professional',
+            spanish: 'Intermediate',
+            korean: 'Basic'
+        },
+        interests: ['Travel', 'Technology', 'Culture']
+    };
+}
+
 // Find a matching user
 function findMatch(selectedLanguage, level) {
-    const langKey = selectedLanguage.toLowerCase();
-    const currentUser = GUEST_MODE ? null : users.find(u => u.name === 'April');
+    console.log(`Looking for match: Language=${selectedLanguage}, Level=${level}`);
     
-    if (!currentUser) return null;
+    // FOR TESTING: Always return oct14@test.com as the match
+    const defaultMatch = getDefaultMatchUser();
     
-    // Get current user's level in the selected language
-    const myLevel = currentUser.languages[langKey];
-    
-    console.log(`Looking for match: Language=${selectedLanguage}, My Level=${myLevel}, Seeking=${level}`);
-    
-    // Filter users who speak the selected language
-    const availableUsers = users.filter(user => {
-        // Skip April (the current user)
-        if (user.name === 'April') return false;
-        
-        // Check if they speak the language
-        if (!user.languages.hasOwnProperty(langKey)) return false;
-        
-        const theirLevel = user.languages[langKey];
-        
-        // Case 1: Talk with Native - match with native speakers only
-        if (level === 'Native') {
-            return theirLevel === 'Native';
-        }
-        
-        // Case 2: Same level matching (Basic, Intermediate, Professional)
-        // Match users with the exact same level
-        return theirLevel === myLevel;
-    });
-    
-    console.log('Available users for matching:', availableUsers.map(u => ({
-        name: u.name,
-        level: u.languages[langKey]
-    })));
-    
-    if (availableUsers.length === 0) {
-        console.log('No match found with matching level');
-        return null;
-    }
-    
-    // Return a random match from available users
-    return availableUsers[Math.floor(Math.random() * availableUsers.length)];
+    console.log('Returning default match for testing:', defaultMatch);
+    return defaultMatch;
 }
 
 // Update session count and favorite button
@@ -3435,8 +3413,8 @@ function setupTutorialButton() {
                     // Find a match and start video chat after matching period
                     const duration = 600; // 10 minutes default
                     setTimeout(() => {
-                        const availableUsers = users.filter(u => u.name !== 'Guest');
-                        const matchedUser = availableUsers[Math.floor(Math.random() * availableUsers.length)];
+                        // FOR TESTING: Use default match
+                        const matchedUser = getDefaultMatchUser();
                         startActualVideoChat(matchedUser, duration);
                     }, 10000); // 10 seconds matching time (testing)
                     
