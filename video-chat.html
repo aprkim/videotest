@@ -1641,8 +1641,9 @@
         }
         
         function showError(message) {
-            alert('Error: ' + message);
-            window.location.href = 'dashboard.html';
+            const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+            showInfoModal('Error', message, 'warning');
+            // Don't redirect - let user see console messages
         }
         
         // Initialize Video Session
@@ -1832,31 +1833,32 @@
                 
                 console.log('✅ Camera stream created:', camera_stream);
                 
-                // Attach local stream to video element
+                // IMPORTANT: Show your own video IMMEDIATELY
                 if (camera_stream) {
                     myVideo.srcObject = camera_stream;
                     await myVideo.play();
                     myPlaceholder.style.display = 'none';
                     myVideo.style.display = 'block';
                     console.log('✅ Local video displaying');
+                    
+                    // Hide loading screen NOW so user sees themselves
+                    hideLoading();
+                    
+                    // Update UI
+                    document.getElementById('partner-name').textContent = TEST_PARTNER.username;
+                    document.getElementById('remote-name').textContent = `${TEST_PARTNER.username} · Waiting`;
+                    
+                    console.log('✅ You can now see yourself!');
                 } else {
                     console.error('Failed to create camera stream');
+                    throw new Error('Failed to create camera stream');
                 }
                 
-                // Step 8: Join channel and start broadcasting
-                updateLoading('Joining session...', '');
+                // Step 8: Join channel and start broadcasting (in background)
                 console.log('Joining channel and starting broadcast...');
                 await bridge.comms.remote_serverJoin();
                 
                 console.log('✅ Joined channel! Broadcasting and waiting for partner...');
-                
-                // Hide loading and show UI
-                hideLoading();
-                
-                // Update UI
-                document.getElementById('partner-name').textContent = TEST_PARTNER.username;
-                document.getElementById('remote-name').textContent = `${TEST_PARTNER.username} · Waiting`;
-                
                 console.log('✅ Session ready!');
                 
             } catch (error) {
