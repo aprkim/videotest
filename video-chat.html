@@ -106,6 +106,23 @@
             background-color: #4a4a4a;
         }
         
+        .theme-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            background-color: #3a3a3a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .theme-toggle-btn:hover {
+            background-color: #4a4a4a;
+        }
+        
         .header-center {
             flex: 1;
             text-align: center;
@@ -384,6 +401,106 @@
                 display: none;
             }
         }
+        
+        /* Light Theme */
+        body.light-theme {
+            background-color: #f5f5f5;
+        }
+        
+        body.light-theme .video-session-container {
+            background-color: #ffffff;
+        }
+        
+        body.light-theme .video-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        body.light-theme .video-title {
+            color: #333333;
+        }
+        
+        body.light-theme .partner-name {
+            color: #333333;
+        }
+        
+        body.light-theme .session-count {
+            color: #666666;
+        }
+        
+        body.light-theme .favorite-btn {
+            color: #666666;
+        }
+        
+        body.light-theme .video-panel {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+        }
+        
+        body.light-theme .video-placeholder {
+            background: linear-gradient(135deg, #f9f9f9 0%, #efefef 100%);
+        }
+        
+        body.light-theme .video-name {
+            color: #333333;
+        }
+        
+        body.light-theme .video-controls {
+            background-color: #ffffff;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        body.light-theme .control-btn {
+            background-color: #f0f0f0;
+            color: #333333;
+        }
+        
+        body.light-theme .control-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        body.light-theme .control-btn[data-active="false"] {
+            background-color: #BF3143;
+            color: white;
+        }
+        
+        body.light-theme .ai-btn[data-active="true"] {
+            background-color: #4a9eff;
+            color: white;
+        }
+        
+        body.light-theme .leave-btn {
+            background-color: #BF3143;
+            color: white;
+        }
+        
+        body.light-theme .help-btn,
+        body.light-theme .theme-toggle-btn {
+            background-color: #f0f0f0;
+            color: #333333;
+        }
+        
+        body.light-theme .help-btn:hover,
+        body.light-theme .theme-toggle-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        body.light-theme .loading-overlay {
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        
+        body.light-theme .loading-text {
+            color: #333333;
+        }
+        
+        body.light-theme .loading-subtext {
+            color: #666666;
+        }
+        
+        body.light-theme .loading-spinner {
+            border-color: #e0e0e0;
+            border-top-color: #BF3143;
+        }
     </style>
 </head>
 <body>
@@ -412,6 +529,22 @@
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
                         <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </button>
+                <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Theme">
+                    <svg id="theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <svg id="theme-icon-light" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                     </svg>
                 </button>
             </div>
@@ -819,8 +952,43 @@
             }
         });
         
+        // Theme Toggle Button
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const body = document.body;
+            const isDark = !body.classList.contains('light-theme');
+            const darkIcon = document.getElementById('theme-icon-dark');
+            const lightIcon = document.getElementById('theme-icon-light');
+            
+            if (isDark) {
+                // Switch to light theme
+                body.classList.add('light-theme');
+                darkIcon.classList.add('hidden');
+                lightIcon.classList.remove('hidden');
+                localStorage.setItem('videotest_theme', 'light');
+            } else {
+                // Switch to dark theme
+                body.classList.remove('light-theme');
+                darkIcon.classList.remove('hidden');
+                lightIcon.classList.add('hidden');
+                localStorage.setItem('videotest_theme', 'dark');
+            }
+        });
+        
+        // Load saved theme preference
+        function loadThemePreference() {
+            const savedTheme = localStorage.getItem('videotest_theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                document.getElementById('theme-icon-dark').classList.add('hidden');
+                document.getElementById('theme-icon-light').classList.remove('hidden');
+            }
+        }
+        
         // Initialize on page load
-        window.addEventListener('DOMContentLoaded', initVideoSession);
+        window.addEventListener('DOMContentLoaded', () => {
+            loadThemePreference();
+            initVideoSession();
+        });
     </script>
 </body>
 </html>
