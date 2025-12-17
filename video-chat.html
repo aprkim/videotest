@@ -1690,11 +1690,16 @@
                 // Hide loading and show the UI
                 hideLoading();
                 
-                // Show message that partner connection will come later
-                document.getElementById('remote-name').textContent = `${partnerName} (Coming soon)`;
+                // Show message that partner is not yet connected
+                document.getElementById('remote-name').textContent = `${partnerName} · Waiting`;
                 
                 console.log('✅ Session ready! Video chat UI displayed.');
                 console.log('Note: Peer-to-peer connection with partner will be implemented next.');
+                
+                // TODO: When partner's video stream connects, update to show just the name:
+                // document.getElementById('remote-name').textContent = partnerName;
+                // remotePlaceholder.style.display = 'none';
+                // remoteVideo.style.display = 'block';
                 
             } catch (error) {
                 console.error('Connection error:', error);
