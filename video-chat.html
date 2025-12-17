@@ -1663,8 +1663,8 @@
                 
                 console.log('Session ID:', sessionId);
                 
-                // TEST MODE: Skip Firestore for test sessions
-                if (sessionId.startsWith('test_')) {
+                // TEST MODE: Skip Firestore for test sessions (any session starting with 'test')
+                if (sessionId.startsWith('test')) {
                     console.log('🧪 TEST MODE: Using hardcoded test partner (oct14)');
                     updateLoading('Loading test session...', sessionId);
                     
