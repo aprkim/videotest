@@ -282,6 +282,13 @@
         <div class="loading-detail" id="loadingDetail">Please wait...</div>
     </div>
 
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="matching-service.js"></script>
+    
     <script type="module">
         import TabbiMateVideo from './tabbimate_video.js';
         
@@ -298,6 +305,9 @@
         // Initialize video chat
         const videoChat = new TabbiMateVideo();
         let isConnected = false;
+        let sessionId = null;
+        let sessionData = null;
+        let partnerMakedoEmail = null;
         
         // Update status functions
         function updateMyStatus(text) {
@@ -349,56 +359,104 @@
         // Initialize video chat
         async function initVideoChat() {
             try {
-                // Get Makedo credentials from localStorage
+                // Get session ID from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                sessionId = urlParams.get('session');
+                
+                if (!sessionId) {
+                    throw new Error('No session ID provided. Please start from the matching screen.');
+                }
+                
+                console.log('=== Video Chat Session:', sessionId, '===');
+                
+                // Load session data from Firestore
+                updateLoading('Loading session...', sessionId);
+                const matchingService = new window.MatchingService();
+                await matchingService.init();
+                
+                sessionData = await matchingService.getSession(sessionId);
+                if (!sessionData) {
+                    throw new Error('Session not found. It may have expired.');
+                }
+                
+                console.log('Session data loaded:', sessionData);
+                
+                // Get my user ID
+                const myUserId = localStorage.getItem('videotest_user_id');
+                if (!myUserId) {
+                    throw new Error('User not logged in');
+                }
+                
+                // Determine which user I am and who my partner is
+                let myMakedoEmail, partnerMakedoEmail;
+                if (sessionData.user1.userId === myUserId) {
+                    myMakedoEmail = sessionData.user1.makedoEmail;
+                    partnerMakedoEmail = sessionData.user2.makedoEmail;
+                    document.getElementById('partnerLabel').textContent = sessionData.user2.email.split('@')[0];
+                } else if (sessionData.user2.userId === myUserId) {
+                    myMakedoEmail = sessionData.user2.makedoEmail;
+                    partnerMakedoEmail = sessionData.user1.makedoEmail;
+                    document.getElementById('partnerLabel').textContent = sessionData.user1.email.split('@')[0];
+                } else {
+                    throw new Error('You are not part of this session');
+                }
+                
+                console.log('My Makedo email:', myMakedoEmail);
+                console.log('Partner Makedo email:', partnerMakedoEmail);
+                
+                // Get Makedo credentials
                 const makedoStateStr = localStorage.getItem('videotest_makedo_state');
                 if (!makedoStateStr) {
-                    throw new Error('Video account not connected. Please connect from the dashboard first.');
+                    throw new Error('Video account not connected');
                 }
                 
                 const makedoState = JSON.parse(makedoStateStr);
                 if (!makedoState.isLoggedIn || !makedoState.password) {
-                    throw new Error('Video account credentials missing. Please reconnect from dashboard.');
+                    throw new Error('Video account credentials missing');
                 }
                 
-                userEmailEl.textContent = makedoState.userEmail;
+                userEmailEl.textContent = myMakedoEmail;
                 
                 // Step 1: Login to Makedo
-                updateLoading('Logging into Makedo...', makedoState.userEmail);
-                await videoChat.login(makedoState.userEmail, makedoState.password);
+                updateLoading('Logging into Makedo...', myMakedoEmail);
+                await videoChat.login(myMakedoEmail, makedoState.password);
                 updateMyStatus('Connected to Makedo');
                 
-                // Step 2: Get available users
-                updateLoading('Looking for available partners...', 'Getting user list');
-                const users = await videoChat.getUsers('', 20);
+                // Step 2: Get available users and find partner
+                updateLoading('Looking for your partner...', partnerMakedoEmail);
+                const users = await videoChat.getUsers('', 50);
                 
                 console.log('Available users:', users);
                 
-                // For testing with two Aprils in different browsers
-                // The first user to connect will see an empty list
-                // The second user will see the first April and can connect
+                // Find partner by email
+                const partner = users.find(u => 
+                    u.email && u.email.toLowerCase() === partnerMakedoEmail.toLowerCase()
+                );
                 
-                if (users.length === 0) {
-                    // No other users - wait in "ready" state
-                    updateLoading('Waiting for partner...', 'You are ready. Waiting for someone to join.');
-                    updateMyStatus('Ready - Waiting for partner');
-                    updatePartnerStatus('No one available yet');
+                if (partner) {
+                    // Partner is online - connect immediately
+                    await connectToPartner(partner);
+                } else {
+                    // Partner not online yet - wait for them
+                    updateLoading('Waiting for partner to join...', partnerMakedoEmail);
+                    updatePartnerStatus('Waiting...');
                     
-                    // Keep checking for users every 5 seconds
+                    // Keep checking every 3 seconds
                     const checkInterval = setInterval(async () => {
                         try {
-                            const updatedUsers = await videoChat.getUsers('', 20);
-                            if (updatedUsers.length > 0) {
+                            const updatedUsers = await videoChat.getUsers('', 50);
+                            const foundPartner = updatedUsers.find(u => 
+                                u.email && u.email.toLowerCase() === partnerMakedoEmail.toLowerCase()
+                            );
+                            
+                            if (foundPartner) {
                                 clearInterval(checkInterval);
-                                await connectToPartner(updatedUsers[0]);
+                                await connectToPartner(foundPartner);
                             }
                         } catch (err) {
-                            console.error('Error checking for users:', err);
+                            console.error('Error checking for partner:', err);
                         }
-                    }, 5000);
-                    
-                } else {
-                    // Found a partner - connect!
-                    await connectToPartner(users[0]);
+                    }, 3000);
                 }
                 
             } catch (error) {

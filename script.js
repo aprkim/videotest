@@ -297,23 +297,8 @@ function handleSignedInUserLanguages(user) {
         state.selectedLanguage = lang.language;
         state.selectedLevel = lang.level;
         
-        // Show matching screen directly
-        showMatchingScreen(lang.language, lang.level);
-        
-        // Create a matched user and start video chat after matching
-        setTimeout(() => {
-            // FOR TESTING: Use default match
-            const matchedUser = getDefaultMatchUser();
-            const levelDurations = {
-                'Basic': 10,
-                'Intermediate': 10,
-                'Advanced': 10,
-                'Professional': 10,
-                'Native': 10
-            };
-            const duration = levelDurations[lang.level] || 10;
-            startActualVideoChat(matchedUser, duration);
-        }, 10000); // 10 seconds matching time (testing)
+        // Start real-time matching
+        startRealTimeMatching(lang.language, lang.level);
     } else {
         // Multiple languages - show language selection but only with user's languages
         console.log('User has multiple languages, showing selection');
@@ -353,22 +338,9 @@ function setupSignedInUserLanguageSelection(user) {
             // Skip level selection since we already have it from profile
             // Go straight to matching
             document.querySelector('.center-container').style.display = 'none';
-            showMatchingScreen(language, level);
             
-            // Create a matched user and start video chat after matching
-            setTimeout(() => {
-                // FOR TESTING: Use default match
-                const matchedUser = getDefaultMatchUser();
-                const levelDurations = {
-                    'Basic': 10,
-                    'Intermediate': 10,
-                    'Advanced': 10,
-                    'Professional': 10,
-                    'Native': 10
-                };
-                const duration = levelDurations[level] || 10;
-                startActualVideoChat(matchedUser, duration);
-            }, 10000); // 10 seconds matching time (testing)
+            // Start real-time matching
+            startRealTimeMatching(language, level);
         });
     });
 }
@@ -725,14 +697,8 @@ function setupLevelButtons() {
                 document.querySelector('.center-container').style.display = 'none';
                 
                 // Show matching screen
-                showMatchingScreen(state.selectedLanguage, level);
-                
-                // Find a match and start video chat after matching period
-                setTimeout(() => {
-                    // FOR TESTING: Use default match
-                    const matchedUser = getDefaultMatchUser();
-                    startActualVideoChat(matchedUser, duration);
-                }, 10000); // 10 seconds matching time (testing)
+                // Start real-time matching
+                startRealTimeMatching(state.selectedLanguage, level);
             }
         });
     });
@@ -829,6 +795,78 @@ function getDefaultMatchUser() {
         },
         interests: ['Travel', 'Technology', 'Culture']
     };
+}
+
+// Real-time matching using Firebase
+async function startRealTimeMatching(language, level) {
+    console.log('=== Starting real-time matching ===');
+    console.log('Language:', language, 'Level:', level);
+    
+    // Show matching screen
+    showMatchingScreen(language, level);
+    
+    try {
+        // Get current user info
+        const userId = localStorage.getItem('videotest_user_id');
+        const userEmail = localStorage.getItem('videotest_user_email');
+        
+        if (!userId || !userEmail) {
+            console.error('User not logged in');
+            alert('Please sign in to start a video chat');
+            return;
+        }
+        
+        // Get user profile
+        const profileKey = `videotest_profile_${userId}`;
+        const savedProfile = localStorage.getItem(profileKey);
+        let profile = savedProfile ? JSON.parse(savedProfile) : {};
+        
+        // Get Makedo email
+        const makedoStateStr = localStorage.getItem('videotest_makedo_state');
+        const makedoState = makedoStateStr ? JSON.parse(makedoStateStr) : null;
+        const makedoEmail = makedoState?.userEmail || userEmail;
+        
+        // Initialize matching service
+        const matchingService = new window.MatchingService();
+        await matchingService.init();
+        
+        // Prepare matching data
+        const matchingData = {
+            userId,
+            email: userEmail,
+            language: language.toLowerCase(),
+            level,
+            interests: profile.interests || [],
+            makedoEmail
+        };
+        
+        console.log('Joining matching queue with data:', matchingData);
+        
+        // Join matching queue (waits for match)
+        const sessionId = await matchingService.joinMatchingQueue(matchingData);
+        
+        console.log('=== MATCH FOUND! ===');
+        console.log('Session ID:', sessionId);
+        
+        // Redirect to video chat with session ID
+        window.location.href = `video-chat.html?session=${sessionId}`;
+        
+    } catch (error) {
+        console.error('Matching error:', error);
+        
+        // Hide matching screen
+        const matchingScreen = document.getElementById('matching-screen');
+        if (matchingScreen) {
+            matchingScreen.classList.add('hidden');
+        }
+        
+        // Show error
+        alert('Could not find a match. Please try again.');
+        
+        // Return to language selection
+        document.querySelector('.center-container').style.display = 'flex';
+        document.querySelector('.map-container').style.display = 'block';
+    }
 }
 
 // Find a matching user
