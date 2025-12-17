@@ -995,7 +995,7 @@
                     
                     <div class="form-group">
                         <label for="name" class="form-label">Name</label>
-                        <input type="text" id="name" class="form-input" value="April Kim" aria-label="Your name">
+                        <input type="text" id="name" class="form-input" placeholder="Enter your name" aria-label="Your name">
                     </div>
                     
                     <div class="form-group">
@@ -1204,7 +1204,7 @@
                     <div class="account-info">
                         <div class="info-row">
                             <span class="info-label">Email</span>
-                            <span class="info-value">april@example.com</span>
+                            <span class="info-value" id="account-email">Loading...</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Plan</span>
@@ -1212,7 +1212,7 @@
                         </div>
                         <div class="info-row">
                             <span class="info-label">Member since</span>
-                            <span class="info-value">Dec 2025</span>
+                            <span class="info-value" id="member-since">Loading...</span>
                         </div>
                     </div>
                     <button class="signout-btn" onclick="window.handleSignOut()">Sign Out</button>
@@ -1290,22 +1290,47 @@
         }
         
         // Load user data from Firebase or localStorage
-        function loadUserData() {
+        async function loadUserData() {
             // Update email display if available
             if (userEmail) {
-                const emailElements = document.querySelectorAll('.info-value');
-                if (emailElements.length > 0) {
-                    emailElements[0].textContent = userEmail;
+                const accountEmailEl = document.getElementById('account-email');
+                if (accountEmailEl) {
+                    accountEmailEl.textContent = userEmail;
                 }
                 
                 // Update name from email (use part before @)
                 const userName = userEmail.split('@')[0];
                 const displayName = userName.charAt(0).toUpperCase() + userName.slice(1);
                 
-                // Update name in profile section
+                // Update name in profile section if it's empty
                 const nameInput = document.getElementById('name');
-                if (nameInput && nameInput.value === 'April Kim') {
+                if (nameInput && !nameInput.value) {
                     nameInput.value = displayName;
+                }
+            }
+            
+            // Get Firebase user to populate account creation date
+            try {
+                const { getAuth } = await import('https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js');
+                const auth = getAuth();
+                const user = auth.currentUser;
+                
+                if (user && user.metadata && user.metadata.creationTime) {
+                    const creationDate = new Date(user.metadata.creationTime);
+                    const formattedDate = creationDate.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        year: 'numeric' 
+                    });
+                    const memberSinceEl = document.getElementById('member-since');
+                    if (memberSinceEl) {
+                        memberSinceEl.textContent = formattedDate;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user metadata:', error);
+                const memberSinceEl = document.getElementById('member-since');
+                if (memberSinceEl) {
+                    memberSinceEl.textContent = 'Recently';
                 }
             }
             
