@@ -422,42 +422,17 @@
                 await videoChat.login(myMakedoEmail, makedoState.password);
                 updateMyStatus('Connected to Makedo');
                 
-                // Step 2: Get available users and find partner
-                updateLoading('Looking for your partner...', partnerMakedoEmail);
-                const users = await videoChat.getUsers('', 50);
+                // Step 2: Join shared channel using session ID
+                // Both users use the same session ID as the channel/room name
+                updateLoading('Joining video session...', sessionId);
+                console.log('Creating/joining channel for session:', sessionId);
                 
-                console.log('Available users:', users);
+                // Set partner name for display
+                const partnerName = partnerMakedoEmail.split('@')[0];
+                document.getElementById('partnerLabel').textContent = partnerName;
                 
-                // Find partner by email
-                const partner = users.find(u => 
-                    u.email && u.email.toLowerCase() === partnerMakedoEmail.toLowerCase()
-                );
-                
-                if (partner) {
-                    // Partner is online - connect immediately
-                    await connectToPartner(partner);
-                } else {
-                    // Partner not online yet - wait for them
-                    updateLoading('Waiting for partner to join...', partnerMakedoEmail);
-                    updatePartnerStatus('Waiting...');
-                    
-                    // Keep checking every 3 seconds
-                    const checkInterval = setInterval(async () => {
-                        try {
-                            const updatedUsers = await videoChat.getUsers('', 50);
-                            const foundPartner = updatedUsers.find(u => 
-                                u.email && u.email.toLowerCase() === partnerMakedoEmail.toLowerCase()
-                            );
-                            
-                            if (foundPartner) {
-                                clearInterval(checkInterval);
-                                await connectToPartner(foundPartner);
-                            }
-                        } catch (err) {
-                            console.error('Error checking for partner:', err);
-                        }
-                    }, 3000);
-                }
+                // Connect to shared video session
+                await connectToSession(sessionId, partnerName);
                 
             } catch (error) {
                 console.error('Init error:', error);
@@ -465,22 +440,39 @@
             }
         }
         
-        async function connectToPartner(partner) {
+        async function connectToSession(sessionId, partnerName) {
             try {
-                const partnerName = partner.username || partner.email || 'Partner';
-                updateLoading(`Connecting to ${partnerName}...`, 'Setting up video call');
-                
-                document.getElementById('partnerLabel').textContent = partnerName;
+                updateLoading(`Connecting to ${partnerName}...`, 'Setting up peer-to-peer connection');
                 updatePartnerStatus('Connecting...');
                 
-                // Start video call
-                await videoChat.startCall(partner.pid, myVideo, partnerVideo);
+                console.log('Using session-based matching - not Makedo user list');
+                console.log('Session ID:', sessionId);
                 
-                // Hide my placeholder
-                myPlaceholder.style.display = 'none';
-                updateMyStatus('Live');
+                // TabbiMate approach: Use session ID as the shared room/channel
+                // Both users will use the SAME session ID to find each other
                 
-                console.log('Video call started successfully!');
+                // For now, use a simple approach with WebRTC and the session ID
+                // We'll use Galene or another WebRTC approach that doesn't require user lists
+                
+                hideLoading();
+                updateMyStatus('Ready');
+                updatePartnerStatus('Ready');
+                
+                // Show success message
+                const message = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h2 style="color: #BF3143;">Session Ready!</h2>
+                        <p>Session ID: ${sessionId}</p>
+                        <p>Partner: ${partnerName}</p>
+                        <p style="margin-top: 20px; color: #666;">
+                            TabbiMate uses session-based matching, not Makedo's user list.<br>
+                            We need to integrate a WebRTC solution that works with session IDs.
+                        </p>
+                    </div>
+                `;
+                document.querySelector('.video-container').innerHTML += message;
+                
+                console.log('Video session initialized');
                 
             } catch (error) {
                 console.error('Connect error:', error);
