@@ -1,6 +1,5 @@
-import Bridge from 'https://proto2.makedo.com:8883/ux/scripts/bridge.js';
-import MakedoConfig from 'https://proto2.makedo.com:8883/ux/scripts/config.js';
-import Fetch from 'https://proto2.makedo.com:8883/ux/scripts/fetch.js';
+import Bridge from 'bridge';
+import MakedoConfig from 'config';
 
 class VibeChat {
     constructor() {
@@ -16,7 +15,9 @@ class VibeChat {
             joinButtonMode: 'join'  // 'join' | 'pause' | 'rejoin'
         };
         
-        this.bridge = null;
+        this.bridge = new Bridge();
+        console.log('Bridge initialized:', this.bridge);
+        console.log('Bridge has comms:', this.bridge.hasComms());
         this.imageUrlBase = MakedoConfig.imageUrlBase;
         
         // Store remote member's media state from WebSocket messages
@@ -77,7 +78,7 @@ class VibeChat {
         }
         
         try {
-            const result = await Fetch.login({ email, password });
+            const result = await this.bridge.login({ email, password });
             
             if (result.status === 'loggedIn') {
                 this.onLoginSuccess({
@@ -106,8 +107,7 @@ class VibeChat {
         // Update UI
         document.getElementById('userInfo').textContent = email;
         
-        // Initialize Bridge and WebSocket
-        this.bridge = new Bridge();
+        // Initialize WebSocket dispatcher
         this.bridge.initDispatcher();
         
         // Set up WebSocket listeners
@@ -429,8 +429,8 @@ class VibeChat {
             
             // Update remote video label with their member info from channel data
             if (result.members && result.members.length > 0) {
-                // Find the other member (not me)
-                const remoteMember = result.members.find(m => m.user_id !== this.state.currentUser.userId);
+                // Find the other member (not me) - use is_me flag from server
+                const remoteMember = result.members.find(m => !m.is_me);
                 if (remoteMember) {
                     const remoteName = remoteMember.local_name || user.username;
                     const remoteStatus = remoteMember.status || 'unknown';
@@ -487,7 +487,7 @@ class VibeChat {
                 this.channelData = channelData;
                 
                 // Initialize comms ONLY if not already done (to preserve existing streams)
-                if (!this.bridge.comms) {
+                if (!this.bridge.hasComms()) {
                     console.log('Initializing comms for pending invite');
                     const memberId = memberData.pub_id || memberData.pid;
                     const accessCode = memberData.access_code || channelData.access_code || "413239";
@@ -516,7 +516,7 @@ class VibeChat {
             this.showStatus('Connecting to Galene server...', 'info');
             
             // Actually connect to Galene and start broadcasting
-            this.bridge.comms.remote_serverJoin();
+            this.bridge.remote_serverJoin();
             console.log('Connected to Galene server - member status should update to: live');
             
             this.state.inChannel = true;
@@ -545,8 +545,8 @@ class VibeChat {
         
         try {
             // Leave Galene server (but don't destroy comms or streams!)
-            if (this.bridge && this.bridge.comms) {
-                this.bridge.comms.remote_serverLeave(false); // false = keep streams alive for preview
+            if (this.bridge && this.bridge.hasComms()) {
+                this.bridge.remote_serverLeave(false); // false = keep streams alive for preview
             }
             
             this.state.inChannel = false;
@@ -584,7 +584,7 @@ class VibeChat {
             this.showStatus('Reconnecting to Galene server...', 'info');
             
             // Rejoin Galene using existing comms
-            this.bridge.comms.remote_serverJoin();
+            this.bridge.remote_serverJoin();
             
             this.state.inChannel = true;
             
@@ -608,18 +608,18 @@ class VibeChat {
         const self = this;
         
         console.log('=== VIBECHAT: setupSFUCallbacks called ===');
-        console.log('bridge.comms exists?', !!this.bridge.comms);
+        console.log('bridge comms object exists?', this.bridge.hasComms());
         
         // Called when we successfully join the Galene channel
-        this.bridge.comms.setOnJoinedChannel(function() {
+        this.bridge.setOnJoinedChannel(function() {
             console.log("CALLBACK: Successfully joined Galene channel");
             console.log("  self.state.videoActive:", self.state.videoActive);
             console.log("  self.state.audioActive:", self.state.audioActive);
             
             // Check if stream exists before trying to broadcast
-            if (self.bridge.comms.streams) {
-                const localStream = self.bridge.comms.streams.local_getStream("camera");
-                const remoteStream = self.bridge.comms.streams.remote_getMyStream("camera");
+            if (self.bridge.hasComms()) {
+                const localStream = self.bridge.local_getStream("camera");
+                const remoteStream = self.bridge.remote_getMyStream("camera");
                 console.log("  local camera stream exists:", !!localStream);
                 console.log("  remote (upstream) camera stream exists:", !!remoteStream);
                 if (localStream) {
@@ -631,18 +631,18 @@ class VibeChat {
             // If video was already turned on before joining, send it to Galene
             if (self.state.videoActive) {
                 console.log("Video already on - broadcasting to Galene");
-                self.bridge.comms.inChannelSetStreamVideoTrack("camera", true);
+                self.bridge.inChannelSetStreamVideoTrack("camera", true);
             }
             
             // If audio was already turned on before joining, send it to Galene
             if (self.state.audioActive) {
                 console.log("Audio already on - broadcasting to Galene");
-                self.bridge.comms.inChannelSetStreamAudioTrack("camera", true);
+                self.bridge.inChannelSetStreamAudioTrack("camera", true);
             }
         });
         
         // Called when our local stream is sent upstream to Galene
-        this.bridge.comms.setOnNewUpStream(function(streamId, memberId, type, stream) {
+        this.bridge.setOnNewUpStream(function(streamId, memberId, type, stream) {
             console.log("CALLBACK: New upstream - streamId:", streamId, "memberId:", memberId, "type:", type);
             // Our local stream is being sent - no UI action needed
         });
@@ -651,7 +651,7 @@ class VibeChat {
         // Callback signature: (localId, username, label, stream, isInitial)
         // username = the member's pub_id that they joined Galene with
         console.log('=== VIBECHAT: Registering onNewDownStream callback ===');
-        this.bridge.comms.setOnNewDownStream(async function(streamId, memberId, type, stream) {
+        this.bridge.setOnNewDownStream(async function(streamId, memberId, type, stream) {
             console.log("==================================");
             console.log("VIBECHAT CALLBACK: New downstream");
             console.log("  streamId:", streamId);
@@ -738,7 +738,7 @@ class VibeChat {
     
         
         // Called when a remote stream ends
-        this.bridge.comms.setOnEndDownStream(function(streamId, memberId, type) {
+        this.bridge.setOnEndDownStream(function(streamId, memberId, type) {
             console.log("CALLBACK: End downstream - streamId:", streamId, "memberId:", memberId, "type:", type);
             
             if (type === 'camera') {
@@ -757,7 +757,7 @@ class VibeChat {
         });
         
         // Called when we exit the channel
-        this.bridge.comms.setOnExitedChannel(function() {
+        this.bridge.setOnExitedChannel(function() {
             console.log("CALLBACK: Exited Galene channel");
         });
         
@@ -776,13 +776,13 @@ class VibeChat {
             audioBtn.classList.remove('off');
             
             // Create or update stream with audio
-            if (this.bridge && this.bridge.comms) {
+            if (this.bridge && this.bridge.hasComms()) {
                 // Always create/update the local stream
-                await this.bridge.comms.local_createStream('camera', true, this.state.videoActive);
+                await this.bridge.local_createStream('camera', true, this.state.videoActive);
                 
                 // If in channel, broadcast to Galene
                 if (this.state.inChannel) {
-                    await this.bridge.comms.inChannelSetStreamAudioTrack('camera', true);
+                    await this.bridge.inChannelSetStreamAudioTrack('camera', true);
                 }
             }
             
@@ -792,8 +792,8 @@ class VibeChat {
             audioBtn.textContent = '🎤 Audio: OFF';
             audioBtn.classList.add('off');
             
-            if (this.bridge && this.bridge.comms) {
-                await this.bridge.comms.inChannelSetStreamAudioTrack('camera', false);
+            if (this.bridge && this.bridge.hasComms()) {
+                await this.bridge.inChannelSetStreamAudioTrack('camera', false);
             }
             
             this.showStatus('Audio disabled', 'info');
@@ -817,8 +817,8 @@ class VibeChat {
             videoBtn.classList.remove('off');
             
             // Create stream with video
-            if (this.bridge && this.bridge.comms) {
-                const stream = await this.bridge.comms.local_createStream('camera', this.state.audioActive, true);
+            if (this.bridge && this.bridge.hasComms()) {
+                const stream = await this.bridge.local_createStream('camera', this.state.audioActive, true);
                 
                 if (stream) {
                     myVideo.srcObject = stream;
@@ -829,7 +829,7 @@ class VibeChat {
                     
                     // Broadcast to Galene if we're in a channel
                     if (this.state.inChannel) {
-                        await this.bridge.comms.inChannelSetStreamVideoTrack('camera', true);
+                        await this.bridge.inChannelSetStreamVideoTrack('camera', true);
                     }
                     
                     this.updateMyTrackStatus();
@@ -843,8 +843,8 @@ class VibeChat {
             videoBtn.textContent = '📹 Video: OFF';
             videoBtn.classList.add('off');
             
-            if (this.bridge && this.bridge.comms) {
-                await this.bridge.comms.inChannelSetStreamVideoTrack('camera', false);
+            if (this.bridge && this.bridge.hasComms()) {
+                await this.bridge.inChannelSetStreamVideoTrack('camera', false);
             }
             
             myVideo.style.display = 'none';
@@ -870,8 +870,8 @@ class VibeChat {
             }
             
             // Leave Galene server and kill all streams (if connected or paused)
-            if (this.bridge && this.bridge.comms) {
-                this.bridge.comms.remote_serverLeave(true); // true = kill streams completely
+            if (this.bridge && this.bridge.hasComms()) {
+                this.bridge.remote_serverLeave(true); // true = kill streams completely
             }
             
             // Reset video display
@@ -936,7 +936,7 @@ class VibeChat {
             }
             
             // Logout
-            await Fetch.logout({});
+            await this.bridge.logout({});
             
             // Disconnect WebSocket
             if (this.bridge && this.bridge.dispatcher && this.bridge.dispatcher.socket) {
@@ -989,8 +989,8 @@ class VibeChat {
         let videoClass = 'off';
         
         // Check source stream if available
-        if (this.bridge && this.bridge.comms && this.bridge.comms.streams) {
-            const stream = this.bridge.comms.streams.local_getStream('camera');
+        if (this.bridge && this.bridge.hasComms()) {
+            const stream = this.bridge.local_getStream('camera');
             if (stream) {
                 const audioTracks = stream.getAudioTracks();
                 const videoTracks = stream.getVideoTracks();

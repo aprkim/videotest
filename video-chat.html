@@ -2041,8 +2041,8 @@
                     }
                     
                     // Disconnect from Bridge
-                    if (bridge && bridge.comms) {
-                        bridge.comms.close();
+                    if (bridge && bridge.hasComms()) {
+                        bridge.close();
                     }
                     
                     // Redirect to dashboard
@@ -2074,14 +2074,14 @@
         // Share Button (Screen Sharing)
         document.getElementById('toggle-share').addEventListener('click', async () => {
             try {
-                if (!bridge || !bridge.comms) {
+                if (!bridge || !bridge.hasComms()) {
                     throw new Error('Not connected to video server');
                 }
-                
+
                 console.log('Starting screencast...');
-                
+
                 // CORRECT: Use Bridge API for screencast
-                const screencast_stream = await bridge.comms.local_createStream('screencast', true, true);
+                const screencast_stream = await bridge.local_createStream('screencast', true, true);
                 
                 if (screencast_stream) {
                     // Show screencast in myVideo
@@ -2099,7 +2099,7 @@
                             console.log('Screencast ended, switching back to camera...');
                             
                             // Switch back to camera stream
-                            camera_stream = await bridge.comms.local_createStream('camera', true, true);
+                            camera_stream = await bridge.local_createStream('camera', true, true);
                             if (camera_stream) {
                                 myVideo.srcObject = camera_stream;
                                 await myVideo.play();

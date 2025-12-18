@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Test Accounts - Tabbimate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #1A1A1A;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #6B7280;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .account-card {
+            background: #F7F7F8;
+            border: 2px solid #E5E5E5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .account-card:hover {
+            border-color: #BF3143;
+            box-shadow: 0 4px 12px rgba(191, 49, 67, 0.1);
+        }
+
+        .account-card.created {
+            background: #D1FAE5;
+            border-color: #10B981;
+        }
+
+        .account-card.error {
+            background: #FEE2E2;
+            border-color: #EF4444;
+        }
+
+        .account-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .account-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+
+        .account-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 14px;
+            color: #4A4A4A;
+        }
+
+        .info-label {
+            font-weight: 600;
+        }
+
+        .btn {
+            background: #BF3143;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #a52938;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: #D1D1D6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-create-all {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .status {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status.pending {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .status.creating {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .status.success {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status.error {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .progress {
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 18px;
+            color: #4A4A4A;
+            font-weight: 600;
+        }
+
+        .error-message {
+            color: #DC2626;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .instructions {
+            background: #FEF3C7;
+            border-left: 4px solid #F59E0B;
+            padding: 16px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .instructions h3 {
+            color: #92400E;
+            margin-bottom: 8px;
+        }
+
+        .instructions p {
+            color: #78350F;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Create Test Accounts</h1>
+        <p class="subtitle">Automatically create test accounts for Tabbimate development and testing</p>
+
+        <div class="instructions">
+            <h3>⚠️ Important Notes:</h3>
+            <p>
+                This tool will create 5 test accounts with pre-configured profiles. Each account will be automatically
+                signed up and their profile data will be saved to localStorage and Firestore.
+                <br><br>
+                <strong>Password for all accounts:</strong> Test123456!
+            </p>
+        </div>
+
+        <div class="progress" id="progress">
+            Ready to create accounts
+        </div>
+
+        <button class="btn btn-create-all" id="createAllBtn" onclick="createAllAccounts()">
+            Create All Test Accounts
+        </button>
+
+        <div id="accountsList"></div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCDa8BY71QImZ2_SpSklCitqU4dKFdoJzs",
+            authDomain: "videotest-9435c.firebaseapp.com",
+            projectId: "videotest-9435c",
+            storageBucket: "videotest-9435c.firebasestorage.app",
+            messagingSenderId: "698822546154",
+            appId: "1:698822546154:web:e449341f3bee5e11333d93"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Test accounts configuration
+        const testAccounts = [
+            {
+                email: 'test1@tabbimate.com',
+                password: 'Test123456!',
+                displayName: 'Alex Chen',
+                profile: {
+                    name: 'Alex Chen',
+                    languages: [
+                        { language: 'English', level: 'Native' },
+                        { language: 'Spanish', level: 'Intermediate' }
+                    ],
+                    interests: ['Travel', 'Music', 'Cooking'],
+                    location: 'San Francisco, CA',
+                    bio: 'Language enthusiast passionate about learning Spanish'
+                }
+            },
+            {
+                email: 'test2@tabbimate.com',
+                password: 'Test123456!',
+                displayName: 'Maria Garcia',
+                profile: {
+                    name: 'Maria Garcia',
+                    languages: [
+                        { language: 'Spanish', level: 'Native' },
+                        { language: 'English', level: 'Advanced' }
+                    ],
+                    interests: ['Movies', 'Technology', 'Sports'],
+                    location: 'Madrid, Spain',
+                    bio: 'Native Spanish speaker looking to practice English'
+                }
+            },
+            {
+                email: 'test3@tabbimate.com',
+                password: 'Test123456!',
+                displayName: 'Sophie Laurent',
+                profile: {
+                    name: 'Sophie Laurent',
+                    languages: [
+                        { language: 'French', level: 'Native' },
+                        { language: 'English', level: 'Professional' }
+                    ],
+                    interests: ['Reading', 'Photography', 'Art'],
+                    location: 'Paris, France',
+                    bio: 'French teacher helping others learn the language'
+                }
+            },
+            {
+                email: 'test4@tabbimate.com',
+                password: 'Test123456!',
+                displayName: 'Yuki Tanaka',
+                profile: {
+                    name: 'Yuki Tanaka',
+                    languages: [
+                        { language: 'Japanese', level: 'Native' },
+                        { language: 'English', level: 'Intermediate' }
+                    ],
+                    interests: ['Anime', 'Gaming', 'Cooking'],
+                    location: 'Tokyo, Japan',
+                    bio: 'Japanese speaker wanting to improve English skills'
+                }
+            },
+            {
+                email: 'test5@tabbimate.com',
+                password: 'Test123456!',
+                displayName: 'Sarah Kim',
+                profile: {
+                    name: 'Sarah Kim',
+                    languages: [
+                        { language: 'English', level: 'Native' },
+                        { language: 'Korean', level: 'Basic' }
+                    ],
+                    interests: ['K-pop', 'Travel', 'Food'],
+                    location: 'Los Angeles, CA',
+                    bio: 'Beginning my Korean language journey'
+                }
+            }
+        ];
+
+        // Render accounts list
+        function renderAccounts() {
+            const accountsList = document.getElementById('accountsList');
+            accountsList.innerHTML = testAccounts.map((account, index) => `
+                <div class="account-card" id="account-${index}">
+                    <div class="account-header">
+                        <div class="account-name">${account.displayName}</div>
+                        <div class="status pending" id="status-${index}">Pending</div>
+                    </div>
+                    <div class="account-info">
+                        <div><span class="info-label">Email:</span> ${account.email}</div>
+                        <div><span class="info-label">Location:</span> ${account.profile.location}</div>
+                        <div><span class="info-label">Languages:</span> ${account.profile.languages.map(l => l.language).join(', ')}</div>
+                        <div><span class="info-label">Interests:</span> ${account.profile.interests.join(', ')}</div>
+                    </div>
+                    <div class="error-message" id="error-${index}" style="display: none;"></div>
+                </div>
+            `).join('');
+        }
+
+        // Create a single account
+        async function createAccount(account, index) {
+            const statusEl = document.getElementById(`status-${index}`);
+            const cardEl = document.getElementById(`account-${index}`);
+            const errorEl = document.getElementById(`error-${index}`);
+
+            try {
+                statusEl.textContent = 'Creating...';
+                statusEl.className = 'status creating';
+
+                // Create user account
+                const userCredential = await auth.createUserWithEmailAndPassword(
+                    account.email,
+                    account.password
+                );
+
+                const user = userCredential.user;
+
+                // Update display name
+                await user.updateProfile({
+                    displayName: account.displayName
+                });
+
+                // Save profile to Firestore
+                await db.collection('users').doc(user.uid).set({
+                    ...account.profile,
+                    email: account.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    isTestAccount: true
+                });
+
+                // Sign out
+                await auth.signOut();
+
+                statusEl.textContent = 'Created ✓';
+                statusEl.className = 'status success';
+                cardEl.className = 'account-card created';
+
+                return { success: true, account };
+
+            } catch (error) {
+                console.error(`Error creating account ${account.email}:`, error);
+
+                statusEl.textContent = 'Error ✗';
+                statusEl.className = 'status error';
+                cardEl.className = 'account-card error';
+                errorEl.style.display = 'block';
+                errorEl.textContent = error.message;
+
+                return { success: false, account, error };
+            }
+        }
+
+        // Create all accounts
+        async function createAllAccounts() {
+            const createAllBtn = document.getElementById('createAllBtn');
+            const progressEl = document.getElementById('progress');
+
+            createAllBtn.disabled = true;
+            createAllBtn.textContent = 'Creating accounts...';
+
+            let created = 0;
+            let failed = 0;
+
+            for (let i = 0; i < testAccounts.length; i++) {
+                progressEl.textContent = `Creating account ${i + 1} of ${testAccounts.length}...`;
+
+                const result = await createAccount(testAccounts[i], i);
+
+                if (result.success) {
+                    created++;
+                } else {
+                    failed++;
+                }
+
+                // Small delay between creations
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            progressEl.textContent = `✓ Complete: ${created} created, ${failed} failed`;
+            createAllBtn.textContent = 'All Accounts Created';
+            createAllBtn.disabled = true;
+
+            if (created > 0) {
+                setTimeout(() => {
+                    alert(`Successfully created ${created} test account(s)!\n\nYou can now sign in with any of these accounts using:\nPassword: Test123456!`);
+                }, 500);
+            }
+        }
+
+        // Initialize
+        renderAccounts();
+    </script>
+</body>
+</html>

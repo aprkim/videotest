@@ -195,7 +195,7 @@ class TabbiMateVideo {
             
             // Step 5: Create local stream (camera/mic)
             console.log('[TabbiMateVideo] Creating local stream...');
-            const localStream = await this.bridge.comms.local_createStream(
+            const localStream = await this.bridge.local_createStream(
                 'camera',
                 this.state.audioEnabled,
                 this.state.videoEnabled
@@ -211,7 +211,7 @@ class TabbiMateVideo {
             
             // Step 6: Join the channel (start broadcasting)
             console.log('[TabbiMateVideo] Joining channel...');
-            this.bridge.comms.remote_serverJoin();
+            this.bridge.remote_serverJoin();
             this.state.inCall = true;
             console.log('[TabbiMateVideo] Call started!');
             
@@ -231,39 +231,39 @@ class TabbiMateVideo {
         const self = this;
         
         // When successfully joined
-        this.bridge.comms.setOnJoinedChannel(function() {
+        this.bridge.setOnJoinedChannel(function() {
             console.log('[TabbiMateVideo] Successfully joined channel!');
-            
+
             // Broadcast video/audio if already enabled
             if (self.state.videoEnabled) {
-                self.bridge.comms.inChannelSetStreamVideoTrack('camera', true);
+                self.bridge.inChannelSetStreamVideoTrack('camera', true);
             }
             if (self.state.audioEnabled) {
-                self.bridge.comms.inChannelSetStreamAudioTrack('camera', true);
+                self.bridge.inChannelSetStreamAudioTrack('camera', true);
             }
-            
+
             if (self.callbacks.onCallJoined) {
                 self.callbacks.onCallJoined();
             }
         });
         
         // When remote stream arrives
-        this.bridge.comms.setOnNewDownStream(function(streamId, memberId, type, stream) {
+        this.bridge.setOnNewDownStream(function(streamId, memberId, type, stream) {
             console.log('[TabbiMateVideo] Remote stream received:', streamId, memberId, type);
-            
+
             // Ignore our own stream echo
-            if (memberId === self.state.memberData?.pub_id || 
+            if (memberId === self.state.memberData?.pub_id ||
                 memberId === self.state.memberData?.pid) {
                 console.log('[TabbiMateVideo] Ignoring self stream echo');
                 return;
             }
-            
+
             // Display remote video
             if (type === 'camera') {
                 remoteVideoElement.srcObject = stream;
                 remoteVideoElement.play().catch(e => console.log('Auto-play prevented:', e));
                 console.log('[TabbiMateVideo] Remote video displayed');
-                
+
                 if (self.callbacks.onRemoteStream) {
                     self.callbacks.onRemoteStream(stream);
                 }
@@ -271,20 +271,20 @@ class TabbiMateVideo {
         });
         
         // When remote stream ends
-        this.bridge.comms.setOnEndDownStream(function(streamId, memberId, type) {
+        this.bridge.setOnEndDownStream(function(streamId, type) {
             console.log('[TabbiMateVideo] Remote stream ended:', streamId, type);
-            
+
             if (type === 'camera') {
                 remoteVideoElement.srcObject = null;
-                
+
                 if (self.callbacks.onRemoteStreamEnded) {
                     self.callbacks.onRemoteStreamEnded();
                 }
             }
         });
-        
+
         // When exited channel
-        this.bridge.comms.setOnExitedChannel(function() {
+        this.bridge.setOnExitedChannel(function() {
             console.log('[TabbiMateVideo] Exited channel');
         });
     }
@@ -295,16 +295,16 @@ class TabbiMateVideo {
      */
     async toggleVideo() {
         try {
-            if (!this.state.inCall || !this.bridge?.comms) {
+            if (!this.state.inCall || !this.bridge) {
                 console.warn('[TabbiMateVideo] Not in call, cannot toggle video');
                 return this.state.videoEnabled;
             }
-            
+
             this.state.videoEnabled = !this.state.videoEnabled;
             console.log('[TabbiMateVideo] Toggling video:', this.state.videoEnabled);
-            
-            await this.bridge.comms.inChannelSetStreamVideoTrack('camera', this.state.videoEnabled);
-            
+
+            await this.bridge.inChannelSetStreamVideoTrack('camera', this.state.videoEnabled);
+
             return this.state.videoEnabled;
         } catch (error) {
             console.error('[TabbiMateVideo] Toggle video error:', error);
@@ -321,16 +321,16 @@ class TabbiMateVideo {
      */
     async toggleAudio() {
         try {
-            if (!this.state.inCall || !this.bridge?.comms) {
+            if (!this.state.inCall || !this.bridge) {
                 console.warn('[TabbiMateVideo] Not in call, cannot toggle audio');
                 return this.state.audioEnabled;
             }
-            
+
             this.state.audioEnabled = !this.state.audioEnabled;
             console.log('[TabbiMateVideo] Toggling audio:', this.state.audioEnabled);
-            
-            await this.bridge.comms.inChannelSetStreamAudioTrack('camera', this.state.audioEnabled);
-            
+
+            await this.bridge.inChannelSetStreamAudioTrack('camera', this.state.audioEnabled);
+
             return this.state.audioEnabled;
         } catch (error) {
             console.error('[TabbiMateVideo] Toggle audio error:', error);
@@ -365,8 +365,8 @@ class TabbiMateVideo {
             }
             
             // Leave Galene and kill all streams
-            if (this.bridge?.comms) {
-                this.bridge.comms.remote_serverLeave(true);
+            if (this.bridge?.hasComms()) {
+                this.bridge.remote_serverLeave(true);
             }
             
             // Reset state
