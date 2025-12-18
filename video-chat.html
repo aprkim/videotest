@@ -1461,28 +1461,24 @@
             const titleEl = document.getElementById('info-title');
             const messageEl = document.getElementById('info-message');
             const okBtn = document.getElementById('info-ok');
-            
+
             icon.innerHTML = iconHtml;
             titleEl.textContent = title;
             messageEl.textContent = message;
             okBtn.textContent = confirmText;
-            
-            // Remove old listeners and add new ones
-            const newOkBtn = okBtn.cloneNode(true);
-            okBtn.parentNode.replaceChild(newOkBtn, okBtn);
-            
-            newOkBtn.onclick = () => {
-                modal.classList.add('hidden');
-                if (confirmCallback) confirmCallback();
-            };
-            
+
+            // Store callback on the button element so the standard click handler can use it
+            okBtn._confirmCallback = confirmCallback;
+
             // Add cancel button functionality (clicking outside)
-            modal.onclick = (e) => {
+            const modalClickHandler = (e) => {
                 if (e.target === modal) {
                     modal.classList.add('hidden');
+                    modal.removeEventListener('click', modalClickHandler);
                 }
             };
-            
+            modal.addEventListener('click', modalClickHandler);
+
             modal.classList.remove('hidden');
         }
         
@@ -1510,8 +1506,16 @@
         }
         
         // Modal event listeners
-        document.getElementById('info-ok').addEventListener('click', () => {
-            document.getElementById('info-modal').classList.add('hidden');
+        document.getElementById('info-ok').addEventListener('click', function() {
+            const modal = document.getElementById('info-modal');
+            modal.classList.add('hidden');
+
+            // Execute confirm callback if one was stored
+            if (this._confirmCallback) {
+                const callback = this._confirmCallback;
+                this._confirmCallback = null; // Clear it after use
+                callback();
+            }
         });
         
         document.getElementById('info-modal').addEventListener('click', (e) => {
@@ -2046,16 +2050,34 @@
                 'Are you sure you want to leave this session?',
                 'Leave',
                 () => {
-                    // Stop camera stream
+                    console.log('Leaving session...');
+
+                    // Stop camera stream tracks
                     if (camera_stream) {
+                        camera_stream.getTracks().forEach(track => {
+                            track.stop();
+                            console.log('Stopped track:', track.kind);
+                        });
                         camera_stream = null;
                     }
-                    
+
+                    // Stop video elements
+                    if (myVideo.srcObject) {
+                        myVideo.srcObject.getTracks().forEach(track => track.stop());
+                        myVideo.srcObject = null;
+                    }
+                    if (remoteVideo.srcObject) {
+                        remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+                        remoteVideo.srcObject = null;
+                    }
+
                     // Disconnect from Bridge
                     if (bridge && bridge.hasComms()) {
+                        console.log('Closing bridge connection...');
                         bridge.close();
                     }
-                    
+
+                    console.log('Redirecting to dashboard...');
                     // Redirect to dashboard
                     window.location.href = 'dashboard.html';
                 }
