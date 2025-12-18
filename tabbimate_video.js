@@ -2,9 +2,11 @@
  * TabbiMate Video Chat Handler
  * Simplified video chat implementation using Makedo's Bridge API
  * Based on vibechat1_ux.js but tailored for TabbiMate's auto-matching flow
- * 
- * Note: Bridge and Fetch are loaded from protocol.js (loaded in HTML)
+ *
+ * Uses ES6 imports with importmap for module resolution
  */
+
+import Bridge from 'bridge';
 
 class TabbiMateVideo {
     constructor() {
@@ -99,14 +101,8 @@ class TabbiMateVideo {
     async initBridge() {
         try {
             console.log('[TabbiMateVideo] Initializing Bridge...');
-            
-            // Wait for Bridge to be available
-            if (typeof window.Bridge === 'undefined') {
-                console.log('[TabbiMateVideo] Waiting for Bridge to load...');
-                await this.waitForBridge();
-            }
-            
-            this.bridge = new window.Bridge();
+
+            this.bridge = new Bridge();
             this.bridge.initDispatcher();
             console.log('[TabbiMateVideo] Bridge initialized with WebSocket');
         } catch (error) {
@@ -444,29 +440,6 @@ class TabbiMateVideo {
         });
     }
     
-    /**
-     * Wait for Bridge to be loaded by protocol.js
-     */
-    async waitForBridge() {
-        return new Promise((resolve, reject) => {
-            let attempts = 0;
-            const maxAttempts = 50; // 5 seconds max
-            
-            const checkBridge = setInterval(() => {
-                attempts++;
-                
-                if (typeof window.Bridge !== 'undefined') {
-                    clearInterval(checkBridge);
-                    console.log('[TabbiMateVideo] Bridge is now available');
-                    resolve();
-                } else if (attempts >= maxAttempts) {
-                    clearInterval(checkBridge);
-                    console.error('[TabbiMateVideo] Timeout waiting for Bridge');
-                    reject(new Error('Timeout waiting for Bridge to load'));
-                }
-            }, 100);
-        });
-    }
     
     /**
      * Join a session channel using session ID
@@ -485,13 +458,7 @@ class TabbiMateVideo {
             
             // Initialize Bridge
             if (!this.bridge) {
-                // Wait for Bridge to be available
-                if (typeof window.Bridge === 'undefined') {
-                    console.log('[TabbiMateVideo] Waiting for Bridge to load...');
-                    await this.waitForBridge();
-                }
-                
-                this.bridge = new window.Bridge();
+                this.bridge = new Bridge();
                 await this.bridge.init();
             }
             
@@ -559,6 +526,6 @@ class TabbiMateVideo {
     }
 }
 
-// Expose globally for use in HTML scripts
-window.TabbiMateVideo = TabbiMateVideo;
+// Export as ES6 module (default export)
+export default TabbiMateVideo;
 
