@@ -1222,10 +1222,21 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Import Map for Module Resolution -->
+    <script type="importmap">
+    {
+      "imports": {
+        "bridge": "https://proto2.makedo.com:8883/ux/scripts/bridge.js",
+        "fetch": "https://proto2.makedo.com:8883/ux/scripts/fetch.js",
+        "config": "https://proto2.makedo.com:8883/ux/scripts/configStatic.js"
+      }
+    }
+    </script>
+
     <script type="module">
         // Import Fetch from fetch.js for Makedo login
-        import Fetch from 'https://proto2.makedo.com:8883/ux/scripts/fetch.js';
+        import Fetch from 'fetch';
         
         // Initialize dashboard
         let userId = null;
