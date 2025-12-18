@@ -1840,8 +1840,8 @@
                 updateLoading('Setting up camera...', '');
                 console.log('Creating local camera stream with audio and video...');
                 
-                // CORRECT: Use bridge.comms.local_createStream(type, audio, video)
-                camera_stream = await bridge.comms.local_createStream('camera', true, true);
+                // CORRECT: Use bridge.local_createStream(type, audio, video)
+                camera_stream = await bridge.local_createStream('camera', true, true);
                 
                 console.log('✅ Camera stream created:', camera_stream);
                 
@@ -1868,11 +1868,11 @@
                 
                 // Step 8: Join channel and start broadcasting (in background)
                 console.log('========================================');
-                console.log('🚀 CALLING bridge.comms.remote_serverJoin()');
+                console.log('🚀 CALLING bridge.remote_serverJoin()');
                 console.log('This makes you visible to partner and starts broadcasting');
                 console.log('========================================');
-                
-                await bridge.comms.remote_serverJoin();
+
+                await bridge.remote_serverJoin();
                 
                 console.log('========================================');
                 console.log('✅ remote_serverJoin() COMPLETED!');
@@ -1897,22 +1897,22 @@
             console.log('Setting up Bridge callbacks...');
             
             // 1. Callback when successfully joined channel
-            bridge.comms.setOnJoinedChannel(function() {
+            bridge.setOnJoinedChannel(function() {
     console.log('========================================');
     console.log('🎉 CALLBACK: setOnJoinedChannel FIRED!');
     console.log('You have successfully joined the Galene channel');
-    
+
     // ✅ ADD THESE CRITICAL LINES:
-    bridge.comms.inChannelSetStreamVideoTrack("camera", true);
-    bridge.comms.inChannelSetStreamAudioTrack("camera", true);
-    
+    bridge.inChannelSetStreamVideoTrack("camera", true);
+    bridge.inChannelSetStreamAudioTrack("camera", true);
+
     console.log('Your camera stream is now broadcasting');
     console.log('========================================');
 });
-            
+
 
             // 2. Callback when MY stream starts going up
-            bridge.comms.setOnNewUpStream(function(streamId, memberId, type, stream) {
+            bridge.setOnNewUpStream(function(streamId, memberId, type, stream) {
                 console.log('========================================');
                 console.log('📤 CALLBACK: setOnNewUpStream FIRED!');
                 console.log('YOUR STREAM IS NOW BROADCASTING TO PARTNER!');
@@ -1924,7 +1924,7 @@
             });
             
             // 3. Callback when receiving PARTNER's stream (MOST IMPORTANT!)
-            bridge.comms.setOnNewDownStream(async function(streamId, memberId, type, stream) {
+            bridge.setOnNewDownStream(async function(streamId, memberId, type, stream) {
                 console.log('========================================');
                 console.log('📥 CALLBACK: setOnNewDownStream FIRED!');
                 console.log('RECEIVED A STREAM FROM SOMEONE!');
@@ -1960,7 +1960,7 @@
             });
             
             // 4. Callback when partner's stream ends
-            bridge.comms.setOnEndDownStream(function(streamId, memberId, type) {
+            bridge.setOnEndDownStream(function(streamId, type) {
                 console.log('📭 setOnEndDownStream: Partner stream ended');
                 console.log('  Stream ID:', streamId);
                 console.log('  Member ID:', memberId);
@@ -1975,7 +1975,7 @@
             });
             
             // 5. Callback when disconnected from channel
-            bridge.comms.setOnExitedChannel(function() {
+            bridge.setOnExitedChannel(function() {
                 console.log('🚪 setOnExitedChannel: Exited channel');
                 console.log('Cleaning up connection...');
                 
