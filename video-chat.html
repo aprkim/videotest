@@ -1662,8 +1662,8 @@
         async function initVideoSession() {
             try {
                 console.log('=== Initializing Video Session ===');
-                console.log('MakedoFetch available?', typeof window.MakedoFetch !== 'undefined');
-                console.log('MakedoBridge available?', typeof window.MakedoBridge !== 'undefined');
+                console.log('Fetch available?', typeof Fetch !== 'undefined');
+                console.log('Bridge available?', typeof Bridge !== 'undefined');
                 
                 // Get session ID from URL
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1774,12 +1774,12 @@
                 // Step 1: Login to Makedo
                 updateLoading('Connecting to video server...', '');
                 console.log('Authenticating with Makedo...');
-                
-                if (!window.MakedoFetch) {
+
+                if (!Fetch) {
                     throw new Error('Makedo Fetch not available');
                 }
-                
-                const loginResult = await window.MakedoFetch.login({
+
+                const loginResult = await Fetch.login({
                     email: myEmail,
                     password: myPassword
                 });
@@ -1794,12 +1794,12 @@
                 
                 // Step 2: Initialize Bridge
                 updateLoading('Setting up video connection...', '');
-                
-                if (!window.MakedoBridge) {
+
+                if (!Bridge) {
                     throw new Error('Makedo Bridge not available');
                 }
-                
-                bridge = new window.MakedoBridge();
+
+                bridge = new Bridge();
                 bridge.initDispatcher();
                 
                 console.log('✅ Bridge initialized');
