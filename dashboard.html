@@ -1073,6 +1073,10 @@
                         <button type="button" class="add-language-btn" onclick="addLanguageRow()">+ Add a language</button>
                         <p class="form-hint">Add all languages you can practice</p>
                     </div>
+
+                    <button type="button" class="btn btn-primary btn-save" id="save-languages-btn" disabled>
+                        Save Changes
+                    </button>
                 </div>
             </div>
             
@@ -1812,11 +1816,16 @@
                 bioTextarea.addEventListener('input', markAsChanged);
             }
             
-            // Setup save button
+            // Setup save buttons
             if (saveBtn) {
-                saveBtn.addEventListener('click', handleSaveProfile);
+                saveBtn.addEventListener('click', () => handleSaveProfile('save-profile-btn'));
             }
-            
+
+            const saveLanguagesBtn = document.getElementById('save-languages-btn');
+            if (saveLanguagesBtn) {
+                saveLanguagesBtn.addEventListener('click', () => handleSaveProfile('save-languages-btn'));
+            }
+
             // Setup interests functionality
             setupInterests();
         }
@@ -1921,36 +1930,52 @@
         
         // Update save button state
         function updateSaveButton() {
-            const saveBtn = document.getElementById('save-profile-btn');
-            if (!saveBtn) return;
-            
-            saveBtn.disabled = !hasUnsavedChanges;
+            const saveProfileBtn = document.getElementById('save-profile-btn');
+            const saveLanguagesBtn = document.getElementById('save-languages-btn');
+
+            if (saveProfileBtn) {
+                saveProfileBtn.disabled = !hasUnsavedChanges;
+            }
+            if (saveLanguagesBtn) {
+                saveLanguagesBtn.disabled = !hasUnsavedChanges;
+            }
         }
         
         // Handle save profile
-        function handleSaveProfile() {
-            const saveBtn = document.getElementById('save-profile-btn');
+        function handleSaveProfile(buttonId = 'save-profile-btn') {
+            const saveBtn = document.getElementById(buttonId);
             if (!saveBtn || !hasUnsavedChanges) return;
-            
+
             // Validate interests count
             if (interests.length > 3) {
                 alert('You can only have up to 3 interests.');
                 return;
             }
-            
+
             // Save to localStorage
             saveProfileData();
-            
-            // Show success state
+
+            // Show success state on both buttons
             hasUnsavedChanges = false;
-            saveBtn.classList.add('saved');
-            saveBtn.textContent = 'Saved ✓';
-            saveBtn.disabled = true;
-            
+            const saveProfileBtn = document.getElementById('save-profile-btn');
+            const saveLanguagesBtn = document.getElementById('save-languages-btn');
+
+            [saveProfileBtn, saveLanguagesBtn].forEach(btn => {
+                if (btn) {
+                    btn.classList.add('saved');
+                    btn.textContent = 'Saved ✓';
+                    btn.disabled = true;
+                }
+            });
+
             // Revert after 2 seconds
             setTimeout(() => {
-                saveBtn.classList.remove('saved');
-                saveBtn.textContent = 'Save Changes';
+                [saveProfileBtn, saveLanguagesBtn].forEach(btn => {
+                    if (btn) {
+                        btn.classList.remove('saved');
+                        btn.textContent = 'Save Changes';
+                    }
+                });
             }, 2000);
         }
         
@@ -2013,7 +2038,43 @@
                 });
             }
         }
-        
+
+        // Setup profile incomplete modal event listeners
+        function setupProfileIncompleteModal() {
+            const modal = document.getElementById('profile-incomplete-modal');
+            const okBtn = document.getElementById('profile-incomplete-ok');
+
+            // OK button - close modal
+            if (okBtn) {
+                okBtn.addEventListener('click', () => {
+                    if (modal) modal.classList.add('hidden');
+                });
+            }
+
+            // Close modal when clicking outside
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+        }
+
+        // Show profile incomplete modal with custom message
+        function showProfileIncompleteModal(message) {
+            const modal = document.getElementById('profile-incomplete-modal');
+            const messageElement = document.getElementById('profile-incomplete-message');
+
+            if (messageElement && message) {
+                messageElement.textContent = message;
+            }
+
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+
         // Setup crop modal event listeners
         function setupCropModal() {
             const modal = document.getElementById('crop-modal');
@@ -2162,28 +2223,28 @@
         
         function handleStartCall() {
             console.log('=== Starting video chat from dashboard ===');
-            
+
             // Check if user has a profile with languages
             const profileKey = `videotest_profile_${userId}`;
             const savedProfile = localStorage.getItem(profileKey);
-            
+
             if (!savedProfile) {
-                alert('Please complete your profile first by adding languages and interests.');
+                showProfileIncompleteModal('Add your languages and interests to start chatting.');
                 return;
             }
-            
+
             let profile;
             try {
                 profile = JSON.parse(savedProfile);
             } catch (e) {
                 console.error('Error parsing profile:', e);
-                alert('Please complete your profile first.');
+                showProfileIncompleteModal('Add your languages and interests to start chatting.');
                 return;
             }
-            
+
             // Check if user has languages set
             if (!profile.languages || profile.languages.length === 0) {
-                alert('Please add at least one language to your profile before starting a video chat.');
+                showProfileIncompleteModal('Add at least one language to start chatting.');
                 return;
             }
             
@@ -2575,6 +2636,7 @@
                 init();
                 setupVideoConnectionButtons();
                 setupSignOutModal();
+                setupProfileIncompleteModal();
                 setupCropModal();
                 setupDisconnectVideoModal();
             });
@@ -2582,6 +2644,7 @@
             init();
             setupVideoConnectionButtons();
             setupSignOutModal();
+            setupProfileIncompleteModal();
             setupCropModal();
             setupDisconnectVideoModal();
         }
@@ -2717,7 +2780,32 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Profile Completion Required Modal -->
+    <div class="modal-overlay hidden" id="profile-incomplete-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+        <div class="modal-dialog" style="background: white; border-radius: 16px; max-width: 420px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden;">
+            <div class="modal-header" style="padding: 32px 32px 24px; background: #BF3143; text-align: center;">
+                <div style="width: 64px; height: 64px; background: white; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BF3143" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <h3 class="modal-title" style="font-size: 22px; font-weight: 700; color: white; margin: 0;">Complete Your Profile</h3>
+            </div>
+            <div class="modal-body" style="padding: 32px;">
+                <p id="profile-incomplete-message" style="margin: 0; color: #4B5563; font-size: 16px; text-align: center; line-height: 1.6;">
+                    Add your languages and interests to start chatting.
+                </p>
+            </div>
+            <div class="modal-footer" style="padding: 0 32px 32px; display: flex; gap: 12px;">
+                <button class="btn btn-primary" id="profile-incomplete-ok" style="flex: 1; background: #BF3143; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(191, 49, 67, 0.3); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;">
+                    Got It
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Disconnect Video Account Modal -->
     <div class="modal-overlay hidden" id="disconnect-video-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;">
         <div class="modal-dialog" style="background: white; border-radius: 16px; max-width: 420px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden;">
