@@ -2941,30 +2941,31 @@
             */
         }
         
-        // Get paired Makedo account for current Firebase user
+        // Get Makedo account for current Firebase user
+        // Each user logs into Makedo with their OWN account (same email as Firebase)
         function getPairedMakedoAccount(firebaseEmail) {
-            // Test account pairing: test01↔test02, test03↔test04, etc.
+            // All test accounts use the same password
             const pairings = {
-                'test01@tabbimate.test': { email: 'test10@tabbimate.test', password: 'test123456' },
-                'test10@tabbimate.test': { email: 'test01@tabbimate.test', password: 'test123456' },
-                'test02@tabbimate.test': { email: 'test03@tabbimate.test', password: 'test123456' },
-                'test03@tabbimate.test': { email: 'test02@tabbimate.test', password: 'test123456' },
-                'test04@tabbimate.test': { email: 'test05@tabbimate.test', password: 'test123456' },
-                'test05@tabbimate.test': { email: 'test04@tabbimate.test', password: 'test123456' },
-                'test06@tabbimate.test': { email: 'test07@tabbimate.test', password: 'test123456' },
-                'test07@tabbimate.test': { email: 'test06@tabbimate.test', password: 'test123456' },
-                'test08@tabbimate.test': { email: 'test09@tabbimate.test', password: 'test123456' },
-                'test09@tabbimate.test': { email: 'test08@tabbimate.test', password: 'test123456' },
-                'test11@tabbimate.test': { email: 'test12@tabbimate.test', password: 'test123456' },
-                'test12@tabbimate.test': { email: 'test11@tabbimate.test', password: 'test123456' },
-                'test13@tabbimate.test': { email: 'test14@tabbimate.test', password: 'test123456' },
-                'test14@tabbimate.test': { email: 'test13@tabbimate.test', password: 'test123456' },
-                'test15@tabbimate.test': { email: 'test16@tabbimate.test', password: 'test123456' },
-                'test16@tabbimate.test': { email: 'test15@tabbimate.test', password: 'test123456' },
-                'test17@tabbimate.test': { email: 'test18@tabbimate.test', password: 'test123456' },
-                'test18@tabbimate.test': { email: 'test17@tabbimate.test', password: 'test123456' },
-                'test19@tabbimate.test': { email: 'test20@tabbimate.test', password: 'test123456' },
-                'test20@tabbimate.test': { email: 'test19@tabbimate.test', password: 'test123456' }
+                'test01@tabbimate.test': { email: 'test01@tabbimate.test', password: 'test123456' },
+                'test10@tabbimate.test': { email: 'test10@tabbimate.test', password: 'test123456' },
+                'test02@tabbimate.test': { email: 'test02@tabbimate.test', password: 'test123456' },
+                'test03@tabbimate.test': { email: 'test03@tabbimate.test', password: 'test123456' },
+                'test04@tabbimate.test': { email: 'test04@tabbimate.test', password: 'test123456' },
+                'test05@tabbimate.test': { email: 'test05@tabbimate.test', password: 'test123456' },
+                'test06@tabbimate.test': { email: 'test06@tabbimate.test', password: 'test123456' },
+                'test07@tabbimate.test': { email: 'test07@tabbimate.test', password: 'test123456' },
+                'test08@tabbimate.test': { email: 'test08@tabbimate.test', password: 'test123456' },
+                'test09@tabbimate.test': { email: 'test09@tabbimate.test', password: 'test123456' },
+                'test11@tabbimate.test': { email: 'test11@tabbimate.test', password: 'test123456' },
+                'test12@tabbimate.test': { email: 'test12@tabbimate.test', password: 'test123456' },
+                'test13@tabbimate.test': { email: 'test13@tabbimate.test', password: 'test123456' },
+                'test14@tabbimate.test': { email: 'test14@tabbimate.test', password: 'test123456' },
+                'test15@tabbimate.test': { email: 'test15@tabbimate.test', password: 'test123456' },
+                'test16@tabbimate.test': { email: 'test16@tabbimate.test', password: 'test123456' },
+                'test17@tabbimate.test': { email: 'test17@tabbimate.test', password: 'test123456' },
+                'test18@tabbimate.test': { email: 'test18@tabbimate.test', password: 'test123456' },
+                'test19@tabbimate.test': { email: 'test19@tabbimate.test', password: 'test123456' },
+                'test20@tabbimate.test': { email: 'test20@tabbimate.test', password: 'test123456' }
             };
 
             return pairings[firebaseEmail.toLowerCase()] || null;
