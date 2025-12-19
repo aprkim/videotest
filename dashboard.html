@@ -3000,7 +3000,7 @@
                     makedoState.userEmail = pairedAccount.email;
                     makedoState.userId = result.userId || pairedAccount.email;
 
-                    saveMakedoLoginState(pairedAccount.email, pairedAccount.password);
+                    saveMakedoLoginState(pairedAccount.password);
                     updateVideoConnectionStatus();
                 } else {
                     console.log('❌ Auto-connect failed:', result?.error || 'Unknown error');
