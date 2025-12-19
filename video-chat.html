@@ -1845,10 +1845,12 @@
                 }
 
                 bridge = new Bridge();
+                console.log('Bridge instance created:', bridge);
+                console.log('Bridge type:', typeof bridge);
+
                 bridge.initDispatcher();
-                
-                console.log('✅ Bridge initialized');
-                
+                console.log('✅ Bridge dispatcher initialized');
+
                 // Step 3: Create or join channel
                 updateLoading('Creating video room...', '');
 
@@ -1859,22 +1861,33 @@
                 console.log('Session-based channel ID:', sessionId);
 
                 // Create channel without inviting (open channel that partner can join)
+                console.log('Calling bridge.createQuickChatChannel...');
                 const channelResult = await bridge.createQuickChatChannel({
                     message: `TabbiMate session ${sessionId}`
                 });
-                
+
+                console.log('Channel result:', channelResult);
+                console.log('Channel result type:', typeof channelResult);
+                console.log('Channel result keys:', Object.keys(channelResult || {}));
+
                 channelId = channelResult.pid;
-                console.log('✅ Channel created:', channelId);
-                
+                console.log('✅ Channel created with ID:', channelId);
+
                 // Step 4: Get member info
                 console.log('Getting member info for channel:', channelId);
+                console.log('Calling bridge.getOrCreateMeMember...');
                 try {
                     memberData = await bridge.getOrCreateMeMember({
                         channel_id: channelId
                     });
-                    console.log('Member data received:', memberData);
+                    console.log('✅ Member data received:', memberData);
+                    console.log('Member data type:', typeof memberData);
+                    console.log('Member data keys:', Object.keys(memberData || {}));
                 } catch (error) {
-                    console.error('Error getting member data:', error);
+                    console.error('❌ Error getting member data:', error);
+                    console.error('Error type:', typeof error);
+                    console.error('Error message:', error.message);
+                    console.error('Error stack:', error.stack);
                     throw new Error('Failed to get member information: ' + error.message);
                 }
 
