@@ -1851,39 +1851,81 @@
                 bridge.initDispatcher();
                 console.log('✅ Bridge dispatcher initialized');
 
-                // Step 3: Create or join channel
-                updateLoading('Creating video room...', '');
+                // Step 3: Look up partner's PID using getUsersByQuery
+                updateLoading('Finding partner...', '');
 
-                // For test mode, use session ID as channel identifier
-                // Both paired users will create/join the same channel
                 const partnerDisplayName = partnerInfo?.displayName || partnerName || 'Partner';
                 console.log('Setting up channel for partner:', partnerDisplayName);
-                console.log('Session-based channel ID:', sessionId);
+                console.log('Partner email to look up:', partnerInfo?.email);
 
-                // SIMPLIFIED APPROACH: Skip Makedo channel creation
-                // Use session ID directly as the Galene room name
-                // Both users will connect to the same Galene room
+                // Query all users to find partner's PID
+                console.log('🔍 Calling bridge.getUsersByQuery() to find partner PID...');
+                let allUsers;
+                try {
+                    allUsers = await bridge.getUsersByQuery();
+                    console.log('📋 getUsersByQuery returned:', allUsers);
+                    console.log('📋 Number of users found:', allUsers?.length || 0);
+                    console.log('📋 User data type:', typeof allUsers);
 
-                console.log('⚡ Skipping Makedo channel creation - connecting directly to Galene');
-                console.log('Using session ID as Galene room:', sessionId);
+                    if (allUsers && allUsers.length > 0) {
+                        console.log('📋 First user sample:', allUsers[0]);
+                    }
+                } catch (error) {
+                    console.error('❌ Error calling getUsersByQuery:', error);
+                    throw new Error('Failed to query users: ' + error.message);
+                }
 
-                // Use session ID as the channel/room ID
-                channelId = sessionId;
+                // Find partner by email
+                const partnerEmail = partnerInfo?.email;
+                let partnerUser = null;
 
-                // Use a fixed member ID based on the user's email
-                // This ensures consistent identity across reconnections
-                const memberId = myEmail.split('@')[0]; // e.g., "test10"
-                const accessCode = "413239"; // Default Galene access code
+                if (allUsers && partnerEmail) {
+                    console.log('🔍 Searching for partner with email:', partnerEmail);
+                    partnerUser = allUsers.find(user => user.email === partnerEmail);
 
-                console.log('Member ID:', memberId);
-                console.log('Access code:', accessCode);
+                    if (partnerUser) {
+                        console.log('✅ Found partner user:', partnerUser);
+                        console.log('✅ Partner PID:', partnerUser.pid);
+                    } else {
+                        console.log('❌ Partner not found in user list');
+                        console.log('📋 Available emails:', allUsers.map(u => u.email));
+                    }
+                }
 
-                // Store fake memberData for self-stream filtering
-                memberData = {
-                    pub_id: memberId,
-                    pid: memberId,
-                    access_code: accessCode
-                };
+                // Step 4: Create channel with partner's PID
+                updateLoading('Creating video room...', '');
+
+                if (partnerUser && partnerUser.pid) {
+                    console.log('Creating channel with invited partner PID:', partnerUser.pid);
+
+                    const channelResult = await bridge.createQuickChatChannel({
+                        invited: partnerUser.pid,
+                        message: `TabbiMate session ${sessionId}`
+                    });
+
+                    console.log('Channel result:', channelResult);
+                    channelId = channelResult.pid;
+                    console.log('✅ Channel created with ID:', channelId);
+
+                    // Get member info
+                    memberData = await bridge.getOrCreateMeMember({
+                        channel_id: channelId
+                    });
+                    console.log('✅ Member data received:', memberData);
+                } else {
+                    // Fallback: Use session ID directly as Galene room
+                    console.log('⚠️ Partner PID not found, using direct Galene connection');
+                    channelId = sessionId;
+                    const memberId = myEmail.split('@')[0];
+                    memberData = {
+                        pub_id: memberId,
+                        pid: memberId,
+                        access_code: "413239"
+                    };
+                }
+
+                const memberId = memberData.pub_id || memberData.pid;
+                const accessCode = memberData.access_code || "413239";
 
                 if (!memberId) {
                     throw new Error('Member ID is missing from member data');
