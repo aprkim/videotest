@@ -1638,12 +1638,46 @@
         let channelId = null;
         let memberData = null;  // Store to filter self stream echo
         
-        // Test partner - hardcoded for now
-        const TEST_PARTNER = {
-            pid: "U8FXidAmuLzEy",
-            username: "oct14",
-            email: "oct14@test.com"
-        };
+        // Get paired test account info based on current Firebase user
+        function getPairedTestAccount(firebaseEmail) {
+            // Returns the Makedo account that should be the partner
+            // Note: This is the OPPOSITE of the Makedo account we're logged into
+            // If Firebase=test01, Makedo=test10, Partner=test01
+            const pairings = {
+                'test01@tabbimate.test': 'test01@tabbimate.test',
+                'test10@tabbimate.test': 'test10@tabbimate.test',
+                'test02@tabbimate.test': 'test02@tabbimate.test',
+                'test03@tabbimate.test': 'test03@tabbimate.test',
+                'test04@tabbimate.test': 'test04@tabbimate.test',
+                'test05@tabbimate.test': 'test05@tabbimate.test',
+                'test06@tabbimate.test': 'test06@tabbimate.test',
+                'test07@tabbimate.test': 'test07@tabbimate.test',
+                'test08@tabbimate.test': 'test08@tabbimate.test',
+                'test09@tabbimate.test': 'test09@tabbimate.test',
+                'test11@tabbimate.test': 'test11@tabbimate.test',
+                'test12@tabbimate.test': 'test12@tabbimate.test',
+                'test13@tabbimate.test': 'test13@tabbimate.test',
+                'test14@tabbimate.test': 'test14@tabbimate.test',
+                'test15@tabbimate.test': 'test15@tabbimate.test',
+                'test16@tabbimate.test': 'test16@tabbimate.test',
+                'test17@tabbimate.test': 'test17@tabbimate.test',
+                'test18@tabbimate.test': 'test18@tabbimate.test',
+                'test19@tabbimate.test': 'test19@tabbimate.test',
+                'test20@tabbimate.test': 'test20@tabbimate.test'
+            };
+
+            const email = pairings[firebaseEmail?.toLowerCase()];
+            if (email) {
+                // Extract username from email (e.g., "test01@tabbimate.test" -> "test01")
+                const username = email.split('@')[0];
+                return {
+                    email: email,
+                    username: username,
+                    displayName: username
+                };
+            }
+            return null;
+        }
         
         // UI Update Functions
         function updateLoading(text, subtext = '') {
@@ -1681,29 +1715,39 @@
                 
                 // TEST MODE: Skip Firestore for test sessions (any session starting with 'test')
                 if (sessionId.startsWith('test')) {
-                    console.log('🧪 TEST MODE: Using hardcoded test partner (oct14)');
+                    console.log('🧪 TEST MODE: Using paired test account');
                     updateLoading('Loading test session...', sessionId);
-                    
+
+                    // Get Firebase user email to determine partner
+                    const firebaseEmail = localStorage.getItem('videotest_user_email');
+                    const testPartner = getPairedTestAccount(firebaseEmail);
+
+                    if (!testPartner) {
+                        throw new Error(`No paired test account found for ${firebaseEmail}`);
+                    }
+
+                    console.log('Firebase account:', firebaseEmail);
+                    console.log('Test partner:', testPartner.username);
+
                     // Get Makedo credentials from localStorage
                     const makedoStateStr = localStorage.getItem('videotest_makedo_state');
                     if (!makedoStateStr) {
                         throw new Error('Video account not connected. Please connect on dashboard first.');
                     }
-                    
+
                     const makedoState = JSON.parse(makedoStateStr);
                     if (!makedoState.isLoggedIn || !makedoState.password) {
                         throw new Error('Video account credentials missing');
                     }
-                    
-                    // Use stored Makedo email and test partner
+
+                    // Use stored Makedo email
                     const myMakedoEmail = makedoState.userEmail;
-                    const partnerDisplayName = TEST_PARTNER.username;
-                    
+
                     console.log('My Makedo email:', myMakedoEmail);
-                    console.log('Test partner:', TEST_PARTNER.username);
-                    
+                    console.log('Partner display name:', testPartner.displayName);
+
                     // Connect to session with test partner
-                    await connectToSession(sessionId, myMakedoEmail, makedoState.password, null, partnerDisplayName);
+                    await connectToSession(sessionId, myMakedoEmail, makedoState.password, testPartner, null);
                     return;
                 }
                 
@@ -1768,12 +1812,12 @@
             }
         }
         
-        async function connectToSession(sessionId, myEmail, myPassword, partnerEmail, partnerName) {
+        async function connectToSession(sessionId, myEmail, myPassword, partnerInfo, partnerName) {
             try {
                 console.log('=== Connecting to Session ===');
                 console.log('Session ID:', sessionId);
                 console.log('My email:', myEmail);
-                console.log('Test partner:', TEST_PARTNER.username);
+                console.log('Partner info:', partnerInfo);
                 
                 // Step 1: Login to Makedo
                 updateLoading('Connecting to video server...', '');
@@ -1808,12 +1852,17 @@
                 
                 console.log('✅ Bridge initialized');
                 
-                // Step 3: Create channel with test partner
+                // Step 3: Create or join channel
                 updateLoading('Creating video room...', '');
-                console.log('Creating channel with:', TEST_PARTNER.username);
-                
+
+                // For test mode, use session ID as channel identifier
+                // Both paired users will create/join the same channel
+                const partnerDisplayName = partnerInfo?.displayName || partnerName || 'Partner';
+                console.log('Setting up channel for partner:', partnerDisplayName);
+                console.log('Session-based channel ID:', sessionId);
+
+                // Create channel without inviting (open channel that partner can join)
                 const channelResult = await bridge.createQuickChatChannel({
-                    invited: TEST_PARTNER.pid,
                     message: `TabbiMate session ${sessionId}`
                 });
                 
@@ -1838,7 +1887,7 @@
                 console.log('✅ Galene connection setup'); console.log('Access code:', accessCode);
                 
                 // Step 6: Setup all callbacks BEFORE joining
-                setupBridgeCallbacks(TEST_PARTNER.username);
+                setupBridgeCallbacks(partnerDisplayName);
                 
                 // Step 7: Create local camera stream (BEFORE joining)
                 updateLoading('Setting up camera...', '');
@@ -1861,8 +1910,8 @@
                     hideLoading();
                     
                     // Update UI
-                    document.getElementById('partner-name').textContent = TEST_PARTNER.username;
-                    document.getElementById('remote-name').textContent = `${TEST_PARTNER.username} · Waiting`;
+                    document.getElementById('partner-name').textContent = partnerDisplayName;
+                    document.getElementById('remote-name').textContent = `${partnerDisplayName} · Waiting`;
                     
                     console.log('✅ You can now see yourself!');
                 } else {

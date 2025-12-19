@@ -252,6 +252,125 @@
             margin-top: 6px;
         }
         
+        /* Language & Interests Summary */
+        .language-summary,
+        .interests-summary {
+            margin: 20px 0;
+            padding: 16px;
+            background: #F3F4F6;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+        }
+
+        .language-summary-header,
+        .interests-summary-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .language-summary-header svg,
+        .interests-summary-header svg {
+            color: #BF3143;
+        }
+
+        .language-summary-list,
+        .interests-summary-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .language-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .language-badge:hover {
+            border-color: #BF3143;
+            box-shadow: 0 2px 8px rgba(191, 49, 67, 0.1);
+        }
+
+        .language-badge-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-badge-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #111827;
+        }
+
+        .language-badge-level {
+            font-size: 12px;
+            color: #6B7280;
+            padding: 2px 8px;
+            background: #F3F4F6;
+            border-radius: 4px;
+        }
+
+        .language-badge-delete {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9CA3AF;
+            transition: color 0.2s ease;
+            border-radius: 4px;
+        }
+
+        .language-badge-delete:hover {
+            color: #EF4444;
+            background: #FEE2E2;
+        }
+
+        .language-badge-level.native {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .language-badge-level.professional,
+        .language-badge-level.advanced {
+            color: #2563EB;
+            font-weight: 600;
+        }
+
+        .language-badge-level.intermediate {
+            color: #D97706;
+            font-weight: 600;
+        }
+
+        .language-badge-level.basic {
+            color: #6B7280;
+        }
+
+        .interest-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 14px;
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 999px;
+            font-size: 13px;
+            color: #374151;
+            font-weight: 500;
+        }
+
         /* Interests */
         .interests-pills {
             display: flex;
@@ -355,9 +474,14 @@
         /* Languages Card */
         .language-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr auto;
             gap: 12px;
             margin-bottom: 16px;
+            align-items: center;
+        }
+
+        .language-row .btn-secondary {
+            height: fit-content;
         }
         
         .language-tags {
@@ -1025,7 +1149,35 @@
                         </div>
                         <label for="photo-upload" class="profile-upload-btn">Upload photo</label>
                     </div>
-                    
+
+                    <!-- Language Summary -->
+                    <div id="language-summary" class="language-summary" style="display: none;">
+                        <div class="language-summary-header">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            <span>My Languages</span>
+                        </div>
+                        <div id="language-summary-list" class="language-summary-list">
+                            <!-- Language badges will be dynamically added here -->
+                        </div>
+                    </div>
+
+                    <!-- Interests Summary -->
+                    <div id="interests-summary" class="interests-summary" style="display: none;">
+                        <div class="interests-summary-header">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <span>My Interests</span>
+                        </div>
+                        <div id="interests-summary-list" class="interests-summary-list">
+                            <!-- Interest badges will be dynamically added here -->
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label for="name" class="form-label">Name</label>
                         <input type="text" id="name" class="form-input" placeholder="Enter your name" aria-label="Your name">
@@ -1237,7 +1389,26 @@
     <script type="module">
         // Import Fetch from fetch.js for Makedo login
         import Fetch from 'fetch';
-        
+
+        // Import and initialize Firebase
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCDa8BY71QImZ2_SpSklCitqU4dKFdoJzs",
+            authDomain: "videotest-9435c.firebaseapp.com",
+            projectId: "videotest-9435c",
+            storageBucket: "videotest-9435c.firebasestorage.app",
+            messagingSenderId: "698822546154",
+            appId: "1:698822546154:web:e449341f3bee5e11333d93"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        console.log('🔥 Firebase initialized');
+
         // Initialize dashboard
         let userId = null;
         let userEmail = null;
@@ -1291,13 +1462,16 @@
             }
             
             console.log('Dashboard initialized for user:', userId);
-            
-            // Load user data
-            loadUserData();
-            
+
+            // Load user data first, then attempt auto-connect
+            loadUserData().then(() => {
+                // Auto-connect to Makedo video account if credentials match
+                attemptAutoConnectMakedo();
+            });
+
             // Load user statistics
             loadUserStats();
-            
+
             // Setup auto-save
             setupAutoSave();
         }
@@ -1322,21 +1496,30 @@
                 }
             }
             
-            // Get Firebase user to populate account creation date
+            // Get Firebase user to populate account creation date and email
             try {
                 const { getAuth } = await import('https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js');
                 const auth = getAuth();
                 const user = auth.currentUser;
-                
-                if (user && user.metadata && user.metadata.creationTime) {
-                    const creationDate = new Date(user.metadata.creationTime);
-                    const formattedDate = creationDate.toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        year: 'numeric' 
-                    });
-                    const memberSinceEl = document.getElementById('member-since');
-                    if (memberSinceEl) {
-                        memberSinceEl.textContent = formattedDate;
+
+                if (user) {
+                    // Set user email for auto-connect
+                    if (user.email && !userEmail) {
+                        userEmail = user.email;
+                        localStorage.setItem('videotest_user_email', userEmail);
+                        console.log('User email set from Firebase Auth:', userEmail);
+                    }
+
+                    if (user.metadata && user.metadata.creationTime) {
+                        const creationDate = new Date(user.metadata.creationTime);
+                        const formattedDate = creationDate.toLocaleDateString('en-US', {
+                            month: 'short',
+                            year: 'numeric'
+                        });
+                        const memberSinceEl = document.getElementById('member-since');
+                        if (memberSinceEl) {
+                            memberSinceEl.textContent = formattedDate;
+                        }
                     }
                 }
             } catch (error) {
@@ -1347,30 +1530,51 @@
                 }
             }
             
-            // Load profile data from localStorage if exists
-            const profileKey = `videotest_profile_${userId}`;
-            const savedProfile = localStorage.getItem(profileKey);
-            
-            if (savedProfile) {
-                try {
-                    const profile = JSON.parse(savedProfile);
-                    
+            // Load profile data from Firestore first, then fall back to localStorage
+            try {
+                const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js');
+                const db = getFirestore();
+                const userDocRef = doc(db, 'users', userId);
+                const userDoc = await getDoc(userDocRef);
+
+                let profile = null;
+
+                if (userDoc.exists()) {
+                    // Load from Firestore
+                    console.log('✅ Loading profile from Firestore');
+                    profile = userDoc.data();
+                    console.log('Profile data:', profile);
+                    console.log('Languages:', profile.languages);
+                    console.log('Interests:', profile.interests);
+                } else {
+                    // Fall back to localStorage
+                    console.log('❌ No Firestore data, checking localStorage');
+                    const profileKey = `videotest_profile_${userId}`;
+                    const savedProfile = localStorage.getItem(profileKey);
+                    if (savedProfile) {
+                        profile = JSON.parse(savedProfile);
+                        console.log('Loaded from localStorage');
+                    }
+                }
+
+                if (profile) {
+                    console.log('📝 Applying profile data to form...');
                     // Update form fields with saved data
                     if (profile.name) {
                         const nameInput = document.getElementById('name');
                         if (nameInput) nameInput.value = profile.name;
                     }
-                    
+
                     if (profile.location) {
                         const locationInput = document.getElementById('location');
                         if (locationInput) locationInput.value = profile.location;
                     }
-                    
+
                     if (profile.bio) {
                         const bioTextarea = document.getElementById('bio');
                         if (bioTextarea) bioTextarea.value = profile.bio;
                     }
-                    
+
                     if (profile.photoUrl) {
                         const profilePreview = document.getElementById('profile-preview');
                         const defaultAvatar = document.getElementById('default-avatar');
@@ -1380,12 +1584,12 @@
                             defaultAvatar.style.display = 'none';
                         }
                     }
-                    
+
                     if (profile.interests && Array.isArray(profile.interests)) {
                         interests = profile.interests;
                         renderInterests();
                     }
-                    
+
                     if (profile.languages && Array.isArray(profile.languages)) {
                         userLanguages = profile.languages;
                     } else {
@@ -1393,13 +1597,77 @@
                         userLanguages = [{ language: 'English', level: 'Professional' }];
                     }
                     renderLanguages();
-                } catch (error) {
-                    console.error('Error loading profile data:', error);
+                    renderLanguageSummary();
+                    renderInterestsSummary();
+                } else {
+                    // New user - start with empty language list
+                    console.log('No profile data found');
+                    userLanguages = [];
+                    renderLanguages();
+                    renderLanguageSummary();
+                    renderInterestsSummary();
                 }
-            } else {
-                // New user - start with empty language list
-                userLanguages = [];
-                renderLanguages();
+            } catch (error) {
+                console.error('Error loading profile data from Firestore:', error);
+                // Fall back to localStorage on error
+                const profileKey = `videotest_profile_${userId}`;
+                const savedProfile = localStorage.getItem(profileKey);
+
+                if (savedProfile) {
+                    try {
+                        const profile = JSON.parse(savedProfile);
+
+                        if (profile.name) {
+                            const nameInput = document.getElementById('name');
+                            if (nameInput) nameInput.value = profile.name;
+                        }
+
+                        if (profile.location) {
+                            const locationInput = document.getElementById('location');
+                            if (locationInput) locationInput.value = profile.location;
+                        }
+
+                        if (profile.bio) {
+                            const bioTextarea = document.getElementById('bio');
+                            if (bioTextarea) bioTextarea.value = profile.bio;
+                        }
+
+                        if (profile.photoUrl) {
+                            const profilePreview = document.getElementById('profile-preview');
+                            const defaultAvatar = document.getElementById('default-avatar');
+                            if (profilePreview && defaultAvatar) {
+                                profilePreview.src = profile.photoUrl;
+                                profilePreview.style.display = 'block';
+                                defaultAvatar.style.display = 'none';
+                            }
+                        }
+
+                        if (profile.interests && Array.isArray(profile.interests)) {
+                            interests = profile.interests;
+                            renderInterests();
+                        }
+
+                        if (profile.languages && Array.isArray(profile.languages)) {
+                            userLanguages = profile.languages;
+                        } else {
+                            userLanguages = [{ language: 'English', level: 'Professional' }];
+                        }
+                        renderLanguages();
+                        renderLanguageSummary();
+                        renderInterestsSummary();
+                    } catch (parseError) {
+                        console.error('Error parsing localStorage profile:', parseError);
+                        userLanguages = [];
+                        renderLanguages();
+                        renderLanguageSummary();
+                        renderInterestsSummary();
+                    }
+                } else {
+                    userLanguages = [];
+                    renderLanguages();
+                    renderLanguageSummary();
+                    renderInterestsSummary();
+                }
             }
             
             // Reset unsaved changes state
@@ -1782,13 +2050,15 @@
         function addLanguageRow() {
             userLanguages.push({ language: 'English', level: 'Basic' });
             renderLanguages();
+            renderLanguageSummary();
             hasUnsavedChanges = true;
             updateSaveButton();
         }
-        
+
         function removeLanguage(index) {
             userLanguages.splice(index, 1);
             renderLanguages();
+            renderLanguageSummary();
             hasUnsavedChanges = true;
             updateSaveButton();
         }
@@ -1802,8 +2072,68 @@
             }
             hasUnsavedChanges = true;
             updateSaveButton();
+            renderLanguageSummary(); // Update summary when language changes
         }
-        
+
+        // Render language summary at top of profile
+        function renderLanguageSummary() {
+            const summaryContainer = document.getElementById('language-summary');
+            const listContainer = document.getElementById('language-summary-list');
+
+            if (!summaryContainer || !listContainer) return;
+
+            if (userLanguages.length === 0) {
+                summaryContainer.style.display = 'none';
+                return;
+            }
+
+            summaryContainer.style.display = 'block';
+            listContainer.innerHTML = userLanguages.map((lang, index) => {
+                const levelClass = lang.level.toLowerCase();
+                return `
+                    <div class="language-badge">
+                        <div class="language-badge-content">
+                            <div class="language-badge-name">${lang.language}</div>
+                            <div class="language-badge-level ${levelClass}">${lang.level}</div>
+                        </div>
+                        <button type="button" class="language-badge-delete" onclick="removeLanguageFromSummary(${index})" aria-label="Remove ${lang.language}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Remove language from summary (same as removeLanguage)
+        function removeLanguageFromSummary(index) {
+            userLanguages.splice(index, 1);
+            renderLanguages();
+            renderLanguageSummary();
+            hasUnsavedChanges = true;
+            updateSaveButton();
+        }
+
+        // Render interests summary at top of profile
+        function renderInterestsSummary() {
+            const summaryContainer = document.getElementById('interests-summary');
+            const listContainer = document.getElementById('interests-summary-list');
+
+            if (!summaryContainer || !listContainer) return;
+
+            if (interests.length === 0) {
+                summaryContainer.style.display = 'none';
+                return;
+            }
+
+            summaryContainer.style.display = 'block';
+            listContainer.innerHTML = interests.map(interest => {
+                return `<div class="interest-badge">${interest}</div>`;
+            }).join('');
+        }
+
         // Auto-save profile data when inputs change
         function setupAutoSave() {
             const nameInput = document.getElementById('name');
@@ -1867,28 +2197,30 @@
         function addInterest() {
             const input = document.getElementById('interests-input');
             const value = input.value.trim();
-            
+
             if (!value) return;
-            
+
             if (interests.length >= 3) {
                 return; // Already at max
             }
-            
+
             if (!interests.includes(value)) {
                 interests.push(value);
                 renderInterests();
+                renderInterestsSummary();
                 hasUnsavedChanges = true;
                 updateSaveButton();
             }
-            
+
             input.value = '';
             updateInterestsUI();
         }
-        
+
         // Remove interest
         function removeInterest(index) {
             interests.splice(index, 1);
             renderInterests();
+            renderInterestsSummary();
             hasUnsavedChanges = true;
             updateSaveButton();
             updateInterestsUI();
@@ -2239,33 +2571,18 @@
         function handleStartCall() {
             console.log('=== Starting video chat from dashboard ===');
 
-            // Check if user has a profile with languages
-            const profileKey = `videotest_profile_${userId}`;
-            const savedProfile = localStorage.getItem(profileKey);
-
-            if (!savedProfile) {
-                showProfileIncompleteModal('Add your languages and interests to start chatting.');
-                return;
-            }
-
-            let profile;
-            try {
-                profile = JSON.parse(savedProfile);
-            } catch (e) {
-                console.error('Error parsing profile:', e);
-                showProfileIncompleteModal('Add your languages and interests to start chatting.');
-                return;
-            }
-
-            // Check if user has languages set
-            if (!profile.languages || profile.languages.length === 0) {
+            // Check if user has languages set (use the actual userLanguages array)
+            if (!userLanguages || userLanguages.length === 0) {
                 showProfileIncompleteModal('Add at least one language to start chatting.');
                 return;
             }
-            
+
             console.log('User has profile with languages, redirecting to app...');
-            console.log('User profile:', profile);
-            
+            console.log('User languages:', userLanguages);
+
+            // Save current profile to localStorage before navigating
+            saveProfileDataSync();
+
             // Redirect to app.html where they can select language and start matching
             window.location.href = 'app.html';
         }
@@ -2276,7 +2593,7 @@
         // Save profile data synchronously (for navigation)
         function saveProfileDataSync() {
             if (!userId) return;
-            
+
             const profileKey = `videotest_profile_${userId}`;
             const profile = {
                 name: document.getElementById('name')?.value || '',
@@ -2286,8 +2603,20 @@
                 interests: interests,
                 languages: userLanguages
             };
-            
+
             localStorage.setItem(profileKey, JSON.stringify(profile));
+
+            // Also save current user data for app.html to detect signed-in users
+            const currentUser = {
+                isSignedInUser: true,
+                userId: userId,
+                email: userEmail,
+                languages: userLanguages,
+                interests: interests,
+                profile: profile
+            };
+            localStorage.setItem('videotest_current_user', JSON.stringify(currentUser));
+
             console.log('Profile data saved before navigation');
         }
         
@@ -2602,6 +2931,85 @@
             */
         }
         
+        // Get paired Makedo account for current Firebase user
+        function getPairedMakedoAccount(firebaseEmail) {
+            // Test account pairing: test01↔test02, test03↔test04, etc.
+            const pairings = {
+                'test01@tabbimate.test': { email: 'test10@tabbimate.test', password: 'Test123456!' },
+                'test10@tabbimate.test': { email: 'test01@tabbimate.test', password: 'Test123456!' },
+                'test02@tabbimate.test': { email: 'test03@tabbimate.test', password: 'Test123456!' },
+                'test03@tabbimate.test': { email: 'test02@tabbimate.test', password: 'Test123456!' },
+                'test04@tabbimate.test': { email: 'test05@tabbimate.test', password: 'Test123456!' },
+                'test05@tabbimate.test': { email: 'test04@tabbimate.test', password: 'Test123456!' },
+                'test06@tabbimate.test': { email: 'test07@tabbimate.test', password: 'Test123456!' },
+                'test07@tabbimate.test': { email: 'test06@tabbimate.test', password: 'Test123456!' },
+                'test08@tabbimate.test': { email: 'test09@tabbimate.test', password: 'Test123456!' },
+                'test09@tabbimate.test': { email: 'test08@tabbimate.test', password: 'Test123456!' },
+                'test11@tabbimate.test': { email: 'test12@tabbimate.test', password: 'Test123456!' },
+                'test12@tabbimate.test': { email: 'test11@tabbimate.test', password: 'Test123456!' },
+                'test13@tabbimate.test': { email: 'test14@tabbimate.test', password: 'Test123456!' },
+                'test14@tabbimate.test': { email: 'test13@tabbimate.test', password: 'Test123456!' },
+                'test15@tabbimate.test': { email: 'test16@tabbimate.test', password: 'Test123456!' },
+                'test16@tabbimate.test': { email: 'test15@tabbimate.test', password: 'Test123456!' },
+                'test17@tabbimate.test': { email: 'test18@tabbimate.test', password: 'Test123456!' },
+                'test18@tabbimate.test': { email: 'test17@tabbimate.test', password: 'Test123456!' },
+                'test19@tabbimate.test': { email: 'test20@tabbimate.test', password: 'Test123456!' },
+                'test20@tabbimate.test': { email: 'test19@tabbimate.test', password: 'Test123456!' }
+            };
+
+            return pairings[firebaseEmail.toLowerCase()] || null;
+        }
+
+        // Auto-connect to paired Makedo account
+        async function attemptAutoConnectMakedo() {
+            console.log('🔄 Attempting auto-connect to Makedo...');
+
+            // Check if already connected
+            loadMakedoLoginState();
+            if (makedoState.isLoggedIn) {
+                console.log('✅ Already connected to Makedo');
+                updateVideoConnectionStatus();
+                return;
+            }
+
+            // Get user email from Firebase
+            if (!userEmail) {
+                console.log('❌ No user email available for auto-connect');
+                return;
+            }
+
+            console.log(`📧 Current Firebase user: ${userEmail}`);
+
+            // Get paired Makedo account
+            const pairedAccount = getPairedMakedoAccount(userEmail);
+
+            if (!pairedAccount) {
+                console.log('❌ No paired Makedo account found for this user');
+                return;
+            }
+
+            console.log(`🔗 Found paired account: ${pairedAccount.email}`);
+            console.log('✅ Attempting auto-login to paired Makedo account...');
+
+            try {
+                const result = await Fetch.login(pairedAccount.email, pairedAccount.password);
+
+                if (result && result.success) {
+                    console.log('🎉 Auto-connected to Makedo successfully!');
+                    makedoState.isLoggedIn = true;
+                    makedoState.userEmail = pairedAccount.email;
+                    makedoState.userId = result.userId || pairedAccount.email;
+
+                    saveMakedoLoginState(pairedAccount.email, pairedAccount.password);
+                    updateVideoConnectionStatus();
+                } else {
+                    console.log('❌ Auto-connect failed:', result?.error || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('❌ Auto-connect error:', error);
+            }
+        }
+
         // Setup video connection button listeners
         function setupVideoConnectionButtons() {
             console.log('=== setupVideoConnectionButtons() called ===');

@@ -14,7 +14,7 @@ const state = {
 let currentMatchedUser = null;
 
 // Guest mode toggle - set to true to test as a new user (non-logged-in)
-const GUEST_MODE = true;
+const GUEST_MODE = false;
 
 // Store selected interests for new users
 let selectedInterests = [];
@@ -801,35 +801,53 @@ function getDefaultMatchUser() {
 async function startRealTimeMatching(language, level) {
     console.log('=== Starting real-time matching ===');
     console.log('Language:', language, 'Level:', level);
-    
+
     // Show matching screen
     showMatchingScreen(language, level);
-    
+
     try {
         // Get current user info
         const userId = localStorage.getItem('videotest_user_id');
         const userEmail = localStorage.getItem('videotest_user_email');
-        
+
         if (!userId || !userEmail) {
             console.error('User not logged in');
             alert('Please sign in to start a video chat');
             return;
         }
-        
+
+        // Check if this is a test account - if so, skip to video chat directly
+        if (userEmail && userEmail.includes('@tabbimate.test')) {
+            console.log('🧪 Test account detected - skipping matching queue');
+            console.log('Proceeding directly to video chat...');
+
+            // Generate a test session ID
+            const timestamp = Date.now();
+            const testSessionId = `test-${userId}-${timestamp}`;
+            console.log('Generated test session ID:', testSessionId);
+
+            // Small delay to show the matching screen briefly
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Go directly to video chat with test session ID
+            window.location.href = `video-chat.html?session=${testSessionId}`;
+            return;
+        }
+
         // Get user profile
         const profileKey = `videotest_profile_${userId}`;
         const savedProfile = localStorage.getItem(profileKey);
         let profile = savedProfile ? JSON.parse(savedProfile) : {};
-        
+
         // Get Makedo email
         const makedoStateStr = localStorage.getItem('videotest_makedo_state');
         const makedoState = makedoStateStr ? JSON.parse(makedoStateStr) : null;
         const makedoEmail = makedoState?.userEmail || userEmail;
-        
+
         // Initialize matching service
         const matchingService = new window.MatchingService();
         await matchingService.init();
-        
+
         // Prepare matching data
         const matchingData = {
             userId,
@@ -839,30 +857,30 @@ async function startRealTimeMatching(language, level) {
             interests: profile.interests || [],
             makedoEmail
         };
-        
+
         console.log('Joining matching queue with data:', matchingData);
-        
+
         // Join matching queue (waits for match)
         const sessionId = await matchingService.joinMatchingQueue(matchingData);
-        
+
         console.log('=== MATCH FOUND! ===');
         console.log('Session ID:', sessionId);
-        
+
         // Redirect to video chat with session ID
         window.location.href = `video-chat.html?session=${sessionId}`;
-        
+
     } catch (error) {
         console.error('Matching error:', error);
-        
+
         // Hide matching screen
         const matchingScreen = document.getElementById('matching-screen');
         if (matchingScreen) {
             matchingScreen.classList.add('hidden');
         }
-        
+
         // Show error
         alert('Could not find a match. Please try again.');
-        
+
         // Return to language selection
         document.querySelector('.center-container').style.display = 'flex';
         document.querySelector('.map-container').style.display = 'block';

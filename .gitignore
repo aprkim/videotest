@@ -18,3 +18,15 @@ node_modules/
 dist/
 build/
 
+# Firebase & Credentials - NEVER COMMIT THESE
+*firebase*adminsdk*.json
+*service*account*.json
+serviceAccountKey*.json
+firebase-credentials*.json
+.env
+.env.local
+.env.*.local
+config/credentials.json
+credentials/
+secrets/
+
