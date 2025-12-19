@@ -2878,6 +2878,10 @@
         
         // Save Makedo login state to localStorage
         function saveMakedoLoginState(password) {
+            console.log('saveMakedoLoginState called with password:', password ? '***' : 'undefined');
+            console.log('makedoState.isLoggedIn:', makedoState.isLoggedIn);
+            console.log('makedoState.userEmail:', makedoState.userEmail);
+
             if (makedoState.isLoggedIn) {
                 const stateToSave = {
                     isLoggedIn: true,
@@ -2886,7 +2890,10 @@
                     password: password  // Store for video session re-login
                 };
                 localStorage.setItem('videotest_makedo_state', JSON.stringify(stateToSave));
-                console.log('Makedo login state saved (with password for session)');
+                console.log('✅ Makedo login state saved to localStorage');
+                console.log('Saved state:', stateToSave);
+            } else {
+                console.log('❌ Not saving - makedoState.isLoggedIn is false');
             }
         }
         
