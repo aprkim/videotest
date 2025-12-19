@@ -1860,11 +1860,21 @@
                 console.log('Setting up channel for partner:', partnerDisplayName);
                 console.log('Session-based channel ID:', sessionId);
 
-                // Create channel without inviting (open channel that partner can join)
+                // Create channel - for test mode, create with partner email
                 console.log('Calling bridge.createQuickChatChannel...');
-                const channelResult = await bridge.createQuickChatChannel({
+                const channelParams = {
                     message: `TabbiMate session ${sessionId}`
-                });
+                };
+
+                // Add invited parameter if we have partner info
+                if (partnerInfo && partnerInfo.email) {
+                    channelParams.invited = partnerInfo.email;
+                    console.log('Creating channel with invited partner:', partnerInfo.email);
+                } else {
+                    console.log('Creating open channel (no partner specified)');
+                }
+
+                const channelResult = await bridge.createQuickChatChannel(channelParams);
 
                 console.log('Channel result:', channelResult);
                 console.log('Channel result type:', typeof channelResult);
