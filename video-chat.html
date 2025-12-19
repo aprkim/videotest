@@ -1870,13 +1870,28 @@
                 console.log('✅ Channel created:', channelId);
                 
                 // Step 4: Get member info
-                memberData = await bridge.getOrCreateMeMember({
-                    channel_id: channelId
-                });
-                
+                console.log('Getting member info for channel:', channelId);
+                try {
+                    memberData = await bridge.getOrCreateMeMember({
+                        channel_id: channelId
+                    });
+                    console.log('Member data received:', memberData);
+                } catch (error) {
+                    console.error('Error getting member data:', error);
+                    throw new Error('Failed to get member information: ' + error.message);
+                }
+
+                if (!memberData) {
+                    throw new Error('Member data is undefined - bridge.getOrCreateMeMember() failed');
+                }
+
                 const memberId = memberData.pub_id || memberData.pid;
                 const accessCode = memberData.access_code || channelResult.access_code || "413239";
-                
+
+                if (!memberId) {
+                    throw new Error('Member ID is missing from member data');
+                }
+
                 console.log('✅ Member ID:', memberId);
                 console.log('✅ Member data stored for self-stream filtering');
                 
