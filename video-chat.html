@@ -1860,51 +1860,30 @@
                 console.log('Setting up channel for partner:', partnerDisplayName);
                 console.log('Session-based channel ID:', sessionId);
 
-                // Create channel - use session ID as channel name for both users to find
-                console.log('Calling bridge.createQuickChatChannel...');
+                // SIMPLIFIED APPROACH: Skip Makedo channel creation
+                // Use session ID directly as the Galene room name
+                // Both users will connect to the same Galene room
 
-                // For test mode: Create an open channel without inviting
-                // Both users will connect to the same Galene room using the session ID
-                const channelParams = {
-                    message: `TabbiMate session ${sessionId}`,
-                    // Don't use 'invited' - causes 500 error
-                    // Instead, both users will join the same Galene room
+                console.log('⚡ Skipping Makedo channel creation - connecting directly to Galene');
+                console.log('Using session ID as Galene room:', sessionId);
+
+                // Use session ID as the channel/room ID
+                channelId = sessionId;
+
+                // Use a fixed member ID based on the user's email
+                // This ensures consistent identity across reconnections
+                const memberId = myEmail.split('@')[0]; // e.g., "test10"
+                const accessCode = "413239"; // Default Galene access code
+
+                console.log('Member ID:', memberId);
+                console.log('Access code:', accessCode);
+
+                // Store fake memberData for self-stream filtering
+                memberData = {
+                    pub_id: memberId,
+                    pid: memberId,
+                    access_code: accessCode
                 };
-
-                console.log('Creating open channel for session:', sessionId);
-                const channelResult = await bridge.createQuickChatChannel(channelParams);
-
-                console.log('Channel result:', channelResult);
-                console.log('Channel result type:', typeof channelResult);
-                console.log('Channel result keys:', Object.keys(channelResult || {}));
-
-                channelId = channelResult.pid;
-                console.log('✅ Channel created with ID:', channelId);
-
-                // Step 4: Get member info
-                console.log('Getting member info for channel:', channelId);
-                console.log('Calling bridge.getOrCreateMeMember...');
-                try {
-                    memberData = await bridge.getOrCreateMeMember({
-                        channel_id: channelId
-                    });
-                    console.log('✅ Member data received:', memberData);
-                    console.log('Member data type:', typeof memberData);
-                    console.log('Member data keys:', Object.keys(memberData || {}));
-                } catch (error) {
-                    console.error('❌ Error getting member data:', error);
-                    console.error('Error type:', typeof error);
-                    console.error('Error message:', error.message);
-                    console.error('Error stack:', error.stack);
-                    throw new Error('Failed to get member information: ' + error.message);
-                }
-
-                if (!memberData) {
-                    throw new Error('Member data is undefined - bridge.getOrCreateMeMember() failed');
-                }
-
-                const memberId = memberData.pub_id || memberData.pid;
-                const accessCode = memberData.access_code || channelResult.access_code || "413239";
 
                 if (!memberId) {
                     throw new Error('Member ID is missing from member data');
