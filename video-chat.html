@@ -1860,20 +1860,18 @@
                 console.log('Setting up channel for partner:', partnerDisplayName);
                 console.log('Session-based channel ID:', sessionId);
 
-                // Create channel - for test mode, create with partner email
+                // Create channel - use session ID as channel name for both users to find
                 console.log('Calling bridge.createQuickChatChannel...');
+
+                // For test mode: Create an open channel without inviting
+                // Both users will connect to the same Galene room using the session ID
                 const channelParams = {
-                    message: `TabbiMate session ${sessionId}`
+                    message: `TabbiMate session ${sessionId}`,
+                    // Don't use 'invited' - causes 500 error
+                    // Instead, both users will join the same Galene room
                 };
 
-                // Add invited parameter if we have partner info
-                if (partnerInfo && partnerInfo.email) {
-                    channelParams.invited = partnerInfo.email;
-                    console.log('Creating channel with invited partner:', partnerInfo.email);
-                } else {
-                    console.log('Creating open channel (no partner specified)');
-                }
-
+                console.log('Creating open channel for session:', sessionId);
                 const channelResult = await bridge.createQuickChatChannel(channelParams);
 
                 console.log('Channel result:', channelResult);
