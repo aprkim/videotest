@@ -821,10 +821,9 @@ async function startRealTimeMatching(language, level) {
             console.log('🧪 Test account detected - skipping matching queue');
             console.log('Proceeding directly to video chat...');
 
-            // Generate a test session ID
-            const timestamp = Date.now();
-            const testSessionId = `test-${userId}-${timestamp}`;
-            console.log('Generated test session ID:', testSessionId);
+            // Use a FIXED session ID so all test users join the same room
+            const testSessionId = 'test-room-1';
+            console.log('Using fixed test session ID:', testSessionId);
 
             // Small delay to show the matching screen briefly
             await new Promise(resolve => setTimeout(resolve, 2000));
