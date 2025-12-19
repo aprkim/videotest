@@ -2999,18 +2999,32 @@
             console.log('✅ Attempting auto-login to paired Makedo account...');
 
             try {
-                const result = await Fetch.login(pairedAccount.email, pairedAccount.password);
+                // Check if Fetch is available
+                if (typeof Fetch === 'undefined') {
+                    console.error('❌ Fetch module not loaded');
+                    return;
+                }
 
-                if (result && result.success) {
+                // Use Fetch.login() with object parameter (same as manual login)
+                console.log('Calling Fetch.login() with email:', pairedAccount.email);
+                const result = await Fetch.login({
+                    email: pairedAccount.email,
+                    password: pairedAccount.password
+                });
+
+                console.log('Login result:', result);
+                console.log('Result status:', result?.status);
+
+                if (result && result.status === 'loggedIn') {
                     console.log('🎉 Auto-connected to Makedo successfully!');
                     makedoState.isLoggedIn = true;
-                    makedoState.userEmail = pairedAccount.email;
-                    makedoState.userId = result.userId || pairedAccount.email;
+                    makedoState.userEmail = result.email || pairedAccount.email;
+                    makedoState.userId = result.pid;
 
                     saveMakedoLoginState(pairedAccount.password);
                     updateVideoConnectionStatus();
                 } else {
-                    console.log('❌ Auto-connect failed:', result?.error || 'Unknown error');
+                    console.log('❌ Auto-connect failed. Result:', result);
                 }
             } catch (error) {
                 console.error('❌ Auto-connect error:', error);
