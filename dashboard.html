@@ -2571,8 +2571,11 @@
         function handleStartCall() {
             console.log('=== Starting video chat from dashboard ===');
 
+            // Skip profile check for test accounts
+            const isTestAccount = userEmail && userEmail.includes('@tabbimate.test');
+
             // Check if user has languages set (use the actual userLanguages array)
-            if (!userLanguages || userLanguages.length === 0) {
+            if (!isTestAccount && (!userLanguages || userLanguages.length === 0)) {
                 showProfileIncompleteModal('Add at least one language to start chatting.');
                 return;
             }
