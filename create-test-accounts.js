@@ -14,7 +14,7 @@
 const testAccounts = [
     {
         email: 'test1@tabbimate.com',
-        password: 'Test123456!',
+        password: 'test123456',
         displayName: 'Test User 1',
         profile: {
             languages: [
@@ -28,7 +28,7 @@ const testAccounts = [
     },
     {
         email: 'test2@tabbimate.com',
-        password: 'Test123456!',
+        password: 'test123456',
         displayName: 'Test User 2',
         profile: {
             languages: [
@@ -42,7 +42,7 @@ const testAccounts = [
     },
     {
         email: 'test3@tabbimate.com',
-        password: 'Test123456!',
+        password: 'test123456',
         displayName: 'Test User 3',
         profile: {
             languages: [
@@ -56,7 +56,7 @@ const testAccounts = [
     },
     {
         email: 'test4@tabbimate.com',
-        password: 'Test123456!',
+        password: 'test123456',
         displayName: 'Test User 4',
         profile: {
             languages: [
@@ -70,7 +70,7 @@ const testAccounts = [
     },
     {
         email: 'test5@tabbimate.com',
-        password: 'Test123456!',
+        password: 'test123456',
         displayName: 'Test User 5',
         profile: {
             languages: [
