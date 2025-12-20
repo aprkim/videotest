@@ -1155,7 +1155,10 @@
                     </div>
 
                     <!-- Language Summary -->
-                    <div id="language-summary" class="language-summary" style="display: none;">
+                    <div id="language-summary" class="language-summary" style="display: none; position: relative;">
+                        <button type="button" id="edit-languages-btn" onclick="scrollToLanguagesSection()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; color: #BF3143; font-size: 14px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s;">
+                            Edit
+                        </button>
                         <div class="language-summary-header">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1165,9 +1168,6 @@
                                 </svg>
                                 <span>My Languages</span>
                             </div>
-                            <button type="button" id="edit-languages-btn" onclick="scrollToLanguagesSection()" style="background: none; border: none; color: #BF3143; font-size: 14px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s;">
-                                Edit
-                            </button>
                         </div>
                         <div id="language-summary-list" class="language-summary-list">
                             <!-- Language badges will be dynamically added here -->
