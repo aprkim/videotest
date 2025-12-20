@@ -1223,9 +1223,9 @@
                 </div>
                 
                 <!-- Languages & Levels Card -->
-                <div class="card" id="languages-section">
+                <div class="card" id="languages-section" style="display: none;">
                     <h2 class="card-title">Languages & Levels</h2>
-                    
+
                     <div class="form-group">
                         <label class="form-label">Your Languages</label>
                         <div id="languages-container">
@@ -2110,17 +2110,28 @@
             }).join('');
         }
 
-        // Scroll to languages section when Edit button is clicked
+        // Toggle languages edit section when Edit button is clicked
         function scrollToLanguagesSection() {
             const languagesSection = document.getElementById('languages-section');
+            const editBtn = document.getElementById('edit-languages-btn');
+
             if (languagesSection) {
-                languagesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                // Add a brief highlight effect
-                languagesSection.style.transition = 'box-shadow 0.3s';
-                languagesSection.style.boxShadow = '0 0 0 3px rgba(191, 49, 67, 0.2)';
-                setTimeout(() => {
-                    languagesSection.style.boxShadow = '';
-                }, 2000);
+                const isHidden = languagesSection.style.display === 'none';
+
+                if (isHidden) {
+                    // Show the edit section
+                    languagesSection.style.display = 'block';
+                    if (editBtn) editBtn.textContent = 'Done';
+
+                    // Smooth scroll to it
+                    setTimeout(() => {
+                        languagesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                } else {
+                    // Hide the edit section
+                    languagesSection.style.display = 'none';
+                    if (editBtn) editBtn.textContent = 'Edit';
+                }
             }
         }
 
