@@ -2110,12 +2110,9 @@
 
             if (!summaryContainer || !listContainer) return;
 
-            if (userLanguages.length === 0) {
-                summaryContainer.style.display = 'none';
-                return;
-            }
-
+            // Always keep the container visible once shown
             summaryContainer.style.display = 'block';
+
             listContainer.innerHTML = userLanguages.map((lang, index) => {
                 const levelClass = lang.level.toLowerCase();
                 return `
@@ -2131,17 +2128,15 @@
 
         // Toggle languages edit section when Edit button is clicked
         function scrollToLanguagesSection() {
-            const languagesSection = document.getElementById('languages-section');
             const editBtn = document.getElementById('edit-languages-btn');
             const addLanguageBtn = document.getElementById('add-language-summary-btn');
 
-            if (languagesSection) {
-                const isHidden = languagesSection.style.display === 'none';
+            if (editBtn) {
+                const isEditMode = editBtn.textContent === 'Edit';
 
-                if (isHidden) {
-                    // Show the edit section (expand in place, no scrolling)
-                    languagesSection.style.display = 'block';
-                    if (editBtn) editBtn.textContent = 'Save';
+                if (isEditMode) {
+                    // Enter edit mode
+                    editBtn.textContent = 'Save';
 
                     // Show "+ Add a language" button
                     if (addLanguageBtn) addLanguageBtn.style.display = 'block';
@@ -2149,18 +2144,21 @@
                     // Add X buttons to language badges
                     renderLanguageSummaryWithDeleteButtons();
                 } else {
-                    // Save and hide the edit section
+                    // Exit edit mode - save changes
                     if (hasUnsavedChanges) {
                         saveProfileData();
                         hasUnsavedChanges = false;
                         updateSaveButton();
                     }
 
-                    languagesSection.style.display = 'none';
-                    if (editBtn) editBtn.textContent = 'Edit';
+                    editBtn.textContent = 'Edit';
 
-                    // Hide "+ Add a language" button and form
-                    if (addLanguageBtn) addLanguageBtn.style.display = 'none';
+                    // Keep "+ Add a language" button visible if no languages, otherwise hide it
+                    if (addLanguageBtn) {
+                        addLanguageBtn.style.display = userLanguages.length === 0 ? 'block' : 'none';
+                    }
+
+                    // Always hide the add language form when exiting edit mode
                     const addLanguageForm = document.getElementById('add-language-inline-form');
                     if (addLanguageForm) {
                         addLanguageForm.style.display = 'none';
