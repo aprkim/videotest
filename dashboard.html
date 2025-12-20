@@ -2107,11 +2107,27 @@
         function renderLanguageSummary() {
             const summaryContainer = document.getElementById('language-summary');
             const listContainer = document.getElementById('language-summary-list');
+            const editBtn = document.getElementById('edit-languages-btn');
+            const addLanguageBtn = document.getElementById('add-language-summary-btn');
+            const addLanguageForm = document.getElementById('add-language-inline-form');
 
             if (!summaryContainer || !listContainer) return;
 
             // Always keep the container visible once shown
             summaryContainer.style.display = 'block';
+
+            // If no languages, hide Edit button and show the inline form directly
+            if (userLanguages.length === 0) {
+                if (editBtn) editBtn.style.display = 'none';
+                if (addLanguageBtn) addLanguageBtn.style.display = 'none';
+                if (addLanguageForm) addLanguageForm.style.display = 'block';
+                listContainer.innerHTML = '';
+                return;
+            }
+
+            // If there are languages, show Edit button and hide form
+            if (editBtn) editBtn.style.display = 'block';
+            if (addLanguageForm) addLanguageForm.style.display = 'none';
 
             listContainer.innerHTML = userLanguages.map((lang, index) => {
                 const levelClass = lang.level.toLowerCase();
@@ -2187,29 +2203,40 @@
             const levelSelect = document.getElementById('new-level-inline');
 
             if (languageSelect.value && levelSelect.value) {
+                const wasEmpty = userLanguages.length === 0;
+
                 // Add the new language to the array
                 userLanguages.push({
                     language: languageSelect.value,
                     level: levelSelect.value
                 });
 
-                // Re-render badges with X buttons
+                // Reset selects
+                languageSelect.value = '';
+                levelSelect.value = '';
+
+                // If this was the first language, show Edit button and enter edit mode
+                if (wasEmpty) {
+                    const editBtn = document.getElementById('edit-languages-btn');
+                    if (editBtn) {
+                        editBtn.style.display = 'block';
+                        editBtn.textContent = 'Save';
+                    }
+                }
+
+                // Re-render badges with X buttons (we're in edit mode)
                 renderLanguageSummaryWithDeleteButtons();
 
                 // Also update the main languages section
                 renderLanguages();
 
-                // Hide form and show button again
-                const form = document.getElementById('add-language-inline-form');
+                // Show the "+ Add a language" button after adding
                 const btn = document.getElementById('add-language-summary-btn');
-                if (form && btn) {
-                    form.style.display = 'none';
-                    btn.style.display = 'block';
-                }
+                if (btn) btn.style.display = 'block';
 
-                // Reset selects
-                languageSelect.value = '';
-                levelSelect.value = '';
+                // Hide the form
+                const form = document.getElementById('add-language-inline-form');
+                if (form) form.style.display = 'none';
 
                 // Mark as unsaved
                 hasUnsavedChanges = true;
@@ -2224,7 +2251,20 @@
         // Render language summary with delete buttons (edit mode)
         function renderLanguageSummaryWithDeleteButtons() {
             const listContainer = document.getElementById('language-summary-list');
+            const editBtn = document.getElementById('edit-languages-btn');
+            const addLanguageBtn = document.getElementById('add-language-summary-btn');
+            const addLanguageForm = document.getElementById('add-language-inline-form');
+
             if (!listContainer) return;
+
+            // If no languages in edit mode, hide Edit button and show inline form
+            if (userLanguages.length === 0) {
+                if (editBtn) editBtn.style.display = 'none';
+                if (addLanguageBtn) addLanguageBtn.style.display = 'none';
+                if (addLanguageForm) addLanguageForm.style.display = 'block';
+                listContainer.innerHTML = '';
+                return;
+            }
 
             listContainer.innerHTML = userLanguages.map((lang, index) => {
                 const levelClass = lang.level.toLowerCase();
