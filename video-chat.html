@@ -2181,8 +2181,10 @@
                     }
 
                     console.log('Redirecting to dashboard...');
-                    // Redirect to dashboard
-                    window.location.href = 'dashboard.html';
+                    // Redirect to dashboard (use setTimeout to ensure cleanup completes)
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 100);
                 }
             );
         });
