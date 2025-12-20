@@ -2975,14 +2975,6 @@
         async function attemptAutoConnectMakedo() {
             console.log('🔄 Attempting auto-connect to Makedo...');
 
-            // Check if already connected
-            loadMakedoLoginState();
-            if (makedoState.isLoggedIn) {
-                console.log('✅ Already connected to Makedo');
-                updateVideoConnectionStatus();
-                return;
-            }
-
             // Get user email from Firebase
             if (!userEmail) {
                 console.log('❌ No user email available for auto-connect');
@@ -2991,16 +2983,42 @@
 
             console.log(`📧 Current Firebase user: ${userEmail}`);
 
-            // Get paired Makedo account
-            const pairedAccount = getPairedMakedoAccount(userEmail);
-
-            if (!pairedAccount) {
+            // Get the expected Makedo account for this Firebase user
+            const expectedMakedoAccount = getPairedMakedoAccount(userEmail);
+            if (!expectedMakedoAccount) {
                 console.log('❌ No paired Makedo account found for this user');
                 return;
             }
 
-            console.log(`🔗 Found paired account: ${pairedAccount.email}`);
-            console.log('✅ Attempting auto-login to paired Makedo account...');
+            console.log(`🔗 Expected Makedo account: ${expectedMakedoAccount.email}`);
+
+            // Check if already connected
+            loadMakedoLoginState();
+            if (makedoState.isLoggedIn && makedoState.userEmail) {
+                console.log(`📋 Found existing Makedo session: ${makedoState.userEmail}`);
+
+                // Validate that the logged-in Makedo account matches the expected one
+                if (makedoState.userEmail.toLowerCase() === expectedMakedoAccount.email.toLowerCase()) {
+                    console.log('✅ Makedo account matches Firebase account - keeping session');
+                    updateVideoConnectionStatus();
+                    return;
+                } else {
+                    console.log('⚠️ MISMATCH DETECTED!');
+                    console.log(`   Firebase: ${userEmail}`);
+                    console.log(`   Expected Makedo: ${expectedMakedoAccount.email}`);
+                    console.log(`   Current Makedo: ${makedoState.userEmail}`);
+                    console.log('🔄 Clearing mismatched Makedo session and logging in with correct account...');
+
+                    // Clear the mismatched session
+                    localStorage.removeItem('videotest_makedo_state');
+                    makedoState.isLoggedIn = false;
+                    makedoState.userEmail = null;
+                    makedoState.userId = null;
+                }
+            }
+
+            // Proceed with login using the correct account
+            console.log('✅ Attempting auto-login to Makedo account...');
 
             try {
                 // Check if Fetch is available
@@ -3010,10 +3028,10 @@
                 }
 
                 // Use Fetch.login() with object parameter (same as manual login)
-                console.log('Calling Fetch.login() with email:', pairedAccount.email);
+                console.log('Calling Fetch.login() with email:', expectedMakedoAccount.email);
                 const result = await Fetch.login({
-                    email: pairedAccount.email,
-                    password: pairedAccount.password
+                    email: expectedMakedoAccount.email,
+                    password: expectedMakedoAccount.password
                 });
 
                 console.log('Login result:', result);
@@ -3022,10 +3040,10 @@
                 if (result && result.status === 'loggedIn') {
                     console.log('🎉 Auto-connected to Makedo successfully!');
                     makedoState.isLoggedIn = true;
-                    makedoState.userEmail = result.email || pairedAccount.email;
+                    makedoState.userEmail = result.email || expectedMakedoAccount.email;
                     makedoState.userId = result.pid;
 
-                    saveMakedoLoginState(pairedAccount.password);
+                    saveMakedoLoginState(expectedMakedoAccount.password);
                     updateVideoConnectionStatus();
                 } else {
                     console.log('❌ Auto-connect failed. Result:', result);
