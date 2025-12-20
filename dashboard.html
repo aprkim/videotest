@@ -3166,9 +3166,8 @@
         // Handle View Study Notes
         async function handleViewStudyNotes() {
             // Check if user has any session history
-            // For now, we'll always show the modal since there's no session tracking yet
-            // TODO: Replace with actual session history check when implemented
-            const hasSessionHistory = false; // This should check Firestore for user's sessions
+            // TODO: Replace with actual session history check from Firestore
+            const hasSessionHistory = true; // Set to true to show Study Notes Hub (change to actual check later)
 
             if (!hasSessionHistory) {
                 // Show the "no notes yet" modal
@@ -3177,9 +3176,8 @@
                     modal.classList.remove('hidden');
                 }
             } else {
-                // Navigate to study notes page (when implemented)
-                // window.location.href = 'study-notes.html';
-                console.log('Navigate to study notes page');
+                // Navigate to study notes page
+                window.location.href = 'study-notes.html';
             }
         }
 

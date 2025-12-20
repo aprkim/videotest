@@ -19,6 +19,9 @@
     <!-- Firebase Configuration -->
     <script src="firebase-config.js"></script>
 
+    <!-- Confetti Animation -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <link rel="stylesheet" href="styles.css">
     
     <style>
@@ -95,11 +98,11 @@
             font-weight: 500;
             transition: background-color 0.2s;
         }
-        
+
         .help-btn:hover {
             background-color: #f8f8f8;
         }
-        
+
         .help-btn svg {
             width: 18px;
             height: 18px;
@@ -280,14 +283,40 @@
             width: 18px;
             height: 18px;
         }
-        
+
         .mute-indicator svg {
             width: 18px;
             height: 18px;
             color: #BF3143;
         }
-        
+
         .mute-indicator.hidden {
+            display: none;
+        }
+
+        /* Camera/Mic Off Overlay Badge */
+        .media-off-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background-color: rgba(51, 51, 51, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .media-off-badge svg {
+            width: 40px;
+            height: 40px;
+            color: #ffffff;
+        }
+
+        .media-off-badge.hidden {
             display: none;
         }
         
@@ -536,8 +565,8 @@
         /* Help Menu Dropdown */
         .help-menu {
             position: absolute;
-            top: 50px;
-            left: 100px;
+            top: calc(100% + 8px);
+            left: 0;
             background-color: #ffffff;
             border: 1px solid #e0e0e0;
             border-radius: 12px;
@@ -954,7 +983,7 @@
         }
         
         .info-icon.success {
-            color: #2ecc71;
+            color: #27AA5E;
         }
         
         .info-icon.info {
@@ -1101,6 +1130,42 @@
                     </svg>
                     <span class="favorite-tooltip">Add to Favorites</span>
                 </button>
+                <div style="position: relative;">
+                    <button class="help-btn" id="help-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <span>Help</span>
+                    </button>
+                    <!-- Help Menu Dropdown -->
+                    <div class="help-menu hidden" id="help-menu">
+                        <button class="help-menu-item" id="review-guidelines">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4"/>
+                                <path d="M12 8h.01"/>
+                            </svg>
+                            <span>Review Session Guidelines</span>
+                        </button>
+                        <button class="help-menu-item" id="block-partner">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                            </svg>
+                            <span>Block <span id="block-name">Partner</span></span>
+                        </button>
+                        <button class="help-menu-item danger" id="report-partner">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            <span>Report <span id="report-name">Partner</span></span>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="header-center">
                 <h1 class="video-title"><span class="tabbi-red">Tabbi</span>Mate</h1>
@@ -1112,14 +1177,6 @@
                         <polyline points="12 6 12 12 16 14"/>
                     </svg>
                     <span id="timer-text">0:30</span>
-                </button>
-                <button class="help-btn" id="help-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                        <line x1="12" y1="17" x2="12.01" y2="17"/>
-                    </svg>
-                    <span>Help</span>
                 </button>
                 <button class="leave-btn" id="leave-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1137,7 +1194,25 @@
             <div class="video-panel">
                 <!-- Local Video Element -->
                 <video class="video-element" id="myVideo" autoplay muted playsinline></video>
-                
+
+                <!-- Media Off Badge Overlay -->
+                <div class="media-off-badge hidden" id="local-media-off-badge">
+                    <!-- Camera Off Icon (matches Video button style) -->
+                    <svg id="camera-off-icon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                        <path d="M23 7l-7 5 7 5V7z"/>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                    </svg>
+                    <!-- Microphone Off Icon -->
+                    <svg id="mic-off-icon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                        <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+                        <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                </div>
+
                 <div class="video-placeholder" id="myPlaceholder">
                     <div class="video-name-container">
                         <div class="mute-indicator hidden" id="local-mute-indicator">
@@ -1224,34 +1299,6 @@
             </button>
         </div>
     </div>
-    
-    <!-- Help Menu Dropdown -->
-    <div class="help-menu hidden" id="help-menu">
-        <button class="help-menu-item" id="review-guidelines">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 16v-4"/>
-                <path d="M12 8h.01"/>
-            </svg>
-            <span>Review Session Guidelines</span>
-        </button>
-        <button class="help-menu-item" id="block-partner">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-            </svg>
-            <span>Block <span id="block-name">Partner</span></span>
-        </button>
-        <button class="help-menu-item danger" id="report-partner">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-            <span>Report <span id="report-name">Partner</span></span>
-        </button>
-    </div>
-    
     <!-- Session Guidelines Modal -->
     <div class="guidelines-modal hidden" id="guidelines-modal">
         <div class="guidelines-content">
@@ -1297,6 +1344,23 @@
         </div>
     </div>
     
+    <!-- Leave Session Confirmation Modal -->
+    <div class="confirm-modal hidden" id="leave-session-modal">
+        <div class="confirm-content">
+            <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <h3 class="confirm-title">Leave Session?</h3>
+            <p class="confirm-message">Are you sure you want to leave this session?</p>
+            <div class="confirm-actions">
+                <button class="cancel-btn" id="leave-session-cancel">Cancel</button>
+                <button class="confirm-btn" id="leave-session-confirm">Leave</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Block Confirmation Modal -->
     <div class="confirm-modal hidden" id="block-modal">
         <div class="confirm-content">
@@ -1404,7 +1468,7 @@
                     </svg>
                     <span>Download Study Note</span>
                 </button>
-                <button class="done-btn" id="done-btn">Done</button>
+                <button class="done-btn" id="done-btn">Return to Dashboard</button>
             </div>
         </div>
     </div>
@@ -1609,9 +1673,17 @@
         // Session Summary Modal
         const sessionSummaryModal = document.getElementById('session-summary');
         document.getElementById('done-btn').addEventListener('click', () => {
+            // Clean up and return to dashboard
             sessionSummaryModal.classList.add('hidden');
-            showInfoModal('Session Complete!', 'Returning to dashboard...', 'success');
-            setTimeout(() => window.location.href = 'dashboard.html', 2000);
+
+            // Stop camera stream
+            if (camera_stream) {
+                camera_stream.getTracks().forEach(track => track.stop());
+                camera_stream = null;
+            }
+
+            // Navigate to dashboard
+            window.location.href = 'dashboard.html';
         });
         document.querySelector('.download-btn').addEventListener('click', () => {
             showInfoModal('Download Started', 'Your session summary and corrections have been saved as a PDF.', 'success');
@@ -1962,11 +2034,14 @@
                     
                     // Hide loading screen NOW so user sees themselves
                     hideLoading();
-                    
+
                     // Update UI
                     document.getElementById('partner-name').textContent = partnerDisplayName;
                     document.getElementById('remote-name').textContent = `${partnerDisplayName} · Waiting`;
-                    
+
+                    // Start the 30-second session timer
+                    startSessionTimer();
+
                     console.log('✅ You can now see yourself!');
                 } else {
                     console.error('Failed to create camera stream');
@@ -2099,12 +2174,47 @@
             console.log('✅ All callbacks configured');
         }
         
+        // Update media off badge based on camera and mic state
+        function updateMediaOffBadge() {
+            const cameraBtn = document.getElementById('toggle-camera');
+            const micBtn = document.getElementById('toggle-mic');
+            const badge = document.getElementById('local-media-off-badge');
+            const cameraIcon = document.getElementById('camera-off-icon');
+            const micIcon = document.getElementById('mic-off-icon');
+
+            const cameraActive = cameraBtn.getAttribute('data-active') === 'true';
+            const micActive = micBtn.getAttribute('data-active') === 'true';
+
+            // Determine which icon to show
+            if (!cameraActive && !micActive) {
+                // Both off - show camera icon (video off takes priority)
+                badge.classList.remove('hidden');
+                cameraIcon.classList.remove('hidden');
+                micIcon.classList.add('hidden');
+            } else if (!cameraActive) {
+                // Only camera off
+                badge.classList.remove('hidden');
+                cameraIcon.classList.remove('hidden');
+                micIcon.classList.add('hidden');
+            } else if (!micActive) {
+                // Only mic off
+                badge.classList.remove('hidden');
+                cameraIcon.classList.add('hidden');
+                micIcon.classList.remove('hidden');
+            } else {
+                // Both on - hide badge
+                badge.classList.add('hidden');
+                cameraIcon.classList.add('hidden');
+                micIcon.classList.add('hidden');
+            }
+        }
+
         // Control Buttons
         document.getElementById('toggle-camera').addEventListener('click', () => {
             const btn = document.getElementById('toggle-camera');
             const isActive = btn.getAttribute('data-active') === 'true';
             btn.setAttribute('data-active', !isActive);
-            
+
             // Toggle video track
             const stream = myVideo.srcObject;
             if (stream) {
@@ -2112,7 +2222,7 @@
                     track.enabled = !isActive;
                 });
             }
-            
+
             // Show/hide placeholder
             if (!isActive) {
                 myPlaceholder.style.display = 'none';
@@ -2121,13 +2231,16 @@
                 myPlaceholder.style.display = 'flex';
                 myVideo.style.display = 'none';
             }
+
+            // Show/hide media off badge overlay
+            updateMediaOffBadge();
         });
         
         document.getElementById('toggle-mic').addEventListener('click', () => {
             const btn = document.getElementById('toggle-mic');
             const isActive = btn.getAttribute('data-active') === 'true';
             btn.setAttribute('data-active', !isActive);
-            
+
             // Toggle audio track
             const stream = myVideo.srcObject;
             if (stream) {
@@ -2135,63 +2248,79 @@
                     track.enabled = !isActive;
                 });
             }
-            
-            // Show/hide mute indicator
+
+            // Show/hide mute indicator in name badge
             const muteIndicator = document.getElementById('local-mute-indicator');
             if (!isActive) {
                 muteIndicator.classList.add('hidden');
             } else {
                 muteIndicator.classList.remove('hidden');
             }
+
+            // Show/hide media off badge overlay
+            updateMediaOffBadge();
         });
         
+        // Leave Session Modal
+        const leaveSessionModal = document.getElementById('leave-session-modal');
         document.getElementById('leave-btn').addEventListener('click', () => {
-            const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>';
-            showConfirm(
-                icon,
-                'Leave Session?',
-                'Are you sure you want to leave this session?',
-                'Leave',
-                () => {
-                    console.log('Leaving session...');
+            leaveSessionModal.classList.remove('hidden');
+        });
 
-                    // Stop camera stream tracks
-                    if (camera_stream) {
-                        camera_stream.getTracks().forEach(track => {
-                            track.stop();
-                            console.log('Stopped track:', track.kind);
-                        });
-                        camera_stream = null;
-                    }
+        document.getElementById('leave-session-cancel').addEventListener('click', () => {
+            leaveSessionModal.classList.add('hidden');
+        });
 
-                    // Stop video elements
-                    if (myVideo.srcObject) {
-                        myVideo.srcObject.getTracks().forEach(track => track.stop());
-                        myVideo.srcObject = null;
-                    }
-                    if (remoteVideo.srcObject) {
-                        remoteVideo.srcObject.getTracks().forEach(track => track.stop());
-                        remoteVideo.srcObject = null;
-                    }
+        document.getElementById('leave-session-confirm').addEventListener('click', () => {
+            leaveSessionModal.classList.add('hidden');
 
-                    // Disconnect from Bridge
-                    if (bridge && bridge.hasComms()) {
-                        console.log('Leaving Galene server...');
-                        try {
-                            bridge.comms.remote_serverLeave();
-                            console.log('✅ Left Galene server successfully');
-                        } catch (e) {
-                            console.log('⚠️ Error leaving server:', e);
-                        }
-                    }
+            console.log('Leaving session...');
 
-                    console.log('Redirecting to dashboard...');
-                    // Redirect to dashboard (use setTimeout to ensure cleanup completes)
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 100);
+            // Stop session timer
+            stopSessionTimer();
+
+            // Stop camera stream tracks
+            if (camera_stream) {
+                camera_stream.getTracks().forEach(track => {
+                    track.stop();
+                    console.log('Stopped track:', track.kind);
+                });
+                camera_stream = null;
+            }
+
+            // Stop video elements
+            if (myVideo.srcObject) {
+                myVideo.srcObject.getTracks().forEach(track => track.stop());
+                myVideo.srcObject = null;
+            }
+            if (remoteVideo.srcObject) {
+                remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+                remoteVideo.srcObject = null;
+            }
+
+            // Disconnect from Bridge
+            if (bridge && bridge.hasComms()) {
+                console.log('Leaving Galene server...');
+                try {
+                    bridge.comms.remote_serverLeave();
+                    console.log('✅ Left Galene server successfully');
+                } catch (e) {
+                    console.log('⚠️ Error leaving server:', e);
                 }
-            );
+            }
+
+            console.log('Redirecting to dashboard...');
+            // Redirect to dashboard (use setTimeout to ensure cleanup completes)
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 100);
+        });
+
+        // Close modal when clicking outside
+        leaveSessionModal.addEventListener('click', (e) => {
+            if (e.target === leaveSessionModal) {
+                leaveSessionModal.classList.add('hidden');
+            }
         });
         
         // AI Button
@@ -2316,11 +2445,164 @@
                 document.getElementById('theme-icon-light').classList.remove('hidden');
             }
         }
-        
+
+        // ========================================
+        // SESSION TIMER (30s session + 30s cooldown)
+        // ========================================
+
+        let sessionTimer = null;
+        let sessionTimeRemaining = 30; // 30 seconds
+        let cooldownTimeRemaining = 30; // 30 seconds
+        let isInCooldown = false;
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            const timerText = document.getElementById('timer-text');
+            const timerBtn = document.getElementById('timer-btn');
+
+            if (isInCooldown) {
+                timerText.textContent = `Cool-down ${formatTime(cooldownTimeRemaining)}`;
+                timerBtn.style.color = '#999999';
+            } else {
+                timerText.textContent = formatTime(sessionTimeRemaining);
+                timerBtn.style.color = '#333333';
+            }
+        }
+
+        function startSessionTimer() {
+            console.log('🕐 Starting 30-second session timer');
+            sessionTimeRemaining = 30;
+            isInCooldown = false;
+            updateTimerDisplay();
+
+            console.log('Timer display updated to:', document.getElementById('timer-text').textContent);
+
+            sessionTimer = setInterval(() => {
+                sessionTimeRemaining--;
+                console.log('⏱️ Timer tick:', sessionTimeRemaining, 'seconds remaining');
+                updateTimerDisplay();
+
+                if (sessionTimeRemaining <= 0) {
+                    console.log('⏰ Session time ended, starting cooldown');
+                    clearInterval(sessionTimer);
+                    endSession();
+                }
+            }, 1000);
+
+            console.log('✅ Session timer interval created');
+        }
+
+        function endSession() {
+            console.log('Session ended, entering 30-second cooldown');
+            isInCooldown = true;
+            cooldownTimeRemaining = 30;
+            updateTimerDisplay();
+
+            // Trigger confetti
+            triggerConfetti();
+
+            // Show session summary modal
+            showInfoModal('Session Complete', 'Great work! You have 30 seconds to wrap up with your partner.', 'success');
+
+            // Start cooldown timer
+            sessionTimer = setInterval(() => {
+                cooldownTimeRemaining--;
+                updateTimerDisplay();
+
+                if (cooldownTimeRemaining <= 0) {
+                    console.log('Cooldown complete, showing session summary');
+                    clearInterval(sessionTimer);
+                    isInCooldown = false;
+                    sessionTimeRemaining = 30;
+                    updateTimerDisplay();
+
+                    // Show session summary and study notes
+                    showSessionSummary();
+                }
+            }, 1000);
+        }
+
+        // Confetti animation - simple falling from top with sound
+        function triggerConfetti() {
+            // Play success sound
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTcIGmi77eea');
+            audio.volume = 0.3;
+            audio.play().catch(e => console.log('Audio play failed:', e));
+
+            // Simple confetti falling from top
+            const duration = 3 * 1000;
+            const animationEnd = Date.now() + duration;
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 30;
+
+                // Confetti falling from top center
+                confetti({
+                    particleCount: particleCount,
+                    angle: 90,
+                    spread: 70,
+                    origin: { x: 0.5, y: -0.1 },
+                    zIndex: 20000,
+                    colors: ['#FFD700', '#FFA500', '#FF6347', '#87CEEB', '#98FB98', '#DDA0DD'],
+                    ticks: 200,
+                    gravity: 1,
+                    decay: 0.94,
+                    startVelocity: 30,
+                    shapes: ['square', 'circle'],
+                    scalar: 1.2
+                });
+            }, 250);
+        }
+
+        function stopSessionTimer() {
+            if (sessionTimer) {
+                clearInterval(sessionTimer);
+                sessionTimer = null;
+            }
+        }
+
+        // Show session summary with study notes
+        function showSessionSummary() {
+            const modal = document.getElementById('session-summary');
+            const partnerName = document.getElementById('partner-name').textContent;
+
+            // Update summary data
+            document.getElementById('summary-language').textContent = 'English';
+            document.getElementById('summary-level').textContent = 'Intermediate';
+            document.getElementById('summary-partner').textContent = partnerName;
+            document.getElementById('summary-duration').textContent = '30 seconds';
+
+            // Format current date
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            document.getElementById('summary-date').textContent = dateStr;
+
+            // Show the modal
+            modal.classList.remove('hidden');
+        }
+
         // Initialize on page load
         window.addEventListener('DOMContentLoaded', () => {
             loadThemePreference();
             initVideoSession();
+
+            // Start session timer when video session starts
+            // We'll start it after video connection is established
         });
     </script>
 </body>

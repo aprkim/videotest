@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes - TabbiMate</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #FAFAFA;
+            color: #333333;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .study-notes-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 24px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .study-notes-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .study-notes-subtitle {
+            font-size: 14px;
+            color: #9CA3AF;
+        }
+
+        .header-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background-color: transparent;
+            color: #6B7280;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .header-cta:hover {
+            background-color: #F9FAFB;
+            border-color: #D1D5DB;
+            color: #374151;
+        }
+
+        .header-cta svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Main Content */
+        .study-notes-main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 40px 80px;
+        }
+
+        /* Last Session Highlight */
+        .last-session-highlight {
+            background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%);
+            border: 1px solid #FFE4E6;
+            border-left: 4px solid #BF3143;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 48px;
+        }
+
+        .highlight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .highlight-meta h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 6px;
+        }
+
+        .highlight-session-info {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        .review-session-btn {
+            padding: 8px 16px;
+            background: none;
+            border: 1px solid #BF3143;
+            color: #BF3143;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .review-session-btn:hover {
+            background-color: #BF3143;
+            color: white;
+        }
+
+        .highlight-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .highlight-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6B7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .expression-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .expression-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #F3F4F6;
+            font-size: 15px;
+            color: #111827;
+        }
+
+        .expression-list li:last-child {
+            border-bottom: none;
+        }
+
+        .expression-context {
+            font-size: 13px;
+            color: #9CA3AF;
+            margin-top: 4px;
+        }
+
+        .focus-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .focus-list li {
+            padding: 10px 0 10px 20px;
+            position: relative;
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.5;
+        }
+
+        .focus-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #BF3143;
+            font-weight: bold;
+        }
+
+        /* Session Timeline */
+        .timeline-header {
+            margin-bottom: 24px;
+        }
+
+        .timeline-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .timeline-subtitle {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        .session-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+
+        /* Session Card */
+        .session-card {
+            background-color: #ffffff;
+            border: 1px solid #E5E7EB;
+            border-left: 3px solid rgba(191, 49, 67, 0.15);
+            border-radius: 10px;
+            padding: 22px 24px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .session-card:hover {
+            border-left-color: rgba(191, 49, 67, 0.5);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .session-card.expanded {
+            cursor: default;
+            border-left-color: #BF3143;
+        }
+
+        .session-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .session-meta {
+            flex: 1;
+        }
+
+        .session-date {
+            font-size: 15px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 6px;
+        }
+
+        .session-details {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        .session-expand-btn {
+            background: none;
+            border: none;
+            color: #BF3143;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .session-expand-btn:hover {
+            background-color: #FFF5F5;
+        }
+
+        /* Contextual Text */
+        .contextual-text {
+            font-size: 14px;
+            color: #9CA3AF;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+        .session-highlights {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .highlight-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #6B7280;
+        }
+
+        .highlight-item svg {
+            width: 14px;
+            height: 14px;
+            color: #9CA3AF;
+        }
+
+        /* Session Details (Expanded) */
+        .session-details-panel {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #F3F4F6;
+        }
+
+        .session-details-panel.visible {
+            display: block;
+        }
+
+        .details-section {
+            margin-bottom: 28px;
+        }
+
+        .details-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 14px;
+        }
+
+        .section-content {
+            background-color: #F9FAFB;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .expression-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .expression-item:last-child {
+            border-bottom: none;
+        }
+
+        .expression-text {
+            font-size: 15px;
+            color: #111827;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .correction-item {
+            padding: 14px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .correction-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .correction-wrong {
+            font-size: 14px;
+            color: #DC2626;
+            text-decoration: line-through;
+            margin-bottom: 6px;
+        }
+
+        .correction-right {
+            font-size: 15px;
+            color: #111827;
+            font-weight: 500;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .correction-right::before {
+            content: '✓';
+            color: #27AA5E;
+            font-weight: bold;
+        }
+
+        .correction-explanation {
+            font-size: 13px;
+            color: #6B7280;
+        }
+
+        .focus-item-detail {
+            padding: 10px 14px;
+            background-color: #ffffff;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #374151;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .focus-item-detail::before {
+            content: '→';
+            color: #BF3143;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .positive-highlight {
+            padding: 10px 14px;
+            background-color: #F0FDF4;
+            border-left: 3px solid #27AA5E;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        /* Learning Progress Summary */
+        .learning-progress {
+            background-color: #ffffff;
+            border: 1px solid #E5E7EB;
+            border-radius: 10px;
+            padding: 28px;
+            margin-bottom: 32px;
+        }
+
+        .progress-header {
+            margin-bottom: 20px;
+        }
+
+        .progress-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .progress-subtitle {
+            font-size: 13px;
+            color: #9CA3AF;
+        }
+
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .progress-stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6B7280;
+            font-weight: 500;
+        }
+
+        /* Bottom CTA */
+        .bottom-cta {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            border: 1px solid #E5E7EB;
+        }
+
+        .bottom-cta-text {
+            font-size: 16px;
+            color: #6B7280;
+            margin-bottom: 16px;
+        }
+
+        .bottom-cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            background-color: #BF3143;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .bottom-cta-btn:hover {
+            background-color: #a02838;
+        }
+
+        .bottom-cta-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="study-notes-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="study-notes-title">Study Notes</h1>
+                <p class="study-notes-subtitle">Your learning journey, one conversation at a time</p>
+            </div>
+            <a href="dashboard.html" class="header-cta">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="study-notes-main">
+        <!-- Learning Progress Summary -->
+        <div class="learning-progress">
+            <div class="progress-header">
+                <h2 class="progress-title">Summary</h2>
+                <p class="progress-subtitle">A quick look at what you've learned so far</p>
+            </div>
+            <div class="progress-grid">
+                <div class="progress-stat">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Sessions</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Expressions</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Corrections</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Timeline -->
+        <div class="timeline-header">
+            <h2 class="timeline-title">All Sessions</h2>
+            <p class="timeline-subtitle">Review any conversation to see what you learned</p>
+        </div>
+
+        <div class="session-timeline" id="session-timeline">
+            <!-- Session Card 1 -->
+            <div class="session-card" onclick="toggleSessionDetails(this)">
+                <div class="session-card-header">
+                    <div class="session-meta">
+                        <div class="session-date">Dec 20, 2025</div>
+                        <div class="session-details">English · 30 seconds · Small Talk</div>
+                    </div>
+                    <button class="session-expand-btn">Review session</button>
+                </div>
+                <div class="session-highlights">
+                    <div class="highlight-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        4 expressions learned
+                    </div>
+                    <div class="highlight-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        3 pronunciation tips
+                    </div>
+                </div>
+
+                <!-- Session Details Panel -->
+                <div class="session-details-panel">
+                    <!-- What you did well -->
+                    <div class="details-section">
+                        <h3 class="section-title">What you did well</h3>
+                        <div class="section-content">
+                            <div class="positive-highlight">Great natural flow in greeting your partner</div>
+                            <div class="positive-highlight">Clear pronunciation of common phrases</div>
+                            <div class="positive-highlight">Good use of polite expressions</div>
+                        </div>
+                    </div>
+
+                    <!-- Expressions Learned -->
+                    <div class="details-section">
+                        <h3 class="section-title">Expressions Learned</h3>
+                        <div class="section-content">
+                            <div class="expression-item">
+                                <div class="expression-text">How's it going?</div>
+                                <div class="expression-context">Informal greeting, commonly used among friends</div>
+                            </div>
+                            <div class="expression-item">
+                                <div class="expression-text">Catch you later</div>
+                                <div class="expression-context">Casual way to say goodbye</div>
+                            </div>
+                            <div class="expression-item">
+                                <div class="expression-text">No worries</div>
+                                <div class="expression-context">Relaxed way to say "it's okay" or "don't worry"</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Corrections -->
+                    <div class="details-section">
+                        <h3 class="section-title">Corrections</h3>
+                        <div class="section-content">
+                            <div class="correction-item">
+                                <div class="correction-wrong">I go to the store yesterday.</div>
+                                <div class="correction-right">I went to the store yesterday.</div>
+                                <div class="correction-explanation">Use past tense 'went' for actions that happened in the past.</div>
+                            </div>
+                            <div class="correction-item">
+                                <div class="correction-wrong">She don't like coffee.</div>
+                                <div class="correction-right">She doesn't like coffee.</div>
+                                <div class="correction-explanation">Use 'doesn't' with third person singular (he, she, it).</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Focus for Next Session -->
+                    <div class="details-section">
+                        <h3 class="section-title">Focus for Next Session</h3>
+                        <div class="section-content">
+                            <div class="focus-item-detail">Practice using past tense verbs in conversation</div>
+                            <div class="focus-item-detail">Try using new expressions you learned today naturally</div>
+                            <div class="focus-item-detail">Work on third person verb forms (he/she does, has, goes)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional session cards would go here -->
+        </div>
+
+        <!-- Bottom CTA -->
+        <div class="bottom-cta">
+            <p class="bottom-cta-text">Ready for another conversation?</p>
+            <a href="dashboard.html" class="bottom-cta-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polygon points="10 8 16 12 10 16 10 8"/>
+                </svg>
+                Start practice session
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        function toggleSessionDetails(card) {
+            const panel = card.querySelector('.session-details-panel');
+            const btn = card.querySelector('.session-expand-btn');
+
+            if (panel.classList.contains('visible')) {
+                panel.classList.remove('visible');
+                btn.textContent = 'Review session';
+                card.classList.remove('expanded');
+            } else {
+                panel.classList.add('visible');
+                btn.textContent = 'Hide details';
+                card.classList.add('expanded');
+            }
+        }
+
+        function scrollToSession(index) {
+            const cards = document.querySelectorAll('.session-card');
+            if (cards[index]) {
+                cards[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Auto-expand if not already expanded
+                const panel = cards[index].querySelector('.session-details-panel');
+                if (!panel.classList.contains('visible')) {
+                    toggleSessionDetails(cards[index]);
+                }
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Study Notes page loaded');
+            // TODO: Load actual session data from Firestore
+        });
+    </script>
+</body>
+</html>
