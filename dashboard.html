@@ -227,6 +227,8 @@
             font-size: 15px;
             font-family: inherit;
             transition: border-color 0.2s ease;
+            min-height: 52px;
+            box-sizing: border-box;
         }
         
         .form-input:focus,
@@ -278,7 +280,8 @@
             color: #BF3143;
         }
 
-        #edit-languages-btn:hover {
+        #edit-languages-btn:hover,
+        #edit-interests-btn:hover {
             background: #FEE2E2 !important;
         }
 
@@ -298,6 +301,8 @@
             border: 1px solid #E5E7EB;
             border-radius: 8px;
             transition: all 0.2s ease;
+            min-height: 52px;
+            box-sizing: border-box;
         }
 
         .language-badge:hover {
@@ -1172,15 +1177,49 @@
                         <div id="language-summary-list" class="language-summary-list">
                             <!-- Language badges will be dynamically added here -->
                         </div>
+
+                        <!-- Add language button (only visible in edit mode) -->
+                        <button type="button" id="add-language-summary-btn" class="add-language-btn" onclick="showAddLanguageForm()" style="display: none; margin-top: 16px;">+ Add a language</button>
+
+                        <!-- Add language form (hidden by default) -->
+                        <div id="add-language-inline-form" style="display: none; margin-top: 12px;">
+                            <div class="language-row">
+                                <select id="new-language-inline" class="form-select" aria-label="Select language">
+                                    <option value="" disabled selected>Language</option>
+                                    <option value="English">English</option>
+                                    <option value="Spanish">Spanish</option>
+                                    <option value="Korean">Korean</option>
+                                </select>
+                                <select id="new-level-inline" class="form-select" aria-label="Select level">
+                                    <option value="" disabled selected>Level</option>
+                                    <option value="Basic">Basic</option>
+                                    <option value="Intermediate">Intermediate</option>
+                                    <option value="Advanced">Advanced</option>
+                                    <option value="Professional">Professional</option>
+                                    <option value="Native">Native</option>
+                                </select>
+                                <button type="button" onclick="confirmAddLanguageInline()" style="padding: 8px 12px; background: none; border: none; cursor: pointer;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BF3143" stroke-width="2">
+                                        <line x1="5" y1="12" x2="19" y2="12"/>
+                                        <line x1="12" y1="5" x2="12" y2="19"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Interests Summary -->
-                    <div id="interests-summary" class="interests-summary" style="display: none;">
+                    <div id="interests-summary" class="interests-summary" style="display: none; position: relative;">
+                        <button type="button" id="edit-interests-btn" onclick="scrollToInterestsSection()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; color: #BF3143; font-size: 14px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s;">
+                            Edit
+                        </button>
                         <div class="interests-summary-header">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                            <span>My Interests</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                                <span>My Interests</span>
+                            </div>
                         </div>
                         <div id="interests-summary-list" class="interests-summary-list">
                             <!-- Interest badges will be dynamically added here -->
@@ -1218,24 +1257,6 @@
                     </div>
                     
                     <button type="button" class="btn btn-primary btn-save" id="save-profile-btn" disabled>
-                        Save Changes
-                    </button>
-                </div>
-                
-                <!-- Languages & Levels Card -->
-                <div class="card" id="languages-section" style="display: none;">
-                    <h2 class="card-title">Languages & Levels</h2>
-
-                    <div class="form-group">
-                        <label class="form-label">Your Languages</label>
-                        <div id="languages-container">
-                            <!-- Languages will be dynamically rendered here -->
-                        </div>
-                        <button type="button" class="add-language-btn" onclick="addLanguageRow()">+ Add a language</button>
-                        <p class="form-hint">Add all languages you can practice</p>
-                    </div>
-
-                    <button type="button" class="btn btn-primary btn-save" id="save-languages-btn" disabled>
                         Save Changes
                     </button>
                 </div>
@@ -2031,15 +2052,13 @@
             container.innerHTML = userLanguages.map((lang, index) => `
                 <div class="language-row">
                     <select class="form-select" onchange="updateLanguage(${index}, this.value, null)" aria-label="Select language">
+                        <option value="" disabled ${lang.language === '' ? 'selected' : ''}>Language</option>
                         <option value="English" ${lang.language === 'English' ? 'selected' : ''}>English</option>
                         <option value="Spanish" ${lang.language === 'Spanish' ? 'selected' : ''}>Spanish</option>
                         <option value="Korean" ${lang.language === 'Korean' ? 'selected' : ''}>Korean</option>
-                        <option value="French" ${lang.language === 'French' ? 'selected' : ''}>French</option>
-                        <option value="German" ${lang.language === 'German' ? 'selected' : ''}>German</option>
-                        <option value="Japanese" ${lang.language === 'Japanese' ? 'selected' : ''}>Japanese</option>
-                        <option value="Mandarin" ${lang.language === 'Mandarin' ? 'selected' : ''}>Mandarin</option>
                     </select>
                     <select class="form-select" onchange="updateLanguage(${index}, null, this.value)" aria-label="Select level">
+                        <option value="" disabled ${lang.level === '' ? 'selected' : ''}>Level</option>
                         <option value="Basic" ${lang.level === 'Basic' ? 'selected' : ''}>Basic</option>
                         <option value="Intermediate" ${lang.level === 'Intermediate' ? 'selected' : ''}>Intermediate</option>
                         <option value="Advanced" ${lang.level === 'Advanced' ? 'selected' : ''}>Advanced</option>
@@ -2057,7 +2076,7 @@
         }
         
         function addLanguageRow() {
-            userLanguages.push({ language: 'English', level: 'Basic' });
+            userLanguages.push({ language: '', level: '' });
             renderLanguages();
             renderLanguageSummary();
             hasUnsavedChanges = true;
@@ -2114,6 +2133,7 @@
         function scrollToLanguagesSection() {
             const languagesSection = document.getElementById('languages-section');
             const editBtn = document.getElementById('edit-languages-btn');
+            const addLanguageBtn = document.getElementById('add-language-summary-btn');
 
             if (languagesSection) {
                 const isHidden = languagesSection.style.display === 'none';
@@ -2121,17 +2141,147 @@
                 if (isHidden) {
                     // Show the edit section (expand in place, no scrolling)
                     languagesSection.style.display = 'block';
-                    if (editBtn) editBtn.textContent = 'Done';
+                    if (editBtn) editBtn.textContent = 'Save';
+
+                    // Show "+ Add a language" button
+                    if (addLanguageBtn) addLanguageBtn.style.display = 'block';
+
+                    // Add X buttons to language badges
+                    renderLanguageSummaryWithDeleteButtons();
                 } else {
-                    // Hide the edit section (collapse)
+                    // Save and hide the edit section
+                    if (hasUnsavedChanges) {
+                        saveProfileData();
+                        hasUnsavedChanges = false;
+                        updateSaveButton();
+                    }
+
                     languagesSection.style.display = 'none';
                     if (editBtn) editBtn.textContent = 'Edit';
+
+                    // Hide "+ Add a language" button and form
+                    if (addLanguageBtn) addLanguageBtn.style.display = 'none';
+                    const addLanguageForm = document.getElementById('add-language-inline-form');
+                    if (addLanguageForm) {
+                        addLanguageForm.style.display = 'none';
+                    }
+
+                    // Remove X buttons from language badges
+                    renderLanguageSummary();
                 }
             }
         }
 
+        // Show the inline add language form
+        function showAddLanguageForm() {
+            const form = document.getElementById('add-language-inline-form');
+            const btn = document.getElementById('add-language-summary-btn');
+
+            if (form && btn) {
+                form.style.display = 'block';
+                btn.style.display = 'none';
+            }
+        }
+
+        // Confirm adding a language from the inline form
+        function confirmAddLanguageInline() {
+            const languageSelect = document.getElementById('new-language-inline');
+            const levelSelect = document.getElementById('new-level-inline');
+
+            if (languageSelect.value && levelSelect.value) {
+                // Add the new language to the array
+                userLanguages.push({
+                    language: languageSelect.value,
+                    level: levelSelect.value
+                });
+
+                // Re-render badges with X buttons
+                renderLanguageSummaryWithDeleteButtons();
+
+                // Also update the main languages section
+                renderLanguages();
+
+                // Hide form and show button again
+                const form = document.getElementById('add-language-inline-form');
+                const btn = document.getElementById('add-language-summary-btn');
+                if (form && btn) {
+                    form.style.display = 'none';
+                    btn.style.display = 'block';
+                }
+
+                // Reset selects
+                languageSelect.value = '';
+                levelSelect.value = '';
+
+                // Mark as unsaved
+                hasUnsavedChanges = true;
+                updateSaveButton();
+            }
+        }
+
+        // Make functions globally accessible
+        window.showAddLanguageForm = showAddLanguageForm;
+        window.confirmAddLanguageInline = confirmAddLanguageInline;
+
+        // Render language summary with delete buttons (edit mode)
+        function renderLanguageSummaryWithDeleteButtons() {
+            const listContainer = document.getElementById('language-summary-list');
+            if (!listContainer) return;
+
+            listContainer.innerHTML = userLanguages.map((lang, index) => {
+                const levelClass = lang.level.toLowerCase();
+                return `
+                    <div class="language-badge" style="display: inline-flex; align-items: center; gap: 8px; padding-right: 8px;">
+                        <div class="language-badge-content">
+                            <div class="language-badge-name">${lang.language}</div>
+                            <div class="language-badge-level ${levelClass}">${lang.level}</div>
+                        </div>
+                        <button type="button" onclick="removeLanguageFromSummary(${index})" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0; color: #6B7280; transition: color 0.2s;" onmouseover="this.style.color='#BF3143'" onmouseout="this.style.color='#6B7280'">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Remove language from summary (called from badge X button)
+        function removeLanguageFromSummary(index) {
+            removeLanguage(index);
+            renderLanguageSummaryWithDeleteButtons();
+        }
+
         // Make function globally accessible
+        window.removeLanguageFromSummary = removeLanguageFromSummary;
+
+        // Toggle interests section when Edit button is clicked
+        function scrollToInterestsSection() {
+            const interestsSection = document.getElementById('interests-input');
+            const editBtn = document.getElementById('edit-interests-btn');
+
+            if (interestsSection) {
+                const parentFormGroup = interestsSection.closest('.form-group');
+                if (parentFormGroup) {
+                    const isHidden = parentFormGroup.style.display === 'none';
+
+                    if (isHidden) {
+                        // Show the edit section
+                        parentFormGroup.style.display = 'block';
+                        if (editBtn) editBtn.textContent = 'Done';
+                    } else {
+                        // Hide the edit section
+                        parentFormGroup.style.display = 'none';
+                        if (editBtn) editBtn.textContent = 'Edit';
+                    }
+                }
+            }
+        }
+
+        // Make functions globally accessible
         window.scrollToLanguagesSection = scrollToLanguagesSection;
+        window.scrollToInterestsSection = scrollToInterestsSection;
 
         // Render interests summary at top of profile
         function renderInterestsSummary() {
