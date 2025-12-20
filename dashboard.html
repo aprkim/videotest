@@ -1224,6 +1224,22 @@
                         <div id="interests-summary-list" class="interests-summary-list">
                             <!-- Interest badges will be dynamically added here -->
                         </div>
+
+                        <!-- Add interest button (only visible in edit mode) -->
+                        <button type="button" id="add-interest-summary-btn" class="add-language-btn" onclick="showAddInterestForm()" style="display: none; margin-top: 16px;">+ Add an interest (max 3)</button>
+
+                        <!-- Add interest form (hidden by default) -->
+                        <div id="add-interest-inline-form" style="display: none; margin-top: 12px;">
+                            <div class="interests-input-wrapper">
+                                <input type="text" id="interest-input-inline" class="form-input" placeholder="Add an interest (max 3)" aria-label="Add interest" maxlength="30">
+                                <button type="button" onclick="confirmAddInterestInline()" style="padding: 8px 12px; background: none; border: none; cursor: pointer;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BF3143" stroke-width="2">
+                                        <line x1="5" y1="12" x2="19" y2="12"/>
+                                        <line x1="12" y1="5" x2="12" y2="19"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -2298,20 +2314,58 @@
         function scrollToInterestsSection() {
             const interestsSection = document.getElementById('interests-input');
             const editBtn = document.getElementById('edit-interests-btn');
+            const addInterestBtn = document.getElementById('add-interest-summary-btn');
 
-            if (interestsSection) {
-                const parentFormGroup = interestsSection.closest('.form-group');
-                if (parentFormGroup) {
-                    const isHidden = parentFormGroup.style.display === 'none';
+            if (editBtn) {
+                const isEditMode = editBtn.textContent === 'Edit';
 
-                    if (isHidden) {
-                        // Show the edit section
-                        parentFormGroup.style.display = 'block';
-                        if (editBtn) editBtn.textContent = 'Done';
-                    } else {
-                        // Hide the edit section
-                        parentFormGroup.style.display = 'none';
-                        if (editBtn) editBtn.textContent = 'Edit';
+                if (isEditMode) {
+                    // Enter edit mode
+                    editBtn.textContent = 'Save';
+
+                    // Show X buttons on interest badges
+                    renderInterestsSummaryWithDeleteButtons();
+
+                    // Show "+ Add an interest" button (if not at max)
+                    if (addInterestBtn && interests.length < 3) {
+                        addInterestBtn.style.display = 'block';
+                    }
+
+                    // Show the interests input section
+                    if (interestsSection) {
+                        const parentFormGroup = interestsSection.closest('.form-group');
+                        if (parentFormGroup) {
+                            parentFormGroup.style.display = 'block';
+                        }
+                    }
+                } else {
+                    // Exit edit mode - save changes
+                    if (hasUnsavedChanges) {
+                        saveProfileData();
+                        hasUnsavedChanges = false;
+                        updateSaveButton();
+                    }
+
+                    editBtn.textContent = 'Edit';
+
+                    // Hide "+ Add an interest" button and form
+                    if (addInterestBtn) {
+                        addInterestBtn.style.display = 'none';
+                    }
+                    const addInterestForm = document.getElementById('add-interest-inline-form');
+                    if (addInterestForm) {
+                        addInterestForm.style.display = 'none';
+                    }
+
+                    // Remove X buttons from interest badges
+                    renderInterestsSummary();
+
+                    // Hide the interests input section
+                    if (interestsSection) {
+                        const parentFormGroup = interestsSection.closest('.form-group');
+                        if (parentFormGroup) {
+                            parentFormGroup.style.display = 'none';
+                        }
                     }
                 }
             }
@@ -2325,19 +2379,120 @@
         function renderInterestsSummary() {
             const summaryContainer = document.getElementById('interests-summary');
             const listContainer = document.getElementById('interests-summary-list');
+            const editBtn = document.getElementById('edit-interests-btn');
 
             if (!summaryContainer || !listContainer) return;
 
+            // Always keep the container visible once shown
+            summaryContainer.style.display = 'block';
+
+            // If no interests, hide Edit button
             if (interests.length === 0) {
-                summaryContainer.style.display = 'none';
+                if (editBtn) editBtn.style.display = 'none';
+                listContainer.innerHTML = '';
                 return;
             }
 
-            summaryContainer.style.display = 'block';
+            // If there are interests, show Edit button
+            if (editBtn) editBtn.style.display = 'block';
+
             listContainer.innerHTML = interests.map(interest => {
                 return `<div class="interest-badge">${interest}</div>`;
             }).join('');
         }
+
+        // Render interests summary with delete buttons (edit mode)
+        function renderInterestsSummaryWithDeleteButtons() {
+            const listContainer = document.getElementById('interests-summary-list');
+            const editBtn = document.getElementById('edit-interests-btn');
+
+            if (!listContainer) return;
+
+            // If no interests in edit mode, hide Edit button
+            if (interests.length === 0) {
+                if (editBtn) editBtn.style.display = 'none';
+                listContainer.innerHTML = '';
+                return;
+            }
+
+            listContainer.innerHTML = interests.map((interest, index) => {
+                return `
+                    <div class="interest-badge" style="display: inline-flex; align-items: center; gap: 8px; padding-right: 8px;">
+                        <span>${interest}</span>
+                        <button type="button" onclick="removeInterestFromSummary(${index})" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0; color: #6B7280; transition: color 0.2s;" onmouseover="this.style.color='#BF3143'" onmouseout="this.style.color='#6B7280'">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Remove interest from summary (called from badge X button)
+        function removeInterestFromSummary(index) {
+            interests.splice(index, 1);
+            renderInterestsSummaryWithDeleteButtons();
+
+            // Show "+ Add an interest" button if under max (3)
+            const addInterestBtn = document.getElementById('add-interest-summary-btn');
+            if (addInterestBtn && interests.length < 3) {
+                addInterestBtn.style.display = 'block';
+            }
+
+            hasUnsavedChanges = true;
+            updateSaveButton();
+        }
+
+        // Make function globally accessible
+        window.removeInterestFromSummary = removeInterestFromSummary;
+
+        // Show the inline add interest form
+        function showAddInterestForm() {
+            const form = document.getElementById('add-interest-inline-form');
+            const btn = document.getElementById('add-interest-summary-btn');
+
+            if (form && btn) {
+                form.style.display = 'block';
+                btn.style.display = 'none';
+            }
+        }
+
+        // Confirm adding an interest from the inline form
+        function confirmAddInterestInline() {
+            const interestInput = document.getElementById('interest-input-inline');
+
+            if (interestInput.value.trim() && interests.length < 3) {
+                interests.push(interestInput.value.trim());
+
+                // Reset input
+                interestInput.value = '';
+
+                // Re-render badges with X buttons
+                renderInterestsSummaryWithDeleteButtons();
+
+                // Hide form and show button again (if not at max)
+                const form = document.getElementById('add-interest-inline-form');
+                const btn = document.getElementById('add-interest-summary-btn');
+                if (form && btn) {
+                    form.style.display = 'none';
+                    if (interests.length < 3) {
+                        btn.style.display = 'block';
+                    } else {
+                        btn.style.display = 'none';
+                    }
+                }
+
+                // Mark as unsaved
+                hasUnsavedChanges = true;
+                updateSaveButton();
+            }
+        }
+
+        // Make functions globally accessible
+        window.showAddInterestForm = showAddInterestForm;
+        window.confirmAddInterestInline = confirmAddInterestInline;
 
         // Auto-save profile data when inputs change
         function setupAutoSave() {
