@@ -253,6 +253,61 @@
             color: #6B7280;
             margin-top: 6px;
         }
+
+        .profile-action-bar {
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .profile-action-bar .btn {
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .profile-action-bar .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .profile-success-message {
+            color: #059669;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 12px 16px;
+            background: #D1FAE5;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .profile-error-message {
+            color: #DC2626;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 12px 16px;
+            background: #FEE2E2;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .profile-action-bar {
+                flex-direction: column-reverse;
+            }
+
+            .profile-action-bar .btn {
+                width: 100%;
+            }
+        }
         
         /* Language & Interests Summary */
         .language-summary,
@@ -1159,6 +1214,12 @@
                         <label for="photo-upload" class="profile-upload-btn">Upload photo</label>
                     </div>
 
+                    <div class="form-group">
+                        <label for="name" class="form-label">Display name</label>
+                        <input type="text" id="name" class="form-input" placeholder="e.g., April K. or April" aria-label="Your display name">
+                        <p class="form-hint">This is how other language mates will see you.</p>
+                    </div>
+
                     <!-- Language Summary -->
                     <div id="language-summary" class="language-summary" style="display: none; position: relative;">
                         <button type="button" id="edit-languages-btn" onclick="scrollToLanguagesSection()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; color: #BF3143; font-size: 14px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s;">
@@ -1243,38 +1304,27 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" id="name" class="form-input" placeholder="Enter your name" aria-label="Your name">
-                    </div>
-                    
-                    <div class="form-group">
                         <label for="location" class="form-label">Location</label>
                         <input type="text" id="location" class="form-input" placeholder="e.g., San Francisco, CA" aria-label="Your location">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="bio" class="form-label">Bio</label>
                         <textarea id="bio" class="form-textarea" placeholder="Tell us a bit about yourself and your language learning goals..." aria-label="Your bio"></textarea>
+                        <p class="form-hint">Tell others a little about you or your language goals.</p>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="interests-input" class="form-label">Interests</label>
-                        <div class="interests-pills" id="interests-pills"></div>
-                        <div class="interests-input-wrapper">
-                            <input type="text" id="interests-input" class="form-input" placeholder="Add an interest (max 3)" aria-label="Add interest" maxlength="30">
-                            <button type="button" class="add-interest-btn" id="add-interest-btn" aria-label="Add interest">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="12" y1="5" x2="12" y2="19"/>
-                                    <line x1="5" y1="12" x2="19" y2="12"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <p class="form-hint" id="interests-hint"></p>
+
+                    <!-- Success/Error Messages -->
+                    <div id="profile-success-message" class="profile-success-message">Profile updated</div>
+                    <div id="profile-error-message" class="profile-error-message">Could not save changes. Please try again.</div>
+
+                    <!-- Action Bar -->
+                    <div class="profile-action-bar">
+                        <button type="button" class="btn btn-secondary" id="profile-cancel-btn">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="profile-save-btn" disabled>
+                            <span id="profile-save-text">Save changes</span>
+                        </button>
                     </div>
-                    
-                    <button type="button" class="btn btn-primary btn-save" id="save-profile-btn" disabled>
-                        Save Changes
-                    </button>
                 </div>
             </div>
             
@@ -1572,7 +1622,13 @@
                 console.error('Error loading user metadata:', error);
                 const memberSinceEl = document.getElementById('member-since');
                 if (memberSinceEl) {
-                    memberSinceEl.textContent = 'Recently';
+                    // Use current date as fallback
+                    const now = new Date();
+                    const formattedDate = now.toLocaleDateString('en-US', {
+                        month: 'short',
+                        year: 'numeric'
+                    });
+                    memberSinceEl.textContent = formattedDate;
                 }
             }
             
@@ -1580,26 +1636,63 @@
             try {
                 const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js');
                 const db = getFirestore();
-                const userDocRef = doc(db, 'users', userId);
-                const userDoc = await getDoc(userDocRef);
+
+                // Check profiles collection first
+                const profileDocRef = doc(db, 'profiles', userId);
+                const profileDoc = await getDoc(profileDocRef);
 
                 let profile = null;
 
-                if (userDoc.exists()) {
-                    // Load from Firestore
-                    console.log('✅ Loading profile from Firestore');
-                    profile = userDoc.data();
+                if (profileDoc.exists()) {
+                    // Load from Firestore profiles collection
+                    console.log('✅ Loading profile from Firestore (profiles)');
+                    profile = profileDoc.data();
                     console.log('Profile data:', profile);
-                    console.log('Languages:', profile.languages);
-                    console.log('Interests:', profile.interests);
+
+                    // Update member since from createdAt if available
+                    if (profile.createdAt && profile.createdAt.toDate) {
+                        const creationDate = profile.createdAt.toDate();
+                        const formattedDate = creationDate.toLocaleDateString('en-US', {
+                            month: 'short',
+                            year: 'numeric'
+                        });
+                        const memberSinceEl = document.getElementById('member-since');
+                        if (memberSinceEl) {
+                            memberSinceEl.textContent = formattedDate;
+                            console.log('Member since set from profile createdAt:', formattedDate);
+                        }
+                    } else {
+                        // If profile doesn't have createdAt, check if member-since still says "Loading..."
+                        const memberSinceEl = document.getElementById('member-since');
+                        if (memberSinceEl && memberSinceEl.textContent === 'Loading...') {
+                            // Use current date as last resort fallback
+                            const now = new Date();
+                            const formattedDate = now.toLocaleDateString('en-US', {
+                                month: 'short',
+                                year: 'numeric'
+                            });
+                            memberSinceEl.textContent = formattedDate;
+                            console.log('Member since set to current date (fallback):', formattedDate);
+                        }
+                    }
                 } else {
-                    // Fall back to localStorage
-                    console.log('❌ No Firestore data, checking localStorage');
-                    const profileKey = `videotest_profile_${userId}`;
-                    const savedProfile = localStorage.getItem(profileKey);
-                    if (savedProfile) {
-                        profile = JSON.parse(savedProfile);
-                        console.log('Loaded from localStorage');
+                    // Try legacy users collection
+                    const userDocRef = doc(db, 'users', userId);
+                    const userDoc = await getDoc(userDocRef);
+
+                    if (userDoc.exists()) {
+                        console.log('✅ Loading profile from Firestore (users - legacy)');
+                        profile = userDoc.data();
+                        console.log('Profile data:', profile);
+                    } else {
+                        // Fall back to localStorage
+                        console.log('❌ No Firestore data, checking localStorage');
+                        const profileKey = `videotest_profile_${userId}`;
+                        const savedProfile = localStorage.getItem(profileKey);
+                        if (savedProfile) {
+                            profile = JSON.parse(savedProfile);
+                            console.log('Loaded from localStorage');
+                        }
                     }
                 }
 
@@ -2495,18 +2588,33 @@
         window.confirmAddInterestInline = confirmAddInterestInline;
 
         // Auto-save profile data when inputs change
+        // Store original values for cancel functionality
+        let originalProfileData = {
+            name: '',
+            location: '',
+            bio: ''
+        };
+
         function setupAutoSave() {
             const nameInput = document.getElementById('name');
             const locationInput = document.getElementById('location');
             const bioTextarea = document.getElementById('bio');
-            const saveBtn = document.getElementById('save-profile-btn');
-            
+            const saveBtn = document.getElementById('profile-save-btn');
+            const cancelBtn = document.getElementById('profile-cancel-btn');
+
+            // Store original values
+            originalProfileData = {
+                name: nameInput ? nameInput.value : '',
+                location: locationInput ? locationInput.value : '',
+                bio: bioTextarea ? bioTextarea.value : ''
+            };
+
             // Mark as changed when any field is edited
             function markAsChanged() {
                 hasUnsavedChanges = true;
-                updateSaveButton();
+                if (saveBtn) saveBtn.disabled = false;
             }
-            
+
             if (nameInput) {
                 nameInput.addEventListener('input', markAsChanged);
             }
@@ -2516,19 +2624,89 @@
             if (bioTextarea) {
                 bioTextarea.addEventListener('input', markAsChanged);
             }
-            
-            // Setup save buttons
+
+            // Setup save button
             if (saveBtn) {
-                saveBtn.addEventListener('click', () => handleSaveProfile('save-profile-btn'));
+                saveBtn.addEventListener('click', handleProfileSave);
             }
 
-            const saveLanguagesBtn = document.getElementById('save-languages-btn');
-            if (saveLanguagesBtn) {
-                saveLanguagesBtn.addEventListener('click', () => handleSaveProfile('save-languages-btn'));
+            // Setup cancel button
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', handleProfileCancel);
             }
 
             // Setup interests functionality
             setupInterests();
+        }
+
+        // Handle profile save
+        async function handleProfileSave() {
+            const saveBtn = document.getElementById('profile-save-btn');
+            const saveText = document.getElementById('profile-save-text');
+            const successMsg = document.getElementById('profile-success-message');
+            const errorMsg = document.getElementById('profile-error-message');
+
+            if (!saveBtn || !saveText) return;
+
+            // Show loading state
+            saveBtn.disabled = true;
+            saveText.textContent = 'Saving…';
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+
+            try {
+                // Call existing save function
+                await saveProfileData();
+
+                // Update original values
+                const nameInput = document.getElementById('name');
+                const locationInput = document.getElementById('location');
+                const bioTextarea = document.getElementById('bio');
+                originalProfileData = {
+                    name: nameInput ? nameInput.value : '',
+                    location: locationInput ? locationInput.value : '',
+                    bio: bioTextarea ? bioTextarea.value : ''
+                };
+
+                // Show success message
+                successMsg.style.display = 'block';
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3000);
+
+                hasUnsavedChanges = false;
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                errorMsg.style.display = 'block';
+                setTimeout(() => {
+                    errorMsg.style.display = 'none';
+                }, 5000);
+                saveBtn.disabled = false;
+            }
+
+            // Reset button text
+            saveText.textContent = 'Save changes';
+        }
+
+        // Handle profile cancel
+        function handleProfileCancel() {
+            const nameInput = document.getElementById('name');
+            const locationInput = document.getElementById('location');
+            const bioTextarea = document.getElementById('bio');
+            const saveBtn = document.getElementById('profile-save-btn');
+            const successMsg = document.getElementById('profile-success-message');
+            const errorMsg = document.getElementById('profile-error-message');
+
+            // Revert to original values
+            if (nameInput) nameInput.value = originalProfileData.name;
+            if (locationInput) locationInput.value = originalProfileData.location;
+            if (bioTextarea) bioTextarea.value = originalProfileData.bio;
+
+            // Reset state
+            hasUnsavedChanges = false;
+            if (saveBtn) saveBtn.disabled = true;
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
         }
         
         // Setup interests add/remove

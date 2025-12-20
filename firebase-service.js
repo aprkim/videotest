@@ -14,11 +14,54 @@ class FirebaseService {
         this.unsubscribeProfile = null;
     }
 
+    // Generate display name from email
+    generateDisplayName(email) {
+        if (!email) return 'User' + Math.floor(Math.random() * 1000);
+
+        // Get email prefix (before @)
+        const prefix = email.split('@')[0];
+
+        // Split by common separators: '.', '_', '-', or numbers
+        const parts = prefix.split(/[._\-0-9]+/).filter(part => part.length > 0);
+
+        if (parts.length === 0) {
+            // No recognizable name parts, use fallback
+            return 'User' + Math.floor(Math.random() * 1000);
+        }
+
+        // Capitalize first part (first name)
+        const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+
+        if (parts.length === 1) {
+            // Only first name available
+            return firstName;
+        }
+
+        // If there's a second part (last name), add initial
+        const lastInitial = parts[1].charAt(0).toUpperCase();
+        return `${firstName} ${lastInitial}.`;
+    }
+
     // Authentication Methods
     async signUp(email, password) {
         try {
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             this.currentUser = userCredential.user;
+
+            // Generate display name from email
+            const displayName = this.generateDisplayName(email);
+
+            // Create initial profile with generated display name
+            await db.collection('profiles').doc(userCredential.user.uid).set({
+                name: displayName,
+                userId: userCredential.user.uid,
+                email: email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            console.log('Profile created with display name:', displayName);
+
             return { success: true, user: this.currentUser };
         } catch (error) {
             console.error('Sign up error:', error);
@@ -42,6 +85,25 @@ class FirebaseService {
             const provider = new firebase.auth.GoogleAuthProvider();
             const userCredential = await auth.signInWithPopup(provider);
             this.currentUser = userCredential.user;
+
+            // Check if this is a new user (first time signing in)
+            const profileDoc = await db.collection('profiles').doc(userCredential.user.uid).get();
+
+            if (!profileDoc.exists) {
+                // New user - create profile with generated display name
+                const displayName = this.generateDisplayName(userCredential.user.email);
+
+                await db.collection('profiles').doc(userCredential.user.uid).set({
+                    name: displayName,
+                    userId: userCredential.user.uid,
+                    email: userCredential.user.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                console.log('Google user profile created with display name:', displayName);
+            }
+
             return { success: true, user: this.currentUser };
         } catch (error) {
             console.error('Google sign in error:', error);
