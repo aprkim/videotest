@@ -2119,16 +2119,11 @@
                 const isHidden = languagesSection.style.display === 'none';
 
                 if (isHidden) {
-                    // Show the edit section
+                    // Show the edit section (expand in place, no scrolling)
                     languagesSection.style.display = 'block';
                     if (editBtn) editBtn.textContent = 'Done';
-
-                    // Smooth scroll to it
-                    setTimeout(() => {
-                        languagesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 100);
                 } else {
-                    // Hide the edit section
+                    // Hide the edit section (collapse)
                     languagesSection.style.display = 'none';
                     if (editBtn) editBtn.textContent = 'Edit';
                 }
