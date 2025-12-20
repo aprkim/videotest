@@ -2176,8 +2176,13 @@
 
                     // Disconnect from Bridge
                     if (bridge && bridge.hasComms()) {
-                        console.log('Closing bridge connection...');
-                        bridge.close();
+                        console.log('Leaving Galene server...');
+                        try {
+                            bridge.comms.remote_serverLeave();
+                            console.log('✅ Left Galene server successfully');
+                        } catch (e) {
+                            console.log('⚠️ Error leaving server:', e);
+                        }
                     }
 
                     console.log('Redirecting to dashboard...');
