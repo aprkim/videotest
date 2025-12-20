@@ -278,6 +278,10 @@
             color: #BF3143;
         }
 
+        #edit-languages-btn:hover {
+            background: #FEE2E2 !important;
+        }
+
         .language-summary-list,
         .interests-summary-list {
             display: flex;
@@ -1153,12 +1157,17 @@
                     <!-- Language Summary -->
                     <div id="language-summary" class="language-summary" style="display: none;">
                         <div class="language-summary-header">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="2" y1="12" x2="22" y2="12"></line>
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                            </svg>
-                            <span>My Languages</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                </svg>
+                                <span>My Languages</span>
+                            </div>
+                            <button type="button" id="edit-languages-btn" onclick="scrollToLanguagesSection()" style="background: none; border: none; color: #BF3143; font-size: 14px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s;">
+                                Edit
+                            </button>
                         </div>
                         <div id="language-summary-list" class="language-summary-list">
                             <!-- Language badges will be dynamically added here -->
@@ -1214,7 +1223,7 @@
                 </div>
                 
                 <!-- Languages & Levels Card -->
-                <div class="card">
+                <div class="card" id="languages-section">
                     <h2 class="card-title">Languages & Levels</h2>
                     
                     <div class="form-group">
@@ -2096,24 +2105,23 @@
                             <div class="language-badge-name">${lang.language}</div>
                             <div class="language-badge-level ${levelClass}">${lang.level}</div>
                         </div>
-                        <button type="button" class="language-badge-delete" onclick="removeLanguageFromSummary(${index})" aria-label="Remove ${lang.language}">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
                     </div>
                 `;
             }).join('');
         }
 
-        // Remove language from summary (same as removeLanguage)
-        function removeLanguageFromSummary(index) {
-            userLanguages.splice(index, 1);
-            renderLanguages();
-            renderLanguageSummary();
-            hasUnsavedChanges = true;
-            updateSaveButton();
+        // Scroll to languages section when Edit button is clicked
+        function scrollToLanguagesSection() {
+            const languagesSection = document.getElementById('languages-section');
+            if (languagesSection) {
+                languagesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Add a brief highlight effect
+                languagesSection.style.transition = 'box-shadow 0.3s';
+                languagesSection.style.boxShadow = '0 0 0 3px rgba(191, 49, 67, 0.2)';
+                setTimeout(() => {
+                    languagesSection.style.boxShadow = '';
+                }, 2000);
+            }
         }
 
         // Render interests summary at top of profile
