@@ -1475,8 +1475,8 @@
     <script type="importmap">
     {
       "imports": {
-        "bridge": "https://proto2.makedo.com:8883/ux/scripts/bridge.js",
-        "config": "https://proto2.makedo.com:8883/ux/scripts/configServer.js"
+        "bridge": "./scripts/bridge.js",
+        "config": "./scripts/configServer.js"
       }
     }
     </script>
@@ -1504,20 +1504,11 @@
         const app = initializeApp(firebaseConfig);
         console.log('🔥 Firebase initialized');
 
-        // Initialize Bridge for Makedo
+        // Initialize Bridge for Makedo (no init() method needed)
         const bridge = new Bridge();
         const CONTEXT_ID = "Kaiaj83n832";
         const CONTEXT_AUTH_TOKEN = "Kaiaj83n832";
-
-        // Initialize Bridge
-        (async () => {
-            try {
-                await bridge.init();
-                console.log('🌉 Bridge initialized');
-            } catch (error) {
-                console.error('Failed to initialize Bridge:', error);
-            }
-        })();
+        console.log('🌉 Bridge initialized:', bridge);
 
         // Initialize dashboard
         let userId = null;

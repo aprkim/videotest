@@ -89,8 +89,8 @@
     <script type="importmap">
     {
       "imports": {
-        "bridge": "https://proto2.makedo.com:8883/ux/scripts/bridge.js",
-        "config": "https://proto2.makedo.com:8883/ux/scripts/configServer.js"
+        "bridge": "./scripts/bridge.js",
+        "config": "./scripts/configServer.js"
       }
     }
     </script>
@@ -123,15 +123,9 @@
         const contextId = "Kaiaj83n832";
         const contextAuthToken = "Kaiaj83n832";
 
-        let bridge = null;
-
-        // Initialize Bridge
-        async function initBridge() {
-            console.log('Initializing Bridge...');
-            bridge = new Bridge();
-            await bridge.init();
-            console.log('Bridge initialized');
-        }
+        // Initialize Bridge (no init() method needed, just instantiate)
+        const bridge = new Bridge();
+        console.log('Bridge initialized:', bridge);
 
         // Register a single account
         async function registerAccount(email, password) {
@@ -160,15 +154,6 @@
 
             btn.disabled = true;
             container.innerHTML = '';
-
-            // Initialize Bridge first
-            try {
-                await initBridge();
-            } catch (error) {
-                container.innerHTML = '<div class="status error">Failed to initialize Bridge: ' + error.message + '</div>';
-                btn.disabled = false;
-                return;
-            }
 
             // Register each account
             for (const account of accounts) {
