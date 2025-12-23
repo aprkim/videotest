@@ -2024,8 +2024,19 @@
                                 message: sharedChannelName
                             });
 
-                            channelId = channelResult.pid;
-                            console.log('✅ Created new channel:', channelId);
+                            console.log('📦 Channel result object:', channelResult);
+                            console.log('📦 Result type:', typeof channelResult);
+                            console.log('📦 Result keys:', Object.keys(channelResult || {}));
+
+                            // Try different property names that might contain the channel ID
+                            channelId = channelResult?.pid || channelResult?.id || channelResult?.channel_id || channelResult?.channelId;
+
+                            console.log('✅ Extracted channel ID:', channelId);
+
+                            if (!channelId) {
+                                console.error('❌ No channel ID found in result!');
+                                throw new Error('Channel creation succeeded but returned no ID');
+                            }
                         }
 
                         // Get member data for this channel
