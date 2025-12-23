@@ -2026,7 +2026,14 @@
 
                             console.log('📦 Channel result object:', channelResult);
                             console.log('📦 Result type:', typeof channelResult);
-                            console.log('📦 Result keys:', Object.keys(channelResult || {}));
+                            const resultKeys = Object.keys(channelResult || {});
+                            console.log('📦 Result keys:', resultKeys);
+                            console.log('📦 Result keys as string:', resultKeys.join(', '));
+
+                            // Log each property and its value
+                            resultKeys.forEach(key => {
+                                console.log(`   - ${key}:`, channelResult[key]);
+                            });
 
                             // Try different property names that might contain the channel ID
                             channelId = channelResult?.pid || channelResult?.id || channelResult?.channel_id || channelResult?.channelId;
