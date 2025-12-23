@@ -1505,8 +1505,15 @@
         // Import Bridge for Makedo
         import Bridge from 'bridge';
 
+        // Initialize Bridge instance
+        const bridge = new Bridge();
+        const CONTEXT_ID = "Kaiaj83n832";
+        const CONTEXT_AUTH_TOKEN = "Kaiaj83n832";
+        console.log('🌉 Bridge initialized for video chat:', bridge);
+
         // Make it available globally for this script
         window.MakedoBridge = Bridge;
+        window.bridge = bridge;
         
         // ========================================
         // MODAL HELPER FUNCTIONS & UI SETUP
@@ -1766,8 +1773,7 @@
         async function initVideoSession() {
             try {
                 console.log('=== Initializing Video Session ===');
-                console.log('Fetch available?', typeof Fetch !== 'undefined');
-                console.log('Bridge available?', typeof Bridge !== 'undefined');
+                console.log('Bridge available?', typeof bridge !== 'undefined');
                 
                 // Get session ID from URL
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1889,21 +1895,19 @@
                 updateLoading('Connecting to video server...', '');
                 console.log('Authenticating with Makedo...');
 
-                if (!Fetch) {
-                    throw new Error('Makedo Fetch not available');
-                }
-
-                const loginResult = await Fetch.login({
+                const loginResult = await bridge.login({
                     email: myEmail,
-                    password: myPassword
+                    password: myPassword,
+                    contextId: CONTEXT_ID,
+                    contextAuthToken: CONTEXT_AUTH_TOKEN
                 });
-                
+
                 console.log('Login result:', loginResult);
-                
+
                 if (loginResult.status !== 'loggedIn') {
                     throw new Error('Failed to authenticate with video server');
                 }
-                
+
                 console.log('✅ Authenticated with Makedo:', loginResult.email);
                 
                 // Step 2: Initialize Bridge
