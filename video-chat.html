@@ -1931,45 +1931,54 @@
                 console.log('Setting up channel for partner:', partnerDisplayName);
                 console.log('Partner email to look up:', partnerInfo?.email);
 
-                // Step 4: Try to find partner and create proper channel, with fallback
+                // Step 4: Get partner's Makedo PID from Firebase (NEW APPROACH)
                 updateLoading('Finding partner...', '');
 
-                let partnerUser = null;
+                let partnerMakedoPid = null;
+                const partnerEmail = partnerInfo?.email;
 
-                // Try to find partner via getUsersByQuery
-                try {
-                    console.log('🔍 Calling bridge.getUsersByQuery() to find partner...');
-                    const allUsers = await bridge.getUsersByQuery();
-                    console.log('📋 Found', allUsers?.length || 0, 'users in context');
+                console.log('🔍 Looking up partner Makedo PID from Firebase...');
+                console.log('Partner email:', partnerEmail);
 
-                    if (allUsers && allUsers.length > 0) {
-                        console.log('📋 Sample user:', allUsers[0]);
+                if (partnerEmail) {
+                    try {
+                        // Query Firebase for partner's makedoPid
+                        const partnerSnapshot = await window.db.collection('users')
+                            .where('email', '==', partnerEmail)
+                            .get();
 
-                        const partnerEmail = partnerInfo?.email;
-                        if (partnerEmail) {
-                            partnerUser = allUsers.find(user => user.email === partnerEmail);
-                            if (partnerUser) {
-                                console.log('✅ Found partner:', partnerUser.email, 'PID:', partnerUser.pid);
+                        if (!partnerSnapshot.empty) {
+                            const partnerDoc = partnerSnapshot.docs[0];
+                            const partnerData = partnerDoc.data();
+                            partnerMakedoPid = partnerData.makedoPid;
+
+                            if (partnerMakedoPid) {
+                                console.log('✅ Found partner Makedo PID from Firebase:', partnerMakedoPid);
+                                console.log('Partner email:', partnerData.email);
                             } else {
-                                console.log('⚠️ Partner', partnerEmail, 'not found in user list');
-                                console.log('Available users:', allUsers.map(u => u.email));
+                                console.log('⚠️ Partner exists in Firebase but has no makedoPid');
+                                console.log('💡 Partner needs to be registered on Makedo first');
                             }
+                        } else {
+                            console.log('⚠️ Partner not found in Firebase:', partnerEmail);
                         }
+                    } catch (error) {
+                        console.error('❌ Error fetching partner from Firebase:', error);
                     }
-                } catch (error) {
-                    console.log('⚠️ getUsersByQuery failed:', error.message);
+                } else {
+                    console.log('⚠️ No partner email provided');
                 }
 
-                // Step 5: Create or join channel
+                // Step 5: Create or join channel using Firebase Makedo PID
                 updateLoading('Creating video room...', '');
 
-                if (partnerUser && partnerUser.pid) {
-                    // METHOD 1: Create a proper Bridge channel with partner invitation
-                    console.log('📞 Creating channel with partner PID:', partnerUser.pid);
+                if (partnerMakedoPid) {
+                    // METHOD 1: Create a proper Bridge channel with partner invitation (using Firebase PID)
+                    console.log('📞 Creating channel with partner Makedo PID from Firebase:', partnerMakedoPid);
 
                     try {
                         const channelResult = await bridge.createQuickChatChannel({
-                            invited: partnerUser.pid,
+                            invited: partnerMakedoPid,
                             message: `TabbiMate session ${sessionId}`
                         });
 
@@ -1985,11 +1994,12 @@
                         throw error;
                     }
                 } else {
-                    // METHOD 2: For TEST MODE - use session-based shared channel
-                    // Both test21 and test22 will get/create the same channel based on sessionId
-                    console.log('🏠 Partner not found via getUsersByQuery');
-                    console.log('📍 Using session-based shared channel approach');
+                    // METHOD 2: Fallback - use session-based shared channel
+                    // This happens when partner has no makedoPid in Firebase
+                    console.log('🏠 Partner Makedo PID not found in Firebase');
+                    console.log('📍 Using session-based shared channel fallback');
                     console.log('Session ID:', sessionId);
+                    console.log('💡 Tip: Register partner on Makedo using admin-makedo-signup.html');
 
                     try {
                         // Try to get existing channel for this session, or create it
