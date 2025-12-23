@@ -1495,20 +1495,16 @@
     <script type="importmap">
     {
       "imports": {
-        "bridge": "https://proto2.makedo.com:8883/ux/scripts/bridge.js",
-        "fetch": "https://proto2.makedo.com:8883/ux/scripts/fetch.js",
-        "config": "https://proto2.makedo.com:8883/ux/scripts/configStatic.js"
+        "bridge": "https://proto2.makedo.com:8883/ux/scripts/bridge.js"
       }
     }
     </script>
 
     <script type="module">
-        // Import Makedo APIs using importmap
-        import Fetch from 'fetch';
+        // Import Bridge for Makedo
         import Bridge from 'bridge';
 
-        // Make them available globally for this script
-        window.MakedoFetch = Fetch;
+        // Make it available globally for this script
         window.MakedoBridge = Bridge;
         
         // ========================================

@@ -1,0 +1,199 @@
+/**
+ * Register test21-25 accounts on Makedo server using bridge.signupInContext()
+ */
+
+// We need to use the browser environment for this since bridge is a browser module
+// This script will generate the HTML page that does the registration
+
+const accounts = [
+    { email: 'test21@tabbimate.test', password: 'test123456' },
+    { email: 'test22@tabbimate.test', password: 'test123456' },
+    { email: 'test23@tabbimate.test', password: 'test123456' },
+    { email: 'test24@tabbimate.test', password: 'test123456' },
+    { email: 'test25@tabbimate.test', password: 'test123456' }
+];
+
+const contextId = "Kaiaj83n832";
+const contextAuthToken = "Kaiaj83n832";
+
+const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Makedo Accounts</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .status.pending {
+            background: #f0f0f0;
+            color: #666;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+        button {
+            background: #BF3143;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #a02839;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #004085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Register Makedo Accounts</h1>
+
+        <div class="info">
+            <strong>Context:</strong> Kaiaj83n832<br>
+            <strong>Accounts to register:</strong> test21@tabbimate.test through test25@tabbimate.test
+        </div>
+
+        <div id="status-container"></div>
+
+        <button id="register-btn" onclick="registerAccounts()">Start Registration</button>
+    </div>
+
+    <script type="module">
+        import Bridge from 'https://proto2.makedo.com:8883/ux/scripts/bridge.js';
+
+        const accounts = ${JSON.stringify(accounts, null, 12)};
+        const contextId = "${contextId}";
+        const contextAuthToken = "${contextAuthToken}";
+
+        let bridge = null;
+
+        // Initialize Bridge
+        async function initBridge() {
+            console.log('Initializing Bridge...');
+            bridge = new Bridge();
+            await bridge.init();
+            console.log('Bridge initialized');
+        }
+
+        // Register a single account
+        async function registerAccount(email, password) {
+            console.log(\`Registering \${email}...\`);
+
+            try {
+                const result = await bridge.signupInContext({
+                    email: email,
+                    password: password,
+                    contextId: contextId,
+                    contextAuthToken: contextAuthToken
+                });
+
+                console.log(\`Registration result for \${email}:\`, result);
+                return { success: true, result };
+            } catch (error) {
+                console.error(\`Registration failed for \${email}:\`, error);
+                return { success: false, error: error.message || error };
+            }
+        }
+
+        // Register all accounts
+        window.registerAccounts = async function() {
+            const btn = document.getElementById('register-btn');
+            const container = document.getElementById('status-container');
+
+            btn.disabled = true;
+            container.innerHTML = '';
+
+            // Initialize Bridge first
+            try {
+                await initBridge();
+            } catch (error) {
+                container.innerHTML = '<div class="status error">Failed to initialize Bridge: ' + error.message + '</div>';
+                btn.disabled = false;
+                return;
+            }
+
+            // Register each account
+            for (const account of accounts) {
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'status processing';
+                statusDiv.id = 'status-' + account.email;
+                statusDiv.textContent = \`Processing \${account.email}...\`;
+                container.appendChild(statusDiv);
+
+                const result = await registerAccount(account.email, account.password);
+
+                if (result.success) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = \`✅ \${account.email} registered successfully\`;
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = \`❌ \${account.email} failed: \${result.error}\`;
+                }
+
+                // Small delay between registrations
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Registration Complete';
+        };
+
+        console.log('Ready to register accounts. Click the button to start.');
+    </script>
+</body>
+</html>`;
+
+const fs = require('fs');
+fs.writeFileSync('/Users/aprkim/videotest/register-makedo-accounts.html', html);
+
+console.log('✅ Created register-makedo-accounts.html');
+console.log('');
+console.log('Open this file in your browser:');
+console.log('http://localhost:8080/register-makedo-accounts.html');
+console.log('');
+console.log('Then click "Start Registration" to register all 5 accounts on Makedo.');

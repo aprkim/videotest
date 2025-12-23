@@ -1475,16 +1475,14 @@
     <script type="importmap">
     {
       "imports": {
-        "bridge": "https://proto2.makedo.com:8883/ux/scripts/bridge.js",
-        "fetch": "https://proto2.makedo.com:8883/ux/scripts/fetch.js",
-        "config": "https://proto2.makedo.com:8883/ux/scripts/configStatic.js"
+        "bridge": "https://proto2.makedo.com:8883/ux/scripts/bridge.js"
       }
     }
     </script>
 
     <script type="module">
-        // Import Fetch from fetch.js for Makedo login
-        import Fetch from 'fetch';
+        // Import Bridge for Makedo login
+        import Bridge from 'bridge';
 
         // Import and initialize Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js';
@@ -1504,6 +1502,21 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         console.log('🔥 Firebase initialized');
+
+        // Initialize Bridge for Makedo
+        const bridge = new Bridge();
+        const CONTEXT_ID = "Kaiaj83n832";
+        const CONTEXT_AUTH_TOKEN = "Kaiaj83n832";
+
+        // Initialize Bridge
+        (async () => {
+            try {
+                await bridge.init();
+                console.log('🌉 Bridge initialized');
+            } catch (error) {
+                console.error('Failed to initialize Bridge:', error);
+            }
+        })();
 
         // Initialize dashboard
         let userId = null;
@@ -3368,22 +3381,22 @@
                     submitBtn.disabled = true;
                     errorDiv.classList.add('hidden');
                     
-                    console.log('Starting Makedo login with Fetch.login()...');
+                    console.log('Starting Makedo login with bridge.login()...');
                     console.log('Email:', email);
-                    
+
                     try {
-                        // Check if Fetch is available
-                        if (typeof Fetch === 'undefined') {
-                            throw new Error('Fetch module not loaded. Please refresh the page and try again.');
-                        }
-                        
-                        // Use Fetch.login() from fetch.js (imported at top of module)
-                        const result = await Fetch.login({ email, password });
-                        
+                        // Use bridge.login() with context
+                        const result = await bridge.login({
+                            email,
+                            password,
+                            contextId: CONTEXT_ID,
+                            contextAuthToken: CONTEXT_AUTH_TOKEN
+                        });
+
                         console.log('Login result:', result);
                         console.log('Result status:', result.status);
                         console.log('Full result object:', JSON.stringify(result));
-                        
+
                         if (result.status === 'loggedIn') {
                             // Success!
                             makedoState.isLoggedIn = true;
@@ -3616,17 +3629,13 @@
             console.log('✅ Attempting auto-login to Makedo account...');
 
             try {
-                // Check if Fetch is available
-                if (typeof Fetch === 'undefined') {
-                    console.error('❌ Fetch module not loaded');
-                    return;
-                }
-
-                // Use Fetch.login() with object parameter (same as manual login)
-                console.log('Calling Fetch.login() with email:', expectedMakedoAccount.email);
-                const result = await Fetch.login({
+                // Use bridge.login() with context
+                console.log('Calling bridge.login() with email:', expectedMakedoAccount.email);
+                const result = await bridge.login({
                     email: expectedMakedoAccount.email,
-                    password: expectedMakedoAccount.password
+                    password: expectedMakedoAccount.password,
+                    contextId: CONTEXT_ID,
+                    contextAuthToken: CONTEXT_AUTH_TOKEN
                 });
 
                 console.log('Login result:', result);
