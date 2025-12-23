@@ -237,6 +237,16 @@
             </button>
         </div>
 
+        <div style="margin-bottom: 30px; padding: 20px; background: #fff3cd; border-radius: 12px; border: 2px dashed #ffc107;">
+            <h3 style="margin-bottom: 10px; color: #2d3748; font-size: 18px;">🚀 Auto-Register Missing Users</h3>
+            <p style="margin-bottom: 15px; color: #4a5568; font-size: 14px;">
+                Find Firebase users without Makedo PIDs and automatically register them on Makedo using signupInContext().
+            </p>
+            <button type="button" class="btn" id="auto-register-btn" style="background: #ff9800;">
+                Auto-Register Missing Users on Makedo
+            </button>
+        </div>
+
         <form id="signup-form">
             <div class="form-group">
                 <label for="email">User Email</label>
@@ -275,6 +285,7 @@
         const form = document.getElementById('signup-form');
         const submitBtn = document.getElementById('submit-btn');
         const syncBtn = document.getElementById('sync-btn');
+        const autoRegisterBtn = document.getElementById('auto-register-btn');
         const progress = document.getElementById('progress');
         const progressFill = document.getElementById('progress-fill');
         const progressText = document.getElementById('progress-text');
@@ -283,6 +294,11 @@
         // Sync button handler
         syncBtn.addEventListener('click', async () => {
             await syncAllMakedoPids();
+        });
+
+        // Auto-register button handler
+        autoRegisterBtn.addEventListener('click', async () => {
+            await autoRegisterMissingUsers();
         });
 
         // Register form handler
@@ -407,6 +423,124 @@
                 console.error('Sync error:', error);
                 addResult('error', `❌ Sync failed: ${error.message}`);
             } finally {
+                syncBtn.disabled = false;
+                submitBtn.disabled = false;
+                setTimeout(() => {
+                    progress.classList.remove('active');
+                    progressText.textContent = 'Processing...';
+                }, 2000);
+            }
+        }
+
+        async function autoRegisterMissingUsers() {
+            autoRegisterBtn.disabled = true;
+            syncBtn.disabled = true;
+            submitBtn.disabled = true;
+            progress.classList.add('active');
+            results.innerHTML = '';
+            progressFill.style.width = '0%';
+            progressText.textContent = 'Auto-registering users...';
+
+            try {
+                // Step 1: Get all Firebase users
+                addResult('info', '🔥 Fetching Firebase users...');
+                progressFill.style.width = '10%';
+
+                const firebaseUsersSnapshot = await window.db.collection('users').get();
+                const firebaseUsers = [];
+                firebaseUsersSnapshot.forEach(doc => {
+                    firebaseUsers.push({ id: doc.id, ...doc.data() });
+                });
+
+                addResult('success', `✅ Found ${firebaseUsers.length} Firebase users`);
+                progressFill.style.width = '20%';
+
+                // Step 2: Filter users without Makedo PID
+                const usersWithoutMakedoPid = firebaseUsers.filter(user => !user.makedoPid);
+
+                if (usersWithoutMakedoPid.length === 0) {
+                    addResult('info', '✨ All Firebase users already have Makedo PIDs!');
+                    progressFill.style.width = '100%';
+                    return;
+                }
+
+                addResult('info', `📋 Found ${usersWithoutMakedoPid.length} users without Makedo PIDs`);
+                progressFill.style.width = '30%';
+
+                // Step 3: Register each user on Makedo
+                let registered = 0;
+                let skipped = 0;
+                let errors = 0;
+                const DEFAULT_PASSWORD = 'test123456'; // Default password for auto-registration
+
+                for (let i = 0; i < usersWithoutMakedoPid.length; i++) {
+                    const user = usersWithoutMakedoPid[i];
+                    const progressPercent = 30 + (i / usersWithoutMakedoPid.length) * 65;
+                    progressFill.style.width = `${progressPercent}%`;
+
+                    if (!user.email) {
+                        addResult('error', `⏭️ Skipped user ${user.id} - no email`);
+                        skipped++;
+                        continue;
+                    }
+
+                    try {
+                        addResult('info', `📝 Registering ${user.email} on Makedo...`);
+
+                        // Register on Makedo using bridge.signupInContext()
+                        const signupResult = await bridge.signupInContext({
+                            email: user.email,
+                            password: DEFAULT_PASSWORD,
+                            contextId: CONTEXT_ID,
+                            contextAuthToken: CONTEXT_AUTH_TOKEN
+                        });
+
+                        console.log(`Signup result for ${user.email}:`, signupResult);
+
+                        if (signupResult.status !== 'loggedIn') {
+                            throw new Error(`Makedo signup failed: ${signupResult.status || 'Unknown error'}`);
+                        }
+
+                        // Save Makedo PID to Firebase
+                        await window.db.collection('users').doc(user.id).update({
+                            makedoPid: signupResult.pid,
+                            makedoEmail: signupResult.email,
+                            makedoRegisteredAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+
+                        addResult('success', `✅ ${user.email} → PID: ${signupResult.pid}`);
+                        registered++;
+
+                        // Small delay to avoid overwhelming the server
+                        await new Promise(resolve => setTimeout(resolve, 500));
+
+                    } catch (error) {
+                        console.error(`Error registering ${user.email}:`, error);
+                        addResult('error', `❌ Failed to register ${user.email}: ${error.message}`);
+                        errors++;
+                    }
+                }
+
+                progressFill.style.width = '100%';
+
+                // Summary
+                addResult('success', `
+                    🎉 Auto-Registration Complete!<br>
+                    <div style="margin-top: 10px; font-size: 13px;">
+                        ✅ Registered: ${registered} users<br>
+                        ⏭️ Skipped: ${skipped} users<br>
+                        ❌ Errors: ${errors}
+                    </div>
+                    <div style="margin-top: 10px; font-size: 12px; color: #718096;">
+                        Default password used: ${DEFAULT_PASSWORD}
+                    </div>
+                `, true);
+
+            } catch (error) {
+                console.error('Auto-registration error:', error);
+                addResult('error', `❌ Auto-registration failed: ${error.message}`);
+            } finally {
+                autoRegisterBtn.disabled = false;
                 syncBtn.disabled = false;
                 submitBtn.disabled = false;
                 setTimeout(() => {
