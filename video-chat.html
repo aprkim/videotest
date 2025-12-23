@@ -1910,15 +1910,10 @@
 
                 console.log('✅ Authenticated with Makedo:', loginResult.email);
                 
-                // Step 2: Initialize Bridge
+                // Step 2: Initialize Bridge dispatcher
                 updateLoading('Setting up video connection...', '');
 
-                if (!Bridge) {
-                    throw new Error('Makedo Bridge not available');
-                }
-
-                bridge = new Bridge();
-                console.log('Bridge instance created:', bridge);
+                console.log('Using existing bridge instance:', bridge);
                 console.log('Bridge type:', typeof bridge);
 
                 bridge.initDispatcher();
