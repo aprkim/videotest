@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makedo Admin - Register Users</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <!-- Firebase config -->
+    <script src="firebase-config.js"></script>
+
+    <!-- jQuery (required by protocol.js) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src='https://proto2.makedo.com:8883/ux/scripts/protocol.js'></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: #edf2f7;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .info-box strong {
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .result-item {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .result-item.success {
+            background: #c6f6d5;
+            border-left: 4px solid #38a169;
+            color: #22543d;
+        }
+
+        .result-item.error {
+            background: #fed7d7;
+            border-left: 4px solid #e53e3e;
+            color: #742a2a;
+        }
+
+        .result-item.info {
+            background: #bee3f8;
+            border-left: 4px solid #3182ce;
+            color: #2c5282;
+        }
+
+        .icon {
+            font-size: 18px;
+        }
+
+        .progress {
+            margin-top: 20px;
+            background: #edf2f7;
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+        }
+
+        .progress.active {
+            display: block;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            background: #667eea;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .user-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .user-info div {
+            padding: 8px;
+            background: #f7fafc;
+            border-radius: 4px;
+        }
+
+        .user-info strong {
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Makedo Admin - Register Users</h1>
+        <p class="subtitle">Register TabbiMate users on Makedo video server</p>
+
+        <div class="info-box">
+            <strong>Context:</strong> Kaiaj83n832<br>
+            <strong>Purpose:</strong> This tool registers new Firebase users on the Makedo server and saves their Makedo PID to Firebase.
+        </div>
+
+        <form id="signup-form">
+            <div class="form-group">
+                <label for="email">User Email</label>
+                <input type="email" id="email" placeholder="user@tabbimate.test" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter password" required>
+            </div>
+
+            <button type="submit" class="btn" id="submit-btn">
+                Register User on Makedo
+            </button>
+        </form>
+
+        <div class="progress" id="progress">
+            <div>Processing...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="results" id="results"></div>
+    </div>
+
+    <script type="module">
+        import { Bridge } from './makedo/bridge.js';
+
+        const CONTEXT_ID = "Kaiaj83n832";
+        const CONTEXT_AUTH_TOKEN = "Kaiaj83n832";
+
+        const bridge = new Bridge();
+        console.log('🌉 Bridge initialized:', bridge);
+
+        const form = document.getElementById('signup-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const progress = document.getElementById('progress');
+        const progressFill = document.getElementById('progress-fill');
+        const results = document.getElementById('results');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                addResult('error', 'Please provide both email and password');
+                return;
+            }
+
+            await registerUser(email, password);
+        });
+
+        async function registerUser(email, password) {
+            submitBtn.disabled = true;
+            progress.classList.add('active');
+            results.innerHTML = '';
+            progressFill.style.width = '0%';
+
+            try {
+                // Step 1: Check if user exists in Firebase
+                addResult('info', `🔍 Checking Firebase user: ${email}`);
+                progressFill.style.width = '20%';
+
+                const userRecord = await getUserFromFirebase(email);
+                if (!userRecord) {
+                    throw new Error(`User ${email} not found in Firebase. Please create Firebase account first.`);
+                }
+
+                addResult('success', `✅ Firebase user found: ${userRecord.uid}`);
+                progressFill.style.width = '40%';
+
+                // Step 2: Register on Makedo using bridge.signupInContext()
+                addResult('info', `📝 Registering on Makedo server...`);
+                progressFill.style.width = '60%';
+
+                console.log('Calling bridge.signupInContext()...');
+                const signupResult = await bridge.signupInContext({
+                    email: email,
+                    password: password,
+                    contextId: CONTEXT_ID,
+                    contextAuthToken: CONTEXT_AUTH_TOKEN
+                });
+
+                console.log('Signup result:', signupResult);
+
+                if (signupResult.status !== 'loggedIn') {
+                    throw new Error(`Makedo signup failed: ${signupResult.status || 'Unknown error'}`);
+                }
+
+                addResult('success', `✅ Registered on Makedo successfully`);
+                progressFill.style.width = '80%';
+
+                // Display Makedo user info
+                const makedoInfo = `
+                    <div class="user-info">
+                        <div><strong>Makedo PID:</strong> ${signupResult.pid}</div>
+                        <div><strong>Email:</strong> ${signupResult.email}</div>
+                        <div><strong>Status:</strong> ${signupResult.status}</div>
+                        <div><strong>Context:</strong> ${signupResult.currentContext?.title || 'Kaiaj83n832'}</div>
+                    </div>
+                `;
+                addResult('info', `📊 Makedo User Info:${makedoInfo}`, true);
+
+                // Step 3: Save Makedo PID to Firebase
+                addResult('info', `💾 Saving Makedo PID to Firebase...`);
+
+                await saveMakedoPidToFirebase(userRecord.uid, signupResult.pid, email);
+
+                addResult('success', `✅ Saved Makedo PID (${signupResult.pid}) to Firebase`);
+                progressFill.style.width = '100%';
+
+                addResult('success', `🎉 Registration complete for ${email}!`);
+
+                // Clear form
+                form.reset();
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                addResult('error', `❌ Error: ${error.message}`);
+            } finally {
+                submitBtn.disabled = false;
+                setTimeout(() => {
+                    progress.classList.remove('active');
+                }, 1000);
+            }
+        }
+
+        async function getUserFromFirebase(email) {
+            // Try to find user by email in Firestore
+            const usersSnapshot = await window.db.collection('users').where('email', '==', email).get();
+
+            if (!usersSnapshot.empty) {
+                const userDoc = usersSnapshot.docs[0];
+                return {
+                    uid: userDoc.id,
+                    email: email,
+                    data: userDoc.data()
+                };
+            }
+
+            return null;
+        }
+
+        async function saveMakedoPidToFirebase(userId, makedoPid, email) {
+            // Update the user's Firestore document with Makedo PID
+            await window.db.collection('users').doc(userId).update({
+                makedoPid: makedoPid,
+                makedoEmail: email,
+                makedoRegisteredAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            console.log(`✅ Saved Makedo PID ${makedoPid} to Firebase user ${userId}`);
+        }
+
+        function addResult(type, message, isHtml = false) {
+            const div = document.createElement('div');
+            div.className = `result-item ${type}`;
+
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+
+            if (isHtml) {
+                div.innerHTML = `<span class="icon">${icon}</span><div>${message}</div>`;
+            } else {
+                div.innerHTML = `<span class="icon">${icon}</span><div>${message}</div>`;
+            }
+
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        // Wait for Firebase to initialize
+        window.addEventListener('load', () => {
+            console.log('🔥 Firebase initialized');
+            console.log('🌉 Bridge ready');
+        });
+    </script>
+</body>
+</html>
