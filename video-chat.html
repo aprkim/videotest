@@ -1935,70 +1935,79 @@
                 console.log('Setting up channel for partner:', partnerDisplayName);
                 console.log('Partner email to look up:', partnerInfo?.email);
 
-                // Query all users to find partner's PID
-                console.log('🔍 Calling bridge.getUsersByQuery() to find partner PID...');
-                let allUsers;
-                try {
-                    allUsers = await bridge.getUsersByQuery();
-                    console.log('📋 getUsersByQuery returned:', allUsers);
-                    console.log('📋 Number of users found:', allUsers?.length || 0);
-                    console.log('📋 User data type:', typeof allUsers);
+                // Step 4: Try to find partner and create proper channel, with fallback
+                updateLoading('Finding partner...', '');
 
-                    if (allUsers && allUsers.length > 0) {
-                        console.log('📋 First user sample:', allUsers[0]);
-                    }
-                } catch (error) {
-                    console.error('❌ Error calling getUsersByQuery:', error);
-                    throw new Error('Failed to query users: ' + error.message);
-                }
-
-                // Find partner by email
-                const partnerEmail = partnerInfo?.email;
                 let partnerUser = null;
 
-                if (allUsers && partnerEmail) {
-                    console.log('🔍 Searching for partner with email:', partnerEmail);
-                    partnerUser = allUsers.find(user => user.email === partnerEmail);
+                // Try to find partner via getUsersByQuery
+                try {
+                    console.log('🔍 Calling bridge.getUsersByQuery() to find partner...');
+                    const allUsers = await bridge.getUsersByQuery();
+                    console.log('📋 Found', allUsers?.length || 0, 'users in context');
 
-                    if (partnerUser) {
-                        console.log('✅ Found partner user:', partnerUser);
-                        console.log('✅ Partner PID:', partnerUser.pid);
-                    } else {
-                        console.log('❌ Partner not found in user list');
-                        console.log('📋 Available emails:', allUsers.map(u => u.email));
+                    if (allUsers && allUsers.length > 0) {
+                        console.log('📋 Sample user:', allUsers[0]);
+
+                        const partnerEmail = partnerInfo?.email;
+                        if (partnerEmail) {
+                            partnerUser = allUsers.find(user => user.email === partnerEmail);
+                            if (partnerUser) {
+                                console.log('✅ Found partner:', partnerUser.email, 'PID:', partnerUser.pid);
+                            } else {
+                                console.log('⚠️ Partner', partnerEmail, 'not found in user list');
+                                console.log('Available users:', allUsers.map(u => u.email));
+                            }
+                        }
                     }
+                } catch (error) {
+                    console.log('⚠️ getUsersByQuery failed:', error.message);
                 }
 
-                // Step 4: Create channel with partner's PID
+                // Step 5: Create or join channel
                 updateLoading('Creating video room...', '');
 
                 if (partnerUser && partnerUser.pid) {
-                    console.log('Creating channel with invited partner PID:', partnerUser.pid);
+                    // METHOD 1: Create a proper Bridge channel with partner invitation
+                    console.log('📞 Creating channel with partner PID:', partnerUser.pid);
 
-                    const channelResult = await bridge.createQuickChatChannel({
-                        invited: partnerUser.pid,
-                        message: `TabbiMate session ${sessionId}`
-                    });
+                    try {
+                        const channelResult = await bridge.createQuickChatChannel({
+                            invited: partnerUser.pid,
+                            message: `TabbiMate session ${sessionId}`
+                        });
 
-                    console.log('Channel result:', channelResult);
-                    channelId = channelResult.pid;
-                    console.log('✅ Channel created with ID:', channelId);
+                        channelId = channelResult.pid;
+                        console.log('✅ Channel created:', channelId);
 
-                    // Get member info
-                    memberData = await bridge.getOrCreateMeMember({
-                        channel_id: channelId
-                    });
-                    console.log('✅ Member data received:', memberData);
+                        memberData = await bridge.getOrCreateMeMember({
+                            channel_id: channelId
+                        });
+                        console.log('✅ Member data:', memberData);
+                    } catch (error) {
+                        console.error('❌ Channel creation failed:', error);
+                        throw error;
+                    }
                 } else {
-                    // Fallback: Use session ID directly as Galene room
-                    console.log('⚠️ Partner PID not found, using direct Galene connection');
-                    channelId = sessionId;
-                    const memberId = myEmail.split('@')[0];
+                    // METHOD 2: Use context-based room (both users join same context room)
+                    console.log('🏠 Using context-based room for session:', sessionId);
+
+                    // Use context ID + session ID as room identifier
+                    const contextRoomId = `${CONTEXT_ID}-${sessionId}`;
+                    const myMemberId = myEmail.split('@')[0]; // e.g., "test21"
+
+                    console.log('Context room ID:', contextRoomId);
+                    console.log('My member ID:', myMemberId);
+
+                    channelId = contextRoomId;
                     memberData = {
-                        pub_id: memberId,
-                        pid: memberId,
-                        access_code: "413239"
+                        pub_id: myMemberId,
+                        pid: myMemberId,
+                        access_code: CONTEXT_AUTH_TOKEN
                     };
+
+                    console.log('✅ Using room:', channelId);
+                    console.log('✅ Member data:', memberData);
                 }
 
                 const memberId = memberData.pub_id || memberData.pid;
