@@ -1981,31 +1981,77 @@
                         throw error;
                     }
                 } else {
-                    // METHOD 2: Use context-based room (both users join same context room)
-                    console.log('🏠 Using context-based room for session:', sessionId);
+                    // METHOD 2: For TEST MODE - use session-based shared channel
+                    // Both test21 and test22 will get/create the same channel based on sessionId
+                    console.log('🏠 Partner not found via getUsersByQuery');
+                    console.log('📍 Using session-based shared channel approach');
+                    console.log('Session ID:', sessionId);
 
-                    // Use context ID + session ID as room identifier
-                    const contextRoomId = `${CONTEXT_ID}-${sessionId}`;
-                    const myMemberId = myEmail.split('@')[0]; // e.g., "test21"
+                    try {
+                        // Try to get existing channel for this session, or create it
+                        // Use a deterministic channel name so both users get the same one
+                        const sharedChannelName = `tabbimate-${sessionId}`;
 
-                    console.log('Context room ID:', contextRoomId);
-                    console.log('My member ID:', myMemberId);
+                        console.log('Looking for or creating channel:', sharedChannelName);
 
-                    channelId = contextRoomId;
-                    memberData = {
-                        pub_id: myMemberId,
-                        pid: myMemberId,
-                        access_code: CONTEXT_AUTH_TOKEN
-                    };
+                        // Try to find existing channel first
+                        let foundChannel = null;
+                        try {
+                            const myChannels = await bridge.getMyChannels();
+                            console.log('My channels:', myChannels);
 
-                    console.log('✅ Using room:', channelId);
-                    console.log('✅ Member data:', memberData);
+                            // Look for channel with matching name in message
+                            foundChannel = myChannels.find(ch =>
+                                ch.message && ch.message.includes(sessionId)
+                            );
+
+                            if (foundChannel) {
+                                console.log('✅ Found existing channel:', foundChannel.pid);
+                                channelId = foundChannel.pid;
+                            }
+                        } catch (error) {
+                            console.log('⚠️ Could not search channels:', error.message);
+                        }
+
+                        // If no existing channel, create new one
+                        if (!channelId) {
+                            console.log('Creating new shared channel for session');
+                            const channelResult = await bridge.createQuickChatChannel({
+                                message: sharedChannelName
+                            });
+
+                            channelId = channelResult.pid;
+                            console.log('✅ Created new channel:', channelId);
+                        }
+
+                        // Get member data for this channel
+                        memberData = await bridge.getOrCreateMeMember({
+                            channel_id: channelId
+                        });
+                        console.log('✅ Member data received:', memberData);
+
+                        if (!memberData) {
+                            throw new Error('getOrCreateMeMember returned null/undefined');
+                        }
+                    } catch (error) {
+                        console.error('❌ Failed to setup shared channel:', error);
+                        throw new Error('Failed to create video room: ' + error.message);
+                    }
                 }
+
+                // Validate memberData before using it
+                if (!memberData) {
+                    console.error('❌ memberData is undefined!');
+                    throw new Error('Failed to get member data - memberData is undefined');
+                }
+
+                console.log('✅ Member data validated:', memberData);
 
                 const memberId = memberData.pub_id || memberData.pid;
                 const accessCode = memberData.access_code || "413239";
 
                 if (!memberId) {
+                    console.error('❌ Member ID is missing:', { memberData });
                     throw new Error('Member ID is missing from member data');
                 }
 
