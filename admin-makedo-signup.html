@@ -227,6 +227,16 @@
             <strong>Purpose:</strong> This tool registers new Firebase users on the Makedo server and saves their Makedo PID to Firebase.
         </div>
 
+        <div style="margin-bottom: 30px; padding: 20px; background: #f7fafc; border-radius: 12px; border: 2px dashed #cbd5e0;">
+            <h3 style="margin-bottom: 10px; color: #2d3748; font-size: 18px;">🔄 Sync Existing Users</h3>
+            <p style="margin-bottom: 15px; color: #4a5568; font-size: 14px;">
+                Retrieve all Makedo users and sync their PIDs to Firebase for existing TabbiMate accounts.
+            </p>
+            <button type="button" class="btn" id="sync-btn" style="background: #48bb78;">
+                Sync All Makedo PIDs to Firebase
+            </button>
+        </div>
+
         <form id="signup-form">
             <div class="form-group">
                 <label for="email">User Email</label>
@@ -244,7 +254,7 @@
         </form>
 
         <div class="progress" id="progress">
-            <div>Processing...</div>
+            <div id="progress-text">Processing...</div>
             <div class="progress-bar">
                 <div class="progress-fill" id="progress-fill"></div>
             </div>
@@ -264,10 +274,18 @@
 
         const form = document.getElementById('signup-form');
         const submitBtn = document.getElementById('submit-btn');
+        const syncBtn = document.getElementById('sync-btn');
         const progress = document.getElementById('progress');
         const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
         const results = document.getElementById('results');
 
+        // Sync button handler
+        syncBtn.addEventListener('click', async () => {
+            await syncAllMakedoPids();
+        });
+
+        // Register form handler
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -282,8 +300,125 @@
             await registerUser(email, password);
         });
 
+        async function syncAllMakedoPids() {
+            syncBtn.disabled = true;
+            submitBtn.disabled = true;
+            progress.classList.add('active');
+            results.innerHTML = '';
+            progressFill.style.width = '0%';
+            progressText.textContent = 'Syncing Makedo PIDs...';
+
+            try {
+                // Step 1: Login to Makedo with admin/test account
+                addResult('info', '🔐 Logging into Makedo...');
+                progressFill.style.width = '10%';
+
+                const loginResult = await bridge.login({
+                    email: 'test01@tabbimate.test', // Use a test account to query
+                    password: 'test123456',
+                    contextId: CONTEXT_ID,
+                    contextAuthToken: CONTEXT_AUTH_TOKEN
+                });
+
+                if (loginResult.status !== 'loggedIn') {
+                    throw new Error('Failed to login to Makedo');
+                }
+
+                addResult('success', '✅ Logged into Makedo');
+                progressFill.style.width = '20%';
+
+                // Step 2: Get all Makedo users
+                addResult('info', '📋 Fetching all Makedo users...');
+
+                const makedoUsers = await bridge.getUsersByQuery();
+                console.log('Makedo users:', makedoUsers);
+
+                addResult('success', `✅ Found ${makedoUsers.length} Makedo users`);
+                progressFill.style.width = '40%';
+
+                // Step 3: Get all Firebase users
+                addResult('info', '🔥 Fetching Firebase users...');
+
+                const firebaseUsersSnapshot = await window.db.collection('users').get();
+                const firebaseUsers = [];
+                firebaseUsersSnapshot.forEach(doc => {
+                    firebaseUsers.push({ id: doc.id, ...doc.data() });
+                });
+
+                addResult('success', `✅ Found ${firebaseUsers.length} Firebase users`);
+                progressFill.style.width = '50%';
+
+                // Step 4: Match and sync
+                addResult('info', '🔗 Matching Makedo PIDs with Firebase users...');
+
+                let synced = 0;
+                let skipped = 0;
+                let errors = 0;
+
+                for (let i = 0; i < firebaseUsers.length; i++) {
+                    const fbUser = firebaseUsers[i];
+                    const progress = 50 + (i / firebaseUsers.length) * 45;
+                    progressFill.style.width = `${progress}%`;
+
+                    // Find matching Makedo user by email
+                    const makedoUser = makedoUsers.find(mu => mu.email === fbUser.email);
+
+                    if (makedoUser && makedoUser.pid) {
+                        // Check if already synced
+                        if (fbUser.makedoPid === makedoUser.pid) {
+                            console.log(`Skip ${fbUser.email} - already synced`);
+                            skipped++;
+                            continue;
+                        }
+
+                        // Update Firebase with Makedo PID
+                        try {
+                            await window.db.collection('users').doc(fbUser.id).update({
+                                makedoPid: makedoUser.pid,
+                                makedoEmail: makedoUser.email,
+                                makedoSyncedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+
+                            addResult('success', `✅ Synced ${fbUser.email} → PID: ${makedoUser.pid}`);
+                            synced++;
+                        } catch (error) {
+                            console.error(`Error syncing ${fbUser.email}:`, error);
+                            addResult('error', `❌ Failed to sync ${fbUser.email}: ${error.message}`);
+                            errors++;
+                        }
+                    } else {
+                        console.log(`No Makedo account for ${fbUser.email}`);
+                    }
+                }
+
+                progressFill.style.width = '100%';
+
+                // Summary
+                addResult('success', `
+                    🎉 Sync Complete!<br>
+                    <div style="margin-top: 10px; font-size: 13px;">
+                        ✅ Synced: ${synced} users<br>
+                        ⏭️ Skipped: ${skipped} (already synced)<br>
+                        ❌ Errors: ${errors}
+                    </div>
+                `, true);
+
+            } catch (error) {
+                console.error('Sync error:', error);
+                addResult('error', `❌ Sync failed: ${error.message}`);
+            } finally {
+                syncBtn.disabled = false;
+                submitBtn.disabled = false;
+                setTimeout(() => {
+                    progress.classList.remove('active');
+                    progressText.textContent = 'Processing...';
+                }, 2000);
+            }
+        }
+
         async function registerUser(email, password) {
             submitBtn.disabled = true;
+            syncBtn.disabled = true;
             progress.classList.add('active');
             results.innerHTML = '';
             progressFill.style.width = '0%';
@@ -351,6 +486,7 @@
                 addResult('error', `❌ Error: ${error.message}`);
             } finally {
                 submitBtn.disabled = false;
+                syncBtn.disabled = false;
                 setTimeout(() => {
                     progress.classList.remove('active');
                 }, 1000);
