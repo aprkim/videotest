@@ -1736,7 +1736,13 @@
                 'test17@tabbimate.test': 'test18@tabbimate.test',
                 'test18@tabbimate.test': 'test17@tabbimate.test',
                 'test19@tabbimate.test': 'test20@tabbimate.test',
-                'test20@tabbimate.test': 'test19@tabbimate.test'
+                'test20@tabbimate.test': 'test19@tabbimate.test',
+                'test21@tabbimate.test': 'test22@tabbimate.test',
+                'test22@tabbimate.test': 'test21@tabbimate.test',
+                'test23@tabbimate.test': 'test24@tabbimate.test',
+                'test24@tabbimate.test': 'test23@tabbimate.test',
+                'test25@tabbimate.test': 'test26@tabbimate.test',
+                'test26@tabbimate.test': 'test25@tabbimate.test'
             };
 
             const email = pairings[firebaseEmail?.toLowerCase()];
@@ -1788,11 +1794,14 @@
                 // TEST MODE: Skip Firestore for test sessions (any session starting with 'test')
                 if (sessionId.startsWith('test')) {
                     console.log('🧪 TEST MODE: Using paired test account');
-                    updateLoading('Loading test session...', sessionId);
 
                     // Get Firebase user email to determine partner
                     const firebaseEmail = localStorage.getItem('videotest_user_email');
                     const testPartner = getPairedTestAccount(firebaseEmail);
+
+                    // Show partner name in loading message
+                    const partnerName = testPartner ? testPartner.displayName : 'partner';
+                    updateLoading(`Connecting with ${partnerName}...`, sessionId);
 
                     if (!testPartner) {
                         throw new Error(`No paired test account found for ${firebaseEmail}`);
