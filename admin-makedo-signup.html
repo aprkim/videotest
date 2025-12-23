@@ -21,6 +21,16 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src='https://proto2.makedo.com:8883/ux/scripts/protocol.js'></script>
 
+    <!-- Import map for Makedo modules -->
+    <script type="importmap">
+    {
+      "imports": {
+        "bridge": "https://proto2.makedo.com:8883/ux/scripts/bridge.js",
+        "config": "https://proto2.makedo.com:8883/ux/scripts/configServer.js"
+      }
+    }
+    </script>
+
     <style>
         * {
             margin: 0;
@@ -244,7 +254,7 @@
     </div>
 
     <script type="module">
-        import { Bridge } from './makedo/bridge.js';
+        import Bridge from 'bridge';
 
         const CONTEXT_ID = "Kaiaj83n832";
         const CONTEXT_AUTH_TOKEN = "Kaiaj83n832";
