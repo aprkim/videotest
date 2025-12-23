@@ -1810,25 +1810,17 @@
                     console.log('Firebase account:', firebaseEmail);
                     console.log('Test partner:', testPartner.username);
 
-                    // Get Makedo credentials from localStorage
-                    const makedoStateStr = localStorage.getItem('videotest_makedo_state');
-                    if (!makedoStateStr) {
-                        throw new Error('Video account not connected. Please connect on dashboard first.');
-                    }
-
-                    const makedoState = JSON.parse(makedoStateStr);
-                    if (!makedoState.isLoggedIn || !makedoState.password) {
-                        throw new Error('Video account credentials missing');
-                    }
-
-                    // Use stored Makedo email
-                    const myMakedoEmail = makedoState.userEmail;
+                    // In TEST MODE, use Firebase email as Makedo email (test accounts use same email)
+                    const myMakedoEmail = firebaseEmail;
+                    const myPassword = 'test123456'; // All test accounts use same password
 
                     console.log('My Makedo email:', myMakedoEmail);
                     console.log('Partner display name:', testPartner.displayName);
+                    console.log('Using test account credentials for Makedo login');
 
                     // Connect to session with test partner
-                    await connectToSession(sessionId, myMakedoEmail, makedoState.password, testPartner, null);
+                    // In TEST MODE, we don't need dashboard connection - we have credentials
+                    await connectToSession(sessionId, myMakedoEmail, myPassword, testPartner, null);
                     return;
                 }
                 
