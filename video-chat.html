@@ -2057,15 +2057,26 @@
                 console.log('========================================');
                 console.log('🚀 CALLING bridge.remote_serverJoin()');
                 console.log('This makes you visible to partner and starts broadcasting');
+                console.log('My email:', myEmail);
+                console.log('Partner email:', partnerInfo?.email);
+                console.log('Channel ID:', channelId);
+                console.log('Member ID:', memberId);
                 console.log('========================================');
 
                 await bridge.remote_serverJoin();
-                
+
                 console.log('========================================');
                 console.log('✅ remote_serverJoin() COMPLETED!');
                 console.log('✅ You are now broadcasting to the channel');
+                console.log('✅ Your member ID:', memberId);
                 console.log('✅ Partner should be able to see you');
                 console.log('✅ Waiting for partner to join and broadcast...');
+                console.log('');
+                console.log('🔍 WHAT TO CHECK:');
+                console.log('1. Wait for setOnJoinedChannel callback (should fire immediately)');
+                console.log('2. Wait for setOnNewUpStream callback (your stream going out)');
+                console.log('3. Wait for setOnNewDownStream callback (partner stream coming in)');
+                console.log('4. If partner already connected, you should see their stream shortly');
                 console.log('========================================');
                 
             } catch (error) {
@@ -2088,12 +2099,19 @@
     console.log('========================================');
     console.log('🎉 CALLBACK: setOnJoinedChannel FIRED!');
     console.log('You have successfully joined the Galene channel');
+    console.log('Channel ID:', channelId);
+    console.log('Member ID:', memberData?.pub_id || memberData?.pid);
 
-    // ✅ ADD THESE CRITICAL LINES:
+    // ✅ CRITICAL: Enable video and audio broadcasting
+    console.log('📤 Enabling video track broadcast...');
     bridge.inChannelSetStreamVideoTrack("camera", true);
-    bridge.inChannelSetStreamAudioTrack("camera", true);
+    console.log('✅ Video track broadcasting enabled');
 
-    console.log('Your camera stream is now broadcasting');
+    console.log('📤 Enabling audio track broadcast...');
+    bridge.inChannelSetStreamAudioTrack("camera", true);
+    console.log('✅ Audio track broadcasting enabled');
+
+    console.log('✅✅✅ Your camera stream is now broadcasting to partners! ✅✅✅');
     console.log('========================================');
 });
 
@@ -2119,30 +2137,45 @@
                 console.log('  Member ID:', memberId);
                 console.log('  Type:', type);
                 console.log('  Stream:', stream);
+                console.log('  Stream has video tracks?', stream?.getVideoTracks()?.length || 0);
+                console.log('  Stream has audio tracks?', stream?.getAudioTracks()?.length || 0);
                 console.log('  My member IDs:', memberData?.pub_id, memberData?.pid);
                 console.log('========================================');
-                
+
                 // IMPORTANT: Ignore our own stream echo
                 if (memberId === memberData?.pub_id || memberId === memberData?.pid) {
-                    console.log('⚠️ Ignoring self stream echo');
+                    console.log('⚠️ Ignoring self stream echo (memberID matches)');
                     return;
                 }
-                
+
                 console.log('✅ This is partner stream, not self!');
-                
+                console.log('✅ Partner member ID:', memberId);
+                console.log('✅ Attaching to remote video element...');
+
                 if (stream && type === 'camera') {
-                    // Attach partner's stream to remote video element
-                    remoteVideo.srcObject = stream;
-                    await remoteVideo.play();
-                    
-                    // Hide placeholder, show video
-                    remotePlaceholder.style.display = 'none';
-                    remoteVideo.style.display = 'block';
-                    
-                    // Update name (remove "Waiting")
-                    document.getElementById('remote-name').textContent = partnerName;
-                    
-                    console.log('✅ Partner video now displaying!');
+                    try {
+                        // Attach partner's stream to remote video element
+                        remoteVideo.srcObject = stream;
+                        console.log('✅ Stream attached to remoteVideo.srcObject');
+
+                        await remoteVideo.play();
+                        console.log('✅ remoteVideo.play() completed');
+
+                        // Hide placeholder, show video
+                        remotePlaceholder.style.display = 'none';
+                        remoteVideo.style.display = 'block';
+
+                        // Update name (remove "Waiting")
+                        document.getElementById('remote-name').textContent = partnerName;
+
+                        console.log('✅✅✅ Partner video now displaying! ✅✅✅');
+                        console.log('========================================');
+                    } catch (error) {
+                        console.error('❌ Error displaying partner video:', error);
+                        console.error('========================================');
+                    }
+                } else {
+                    console.log('⚠️ Stream is null or type is not camera:', { stream: !!stream, type });
                 }
             });
             
